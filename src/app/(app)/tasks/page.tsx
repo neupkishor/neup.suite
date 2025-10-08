@@ -305,18 +305,15 @@ function TaskCard({ task, projects }: { task: Task, projects: Project[] | null }
 
     return (
         <Card>
-            <CardHeader>
-                <div className="flex justify-between items-start">
-                    <CardTitle className="font-headline text-lg">{task.title}</CardTitle>
-                    <Badge variant={getStatusVariant(task.status)} className="shrink-0">
-                        <StatusIcon className={cn("mr-1 h-3.5 w-3.5", task.status === 'In Progress' && 'animate-spin')} />
-                        {task.status}
-                    </Badge>
+            <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4">
+                <div className="flex items-center gap-4 flex-1">
+                     <StatusIcon className={cn("h-6 w-6 shrink-0", statusConfig[task.status].color, task.status === 'In Progress' && 'animate-spin')} />
+                    <div>
+                        <p className="font-semibold">{task.title}</p>
+                        {project && <p className="text-sm text-muted-foreground">{project.name}</p>}
+                    </div>
                 </div>
-                {project && <CardDescription>{project.name}</CardDescription>}
-            </CardHeader>
-            <CardFooter className="flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-4 sm:gap-6 text-sm text-muted-foreground ml-10 sm:ml-0">
                     <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
                             {avatar && <AvatarImage src={avatar.imageUrl} alt={task.assignee} />}
@@ -324,14 +321,17 @@ function TaskCard({ task, projects }: { task: Task, projects: Project[] | null }
                         </Avatar>
                         <span>{task.assignee}</span>
                     </div>
-                 </div>
-                 {task.deadline && (
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <CalendarIconLucide className="h-4 w-4" />
-                        <span>{format(new Date(task.deadline), 'MMM d, yyyy')}</span>
-                    </div>
-                 )}
-            </CardFooter>
+                    {task.deadline && (
+                        <div className="flex items-center gap-1.5">
+                            <CalendarIconLucide className="h-4 w-4" />
+                            <span>{format(new Date(task.deadline), 'MMM d')}</span>
+                        </div>
+                    )}
+                </div>
+                <Badge variant={getStatusVariant(task.status)} className="w-28 justify-center shrink-0 hidden lg:flex">
+                    {task.status}
+                </Badge>
+            </CardContent>
         </Card>
     );
 }
@@ -339,17 +339,18 @@ function TaskCard({ task, projects }: { task: Task, projects: Project[] | null }
 function TaskCardSkeleton() {
     return (
         <Card>
-            <CardHeader>
-                <div className="flex justify-between items-start">
-                    <Skeleton className="h-6 w-3/4 mb-2" />
-                    <Skeleton className="h-6 w-20" />
+            <CardContent className="flex items-center gap-4 p-4">
+                <Skeleton className="h-6 w-6 rounded-full" />
+                <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
                 </div>
-                <Skeleton className="h-4 w-1/3" />
-            </CardHeader>
-            <CardFooter className="flex items-center justify-between">
-                <Skeleton className="h-8 w-28" />
-                <Skeleton className="h-5 w-24" />
-            </CardFooter>
+                <div className="flex items-center gap-6">
+                     <Skeleton className="h-8 w-24" />
+                     <Skeleton className="h-5 w-20" />
+                </div>
+                <Skeleton className="h-6 w-28 hidden lg:block" />
+            </CardContent>
         </Card>
     );
 }
@@ -403,7 +404,7 @@ export default function TasksPage() {
           </Dialog>
         </div>
       </CardHeader>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {loading &&
             Array.from({ length: 3 }).map((_, i) => (
                 <TaskCardSkeleton key={i} />
@@ -412,14 +413,14 @@ export default function TasksPage() {
         {!loading && tasks?.map((task) => (
             <TaskCard key={task.id} task={task} projects={projects} />
         ))}
+         {!loading && tasks?.length === 0 && (
+            <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                    No tasks found. Create one to get started.
+                </CardContent>
+            </Card>
+        )}
       </div>
-      {!loading && tasks?.length === 0 && (
-        <Card className="col-span-full">
-            <CardContent className="p-6 text-center text-muted-foreground">
-                No tasks found. Create one to get started.
-            </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
