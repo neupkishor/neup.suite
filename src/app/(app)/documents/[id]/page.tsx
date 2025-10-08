@@ -2,7 +2,7 @@
 'use client';
 import { use } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useDoc } from '@/firebase';
@@ -12,6 +12,7 @@ import { useMemo } from 'react';
 import type { Document } from '@/schemas/document';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
+import { File, Calendar, User, FileText, Hash, HardDrive } from 'lucide-react';
 
 const getStatusVariant = (status: string) => {
     switch (status) {
@@ -25,6 +26,16 @@ const getStatusVariant = (status: string) => {
     }
 };
 
+const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+
 export default function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const firestore = useFirestore();
@@ -33,7 +44,7 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
         return doc(firestore, 'documents', id) as DocumentReference<Document>;
     }, [firestore, id]);
 
-    const { data: document, loading } = useDoc<Document & {createdOn: {seconds: number}}>(documentRef);
+    const { data: document, loading } = useDoc<Document & {createdOn: {seconds: number}, updatedOn: {seconds: number}}>(documentRef);
     
     if (loading) {
         return (
@@ -69,33 +80,89 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
     const createdDate = document.createdOn
     ? format(new Date(document.createdOn.seconds * 1000), 'PPP')
     : 'N/A';
+     const updatedDate = document.updatedOn
+    ? format(new Date(document.updatedOn.seconds * 1000), 'PPP')
+    : 'N/A';
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-            <div>
-                <CardTitle className="font-headline text-2xl">{document.name}</CardTitle>
-                <CardDescription>
-                    {document.version ? `Version ${document.version} - ` : ''} 
-                    Last updated on {createdDate}
-                </CardDescription>
+    <div className="space-y-6">
+        <Card>
+        <CardHeader>
+            <div className="flex justify-between items-start">
+                <div>
+                    <CardTitle className="font-headline text-2xl">{document.name}</CardTitle>
+                    <CardDescription>
+                        Version {document.version || '1.0'}
+                    </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                    <Button asChild>
+                        <Link href={`/documents/${id}/edit`}>Edit</Link>
+                    </Button>
+                    <Button variant="destructive">Delete</Button>
+                </div>
             </div>
-            <div className="flex gap-2">
-                <Button asChild>
-                    <Link href={`/documents/${id}/edit`}>Edit</Link>
-                </Button>
-                 <Button variant="destructive">Delete</Button>
+        </CardHeader>
+        <CardContent>
+            <div className="prose max-w-none">
+                <p>
+                    <a href={document.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        View or Download Document
+                    </a>
+                </p>
+                {document.notes && <blockquote className="mt-4 border-l-2 pl-6 italic">{document.notes}</blockquote>}
             </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Badge variant={getStatusVariant(document.status)}>{document.status}</Badge>
-        <div className="mt-4 prose max-w-none">
-            <p>Document content preview will be available here.</p>
-            <p>URL: <a href={document.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{document.url}</a></p>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Document Details</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                <div className="flex items-start gap-3">
+                    <File className="h-5 w-5 text-muted-foreground mt-0.5"/>
+                    <div>
+                        <p className="text-muted-foreground">Status</p>
+                        <Badge variant={getStatusVariant(document.status)}>{document.status}</Badge>
+                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                    <User className="h-5 w-5 text-muted-foreground mt-0.5"/>
+                    <div>
+                        <p className="text-muted-foreground">Uploaded By</p>
+                        <p>{document.uploadedBy || 'N/A'}</p>
+                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                    <Calendar className="h-5 w-5 text-muted-foreground mt-0.5"/>
+                    <div>
+                        <p className="text-muted-foreground">Uploaded On</p>
+                        <p>{createdDate}</p>
+                    </div>
+                </div>
+                 <div className="flex items-start gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground mt-0.5"/>
+                    <div>
+                        <p className="text-muted-foreground">File Type</p>
+                        <p>{document.fileType || 'N/A'}</p>
+                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                    <HardDrive className="h-5 w-5 text-muted-foreground mt-0.5"/>
+                    <div>
+                        <p className="text-muted-foreground">File Size</p>
+                        <p>{document.size ? formatBytes(document.size) : 'N/A'}</p>
+                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                    <Hash className="h-5 w-5 text-muted-foreground mt-0.5"/>
+                    <div>
+                        <p className="text-muted-foreground">Version</p>
+                        <p>{document.version || '1.0'}</p>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    </div>
   );
 }

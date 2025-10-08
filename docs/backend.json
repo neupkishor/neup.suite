@@ -317,6 +317,10 @@
         "url": { "type": "string", "format": "uri" },
         "version": { "type": "string" },
         "status": { "type": "string", "enum": ["Signed", "Approved", "In Review", "Archived"] },
+        "fileType": { "type": "string", "description": "The MIME type of the file." },
+        "size": { "type": "number", "description": "The size of the file in bytes." },
+        "uploadedBy": { "type": "string", "description": "The ID of the user who uploaded the file." },
+        "notes": { "type": "string", "description": "Notes or comments about the file." },
         "createdOn": { "type": "string", "format": "date-time" },
         "updatedOn": { "type": "string", "format": "date-time" }
       },

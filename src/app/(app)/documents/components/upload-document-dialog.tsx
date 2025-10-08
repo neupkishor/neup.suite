@@ -19,10 +19,12 @@ import { Loader2, UploadCloud } from 'lucide-react';
 import { useFirestore } from '@/firebase/provider';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { uploadFile } from '@/lib/upload-service';
+import { Textarea } from '@/components/ui/textarea';
 
 export function UploadDocumentDialog({ children }: { children: React.ReactNode }) {
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState('');
+  const [notes, setNotes] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -38,6 +40,14 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
       }
     }
   };
+
+  const resetState = () => {
+    setFile(null);
+    setName('');
+    setNotes('');
+    setIsUploading(false);
+    setError(null);
+  }
 
   const handleUpload = async () => {
     if (!file || !firestore) {
@@ -58,14 +68,16 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
         url: fileUrl,
         status: 'In Review',
         version: '1.0',
+        fileType: file.type,
+        size: file.size,
+        notes: notes,
+        uploadedBy: 'Jane Doe', // Placeholder
         createdOn: serverTimestamp(),
         updatedOn: serverTimestamp(),
       });
       
       setIsOpen(false);
-      // Reset state on successful upload
-      setFile(null);
-      setName('');
+      resetState();
 
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -75,36 +87,29 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) {
+            resetState();
+        }
+    }}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Upload Document</DialogTitle>
           <DialogDescription>
-            Select a file from your computer to upload to the repository.
+            Select a file and add details to upload it to the repository.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid w-full items-center gap-1.5">
-            <Label htmlFor="document-name">Document Name</Label>
-            <Input
-              id="document-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Master Service Agreement.pdf"
-            />
-          </div>
-          <div className="grid w-full items-center gap-1.5">
-            <Label>File</Label>
-            <div
+          <div
               className="mt-1 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
               <div className="space-y-1 text-center">
                 <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
                 {file ? (
-                    <p className="text-sm text-foreground">{file.name}</p>
+                    <p className="text-sm text-foreground">{file.name} ({(file.size / 1024).toFixed(2)} KB)</p>
                 ) : (
                     <p className="text-sm text-muted-foreground">
                         <span className="font-semibold text-primary">Click to upload</span> or drag and drop
@@ -120,6 +125,24 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
               type="file"
               className="sr-only"
               onChange={handleFileChange}
+            />
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="document-name">Document Name</Label>
+            <Input
+              id="document-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Master Service Agreement.pdf"
+            />
+          </div>
+          <div className="grid w-full items-center gap-1.5">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add a brief description or any relevant notes..."
             />
           </div>
           {error && <p className="text-sm font-medium text-destructive">{error}</p>}
