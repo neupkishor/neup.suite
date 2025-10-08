@@ -53,19 +53,20 @@ export default function CreateProjectPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!firestore) return;
-    setIsSubmitting(true);
-    try {
-        await createProject(firestore, {
-            ...values,
-            deadline: format(values.deadline, "yyyy-MM-dd"),
-            status: 'Planning'
-        });
-        router.push('/projects');
-    } catch (error) {
-        console.error("Error creating project:", error);
+    if (!firestore) {
         setIsSubmitting(false);
-    }
+        return;
+    };
+    setIsSubmitting(true);
+
+    await createProject(firestore, {
+        ...values,
+        deadline: format(values.deadline, "yyyy-MM-dd"),
+        status: 'Planning'
+    });
+    
+    // This part will only be reached if createProject succeeds
+    router.push('/projects');
   }
 
   return (
