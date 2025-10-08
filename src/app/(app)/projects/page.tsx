@@ -7,7 +7,7 @@ import { FolderKanban } from "lucide-react";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { createProject } from "@/actions/projects/create-project";
@@ -72,20 +72,6 @@ export default function ProjectsPage() {
     }, [firestore]);
 
     const { data: projects, loading } = useCollection<Project>(projectsCollection);
-
-    useEffect(() => {
-        // Create a sample project if there are none.
-        if (!loading && projects && projects.length === 0 && firestore) {
-            const newProject = {
-                identifier: 'phoenix-project',
-                name: 'Phoenix Project',
-                status: 'In Progress',
-                deadline: '2024-08-15',
-            };
-            createProject(firestore, newProject);
-        }
-    }, [loading, projects, firestore]);
-
 
   return (
     <div className="space-y-6">

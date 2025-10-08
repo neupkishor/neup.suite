@@ -14,6 +14,8 @@ import {
   Loader2,
   PlusCircle,
   XCircle,
+  Calendar as CalendarIconLucide,
+  User as UserIcon,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -28,15 +30,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -84,6 +79,7 @@ type Task = {
   assignee: string;
   deadline?: string;
   status: 'To Do' | 'In Progress' | 'Done' | 'Cancelled';
+  project: string;
 };
 
 type Project = {
@@ -301,6 +297,63 @@ const getStatusVariant = (status: Task['status']) => {
     }
 }
 
+function TaskCard({ task, projects }: { task: Task, projects: Project[] | null }) {
+    const StatusIcon = statusConfig[task.status]?.icon || Circle;
+    const assignee = teamMembers.find(m => m.name === task.assignee);
+    const avatar = placeholderImages.find(p => p.id === assignee?.avatarId);
+    const project = projects?.find(p => p.id === task.project);
+
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <CardTitle className="font-headline text-lg">{task.title}</CardTitle>
+                    <Badge variant={getStatusVariant(task.status)} className="shrink-0">
+                        <StatusIcon className={cn("mr-1 h-3.5 w-3.5", task.status === 'In Progress' && 'animate-spin')} />
+                        {task.status}
+                    </Badge>
+                </div>
+                {project && <CardDescription>{project.name}</CardDescription>}
+            </CardHeader>
+            <CardFooter className="flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                            {avatar && <AvatarImage src={avatar.imageUrl} alt={task.assignee} />}
+                            <AvatarFallback>{task.assignee.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <span>{task.assignee}</span>
+                    </div>
+                 </div>
+                 {task.deadline && (
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <CalendarIconLucide className="h-4 w-4" />
+                        <span>{format(new Date(task.deadline), 'MMM d, yyyy')}</span>
+                    </div>
+                 )}
+            </CardFooter>
+        </Card>
+    );
+}
+
+function TaskCardSkeleton() {
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <Skeleton className="h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-6 w-20" />
+                </div>
+                <Skeleton className="h-4 w-1/3" />
+            </CardHeader>
+            <CardFooter className="flex items-center justify-between">
+                <Skeleton className="h-8 w-28" />
+                <Skeleton className="h-5 w-24" />
+            </CardFooter>
+        </Card>
+    );
+}
+
 
 export default function TasksPage() {
   const [open, setOpen] = useState(false);
@@ -322,8 +375,8 @@ export default function TasksPage() {
   const loading = tasksLoading || projectsLoading;
 
   return (
-    <Card>
-      <CardHeader>
+    <div className="space-y-6">
+      <CardHeader className="p-0">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="font-headline text-2xl">Task Management</CardTitle>
@@ -350,63 +403,23 @@ export default function TasksPage() {
           </Dialog>
         </div>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Task</TableHead>
-              <TableHead>Assignee</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Deadline</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-28" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                </TableRow>
-              ))}
-            {!loading && tasks?.map((task) => {
-              const StatusIcon = statusConfig[task.status]?.icon || Circle;
-              const assignee = teamMembers.find(m => m.name === task.assignee);
-              const avatar = placeholderImages.find(p => p.id === assignee?.avatarId);
-              return (
-                <TableRow key={task.id}>
-                  <TableCell className="font-medium">{task.title}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                         <Avatar className="h-8 w-8">
-                            {avatar && <AvatarImage src={avatar.imageUrl} alt={task.assignee} />}
-                            <AvatarFallback>{task.assignee.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <span>{task.assignee}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(task.status)}>
-                        <StatusIcon className={cn("mr-1 h-3.5 w-3.5", task.status === 'In Progress' && 'animate-spin')} />
-                        {task.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{task.deadline ? format(new Date(task.deadline), 'MMM d, yyyy') : 'No deadline'}</TableCell>
-                </TableRow>
-              );
-            })}
-             {!loading && tasks?.length === 0 && (
-                <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                        No tasks found.
-                    </TableCell>
-                </TableRow>
-             )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {loading &&
+            Array.from({ length: 3 }).map((_, i) => (
+                <TaskCardSkeleton key={i} />
+            ))
+        }
+        {!loading && tasks?.map((task) => (
+            <TaskCard key={task.id} task={task} projects={projects} />
+        ))}
+      </div>
+      {!loading && tasks?.length === 0 && (
+        <Card className="col-span-full">
+            <CardContent className="p-6 text-center text-muted-foreground">
+                No tasks found. Create one to get started.
+            </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
-
