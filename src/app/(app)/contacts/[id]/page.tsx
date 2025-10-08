@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { deleteContact } from "@/actions/contacts/delete-contact";
-import { Loader2, Mail, Phone, Globe, Trash2, Pencil, Calendar, MessageSquare, Briefcase, MapPin, Notebook, Plus, User as UserIcon } from "lucide-react";
+import { Loader2, Mail, Phone, Globe, Trash2, Pencil, Calendar, MessageSquare, Briefcase, MapPin, Notebook, Plus, User as UserIcon, Building } from "lucide-react";
 import type { Contact } from "@/schemas/contact";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -93,6 +93,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                     <div>
                         <CardTitle className="font-headline text-3xl">{displayName}</CardTitle>
                         {contact.role && <p className="text-base text-muted-foreground">{contact.role}</p>}
+                        {contact.organization && <p className="text-sm text-muted-foreground flex items-center gap-2"><Building className="h-4 w-4" />{contact.organization}</p>}
                     </div>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">

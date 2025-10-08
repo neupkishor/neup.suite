@@ -188,6 +188,7 @@
           }
         },
         "role": { "type": "string" },
+        "organization": { "type": "string" },
         "emails": {
           "type": "array",
           "items": {
@@ -357,3 +358,4 @@
     }
   }
 }
+

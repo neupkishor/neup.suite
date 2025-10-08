@@ -43,6 +43,7 @@ const prepareDataForForm = (contact?: Contact & { id?: string }): ContactFormVal
         return {
             name: { firstName: '', middleName: '', lastName: '' },
             role: '',
+            organization: '',
             avatarUrl: '',
             notes: '',
             emails: [],
@@ -61,6 +62,7 @@ const prepareDataForForm = (contact?: Contact & { id?: string }): ContactFormVal
             lastName: contact.name.lastName || '',
         },
         role: contact.role || '',
+        organization: contact.organization || '',
         avatarUrl: contact.avatarUrl || '',
         notes: contact.notes || '',
         emails: contact.emails || [],
@@ -148,9 +150,14 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
                         <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input placeholder="Doe" {...field} /></FormControl><FormMessage /></FormItem>
                     )}/>
                 </div>
-                <FormField control={form.control} name="role" render={({ field }) => (
-                    <FormItem><FormLabel>Role / Job Title</FormLabel><FormControl><Input placeholder="e.g. Project Manager" {...field} /></FormControl><FormMessage /></FormItem>
-                )}/>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField control={form.control} name="role" render={({ field }) => (
+                      <FormItem><FormLabel>Role / Job Title</FormLabel><FormControl><Input placeholder="e.g. Project Manager" {...field} /></FormControl><FormMessage /></FormItem>
+                  )}/>
+                  <FormField control={form.control} name="organization" render={({ field }) => (
+                      <FormItem><FormLabel>Organization</FormLabel><FormControl><Input placeholder="e.g. Acme Inc." {...field} /></FormControl><FormMessage /></FormItem>
+                  )}/>
+                </div>
                  {showAvatarUrl ? (
                     <FormField control={form.control} name="avatarUrl" render={({ field }) => (
                         <FormItem><FormLabel>Photo URL</FormLabel><FormControl><Input placeholder="https://example.com/photo.jpg" {...field} /></FormControl><FormMessage /></FormItem>

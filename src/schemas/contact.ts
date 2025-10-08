@@ -51,6 +51,7 @@ export const contactSchema = z.object({
     }
   ),
   role: z.string().optional(),
+  organization: z.string().optional(),
   emails: z.array(contactEmailSchema).optional(),
   phoneNumbers: z.array(contactPhoneSchema).optional(),
   addresses: z.array(contactAddressSchema).optional(),
