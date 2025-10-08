@@ -1,9 +1,9 @@
+
 'use client';
 import {
   addDoc,
   collection,
   CollectionReference,
-  Firestore,
   serverTimestamp,
 } from 'firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -48,7 +48,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -76,14 +75,21 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { placeholderImages } from '@/lib/placeholder-images';
+import { taskSchema } from '@/schemas/task';
+import { Textarea } from '@/components/ui/textarea';
 
 type Task = {
   id: string;
-  name: string;
+  title: string;
   assignee: string;
-  deadline: string;
+  deadline?: string;
   status: 'To Do' | 'In Progress' | 'Done' | 'Cancelled';
 };
+
+type Project = {
+    id: string;
+    name: string;
+}
 
 const teamMembers = [
     { name: 'Jane Doe', avatarId: 'user-avatar' },
@@ -92,22 +98,18 @@ const teamMembers = [
     { name: 'Casey Williams', avatarId: 'contact-4' },
 ];
 
-const taskSchema = z.object({
-  name: z.string().min(1, 'Task name is required'),
-  assignee: z.string().min(1, 'Please assign the task'),
-  deadline: z.date({ required_error: 'A deadline is required' }),
-  status: z.enum(['To Do', 'In Progress', 'Done', 'Cancelled']),
-});
 
-function NewTaskForm({ setOpen }: { setOpen: (open: boolean) => void }) {
+function NewTaskForm({ setOpen, projects }: { setOpen: (open: boolean) => void, projects: Project[] | null }) {
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof taskSchema>>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      name: '',
+      title: '',
+      description: '',
       status: 'To Do',
+      subtasks: [],
     },
   });
 
@@ -119,7 +121,7 @@ function NewTaskForm({ setOpen }: { setOpen: (open: boolean) => void }) {
     try {
       await addDoc(taskCollection, {
         ...values,
-        deadline: format(values.deadline, 'yyyy-MM-dd'),
+        deadline: values.deadline ? format(values.deadline, 'yyyy-MM-dd') : null,
         createdBy: 'user_placeholder',
         createdOn: serverTimestamp(),
       });
@@ -142,10 +144,10 @@ function NewTaskForm({ setOpen }: { setOpen: (open: boolean) => void }) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="name"
+          name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Task Name</FormLabel>
+              <FormLabel>Task Title</FormLabel>
               <FormControl>
                 <Input placeholder="e.g. Design the new logo" {...field} />
               </FormControl>
@@ -153,7 +155,42 @@ function NewTaskForm({ setOpen }: { setOpen: (open: boolean) => void }) {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Add a more detailed description..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="project"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a project" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {projects?.map(project => (
+                        <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
             control={form.control}
             name="assignee"
@@ -181,7 +218,7 @@ function NewTaskForm({ setOpen }: { setOpen: (open: boolean) => void }) {
             name="deadline"
             render={({ field }) => (
                 <FormItem className="flex flex-col">
-                <FormLabel>Deadline</FormLabel>
+                <FormLabel>Deadline (Optional)</FormLabel>
                 <Popover>
                     <PopoverTrigger asChild>
                     <FormControl>
@@ -214,8 +251,7 @@ function NewTaskForm({ setOpen }: { setOpen: (open: boolean) => void }) {
                 </FormItem>
             )}
             />
-        </div>
-        <FormField
+             <FormField
             control={form.control}
             name="status"
             render={({ field }) => (
@@ -238,6 +274,8 @@ function NewTaskForm({ setOpen }: { setOpen: (open: boolean) => void }) {
                 </FormItem>
             )}
             />
+        </div>
+        
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Task
@@ -267,12 +305,21 @@ const getStatusVariant = (status: Task['status']) => {
 export default function TasksPage() {
   const [open, setOpen] = useState(false);
   const firestore = useFirestore();
+
   const tasksCollection = useMemo(() => {
     if (!firestore) return null;
     return collection(firestore, 'tasks') as CollectionReference<Task>;
   }, [firestore]);
+  const { data: tasks, loading: tasksLoading } = useCollection<Task>(tasksCollection);
 
-  const { data: tasks, loading } = useCollection<Task>(tasksCollection);
+  const projectsCollection = useMemo(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'projects') as CollectionReference<Project>;
+  }, [firestore]);
+  const { data: projects, loading: projectsLoading } = useCollection<Project>(projectsCollection);
+
+
+  const loading = tasksLoading || projectsLoading;
 
   return (
     <Card>
@@ -298,7 +345,7 @@ export default function TasksPage() {
                   Fill out the details below to add a new task.
                 </DialogDescription>
               </DialogHeader>
-              <NewTaskForm setOpen={setOpen} />
+              <NewTaskForm setOpen={setOpen} projects={projects} />
             </DialogContent>
           </Dialog>
         </div>
@@ -325,12 +372,11 @@ export default function TasksPage() {
               ))}
             {!loading && tasks?.map((task) => {
               const StatusIcon = statusConfig[task.status]?.icon || Circle;
-              const statusColor = statusConfig[task.status]?.color || 'text-muted-foreground';
               const assignee = teamMembers.find(m => m.name === task.assignee);
               const avatar = placeholderImages.find(p => p.id === assignee?.avatarId);
               return (
                 <TableRow key={task.id}>
-                  <TableCell className="font-medium">{task.name}</TableCell>
+                  <TableCell className="font-medium">{task.title}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                          <Avatar className="h-8 w-8">
@@ -346,7 +392,7 @@ export default function TasksPage() {
                         {task.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{format(new Date(task.deadline), 'MMM d, yyyy')}</TableCell>
+                  <TableCell>{task.deadline ? format(new Date(task.deadline), 'MMM d, yyyy') : 'No deadline'}</TableCell>
                 </TableRow>
               );
             })}
@@ -363,3 +409,4 @@ export default function TasksPage() {
     </Card>
   );
 }
+

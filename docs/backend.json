@@ -82,26 +82,28 @@
       "description": "Represents a single task or to-do item.",
       "type": "object",
       "properties": {
-        "name": {
+        "title": {
           "type": "string",
-          "description": "The description or name of the task."
+          "description": "The title of the task."
         },
-        "assignee": {
-          "type": "string",
-          "description": "Name of the user this task is assigned to."
+        "description": {
+            "type": "string",
+            "description": "A detailed description of the task."
         },
-        "deadline": {
-          "type": "string",
-          "format": "date",
-          "description": "The task deadline."
+        "project": {
+            "type": "string",
+            "description": "The ID of the project this task belongs to."
         },
         "status": {
           "type": "string",
           "enum": ["To Do", "In Progress", "Done", "Cancelled"]
         },
-        "projectId": {
-          "type": "string",
-          "description": "The ID of the project this task belongs to."
+        "subtasks": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "A list of subtasks."
         },
         "createdBy": {
           "type": "string",
@@ -111,9 +113,14 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the task was created."
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date",
+          "description": "The task deadline."
         }
       },
-      "required": ["name", "assignee", "deadline", "status", "createdBy", "createdOn"]
+      "required": ["title", "project", "status", "createdBy", "createdOn"]
     }
   },
   "firestore": {
