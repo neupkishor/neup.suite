@@ -1,34 +1,33 @@
+
 'use client';
 import {
-  doc,
-  updateDoc,
+  collection,
+  addDoc,
   serverTimestamp,
   Firestore,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { goalSchema } from '@/schemas/goal';
 import { z } from 'zod';
-import { projectSchema } from '@/schemas/project';
 
-type UpdatedProject = Partial<Omit<z.infer<typeof projectSchema>, 'deadline'> & {
-    deadline: string;
-}>;
+type NewGoal = Omit<z.infer<typeof goalSchema>, 'targetDate'> & { targetDate: string };
 
-export async function updateProject(
+export async function addGoal(
   db: Firestore,
-  projectId: string,
-  projectData: UpdatedProject
+  goalData: NewGoal
 ) {
-  const projectDoc = doc(db, 'projects', projectId);
+  const goalsCollection = collection(db, 'goals');
   
-  return updateDoc(projectDoc, {
-    ...projectData,
+  return addDoc(goalsCollection, {
+    ...goalData,
+    createdOn: serverTimestamp(),
     updatedOn: serverTimestamp(),
   }).catch((serverError) => {
     const permissionError = new FirestorePermissionError({
-      path: projectDoc.path,
-      operation: 'update',
-      requestResourceData: projectData,
+      path: goalsCollection.path,
+      operation: 'create',
+      requestResourceData: goalData,
     });
     errorEmitter.emit('permission-error', permissionError);
     throw serverError;

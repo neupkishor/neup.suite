@@ -5,6 +5,8 @@ import {
   collection,
   CollectionReference,
   serverTimestamp,
+  query,
+  where,
 } from 'firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -13,7 +15,7 @@ import {
   MessageSquarePlus,
   Trash,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -59,6 +61,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { CalendarIcon } from 'lucide-react';
 import { TaskCard } from './components/task-card';
+import Cookies from 'js-cookie';
+import Link from 'next/link';
 
 
 type Project = {
@@ -76,9 +80,11 @@ const teamMembers = [
 function NewTaskItem({
   setIsCreating,
   projects,
+  clientId
 }: {
   setIsCreating: (isCreating: boolean) => void;
   projects: Project[] | null;
+  clientId: string;
 }) {
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,6 +98,7 @@ function NewTaskItem({
       status: 'To Do',
       assignees: ['Jane Doe'],
       subtasks: [],
+      clientId: clientId,
     },
   });
 
@@ -382,23 +389,52 @@ function TaskCardSkeleton() {
 export default function TasksPage() {
   const [isCreating, setIsCreating] = useState(false);
   const firestore = useFirestore();
+  const [clientId, setClientId] = useState<string | null>(null);
+
+   useEffect(() => {
+        setClientId(Cookies.get('client') || null);
+    }, []);
 
   const tasksCollection = useMemo(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'tasks') as CollectionReference<Task>;
-  }, [firestore]);
+    if (!firestore || !clientId) return null;
+    return query(
+        collection(firestore, 'tasks') as CollectionReference<Task>,
+        where('clientId', '==', clientId)
+    );
+  }, [firestore, clientId]);
   const { data: tasks, loading: tasksLoading } = useCollection<Task & {id: string}>(
     tasksCollection
   );
 
   const projectsCollection = useMemo(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'projects') as CollectionReference<Project>;
-  }, [firestore]);
+    if (!firestore || !clientId) return null;
+    return query(
+        collection(firestore, 'projects') as CollectionReference<Project>,
+        where('clientId', '==', clientId)
+    );
+  }, [firestore, clientId]);
   const { data: projects, loading: projectsLoading } =
     useCollection<Project>(projectsCollection);
 
   const loading = tasksLoading || projectsLoading;
+
+  if (!clientId && !loading) {
+    return (
+        <div className="space-y-6">
+            <CardHeader className="p-0">
+                <CardTitle className="font-headline text-2xl">Task Management</CardTitle>
+                <CardDescription>You must select a client to view their tasks.</CardDescription>
+            </CardHeader>
+            <Card>
+                <CardContent className="p-6 text-center">
+                    <Button asChild>
+                        <Link href="/clients">Select a Client</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -424,8 +460,8 @@ export default function TasksPage() {
               <PlusCircle className="h-5 w-5" />
               <span className="font-medium">New Task</span>
             </button>}
-            {isCreating && (
-                <NewTaskItem setIsCreating={setIsCreating} projects={projects} />
+            {isCreating && clientId && (
+                <NewTaskItem setIsCreating={setIsCreating} projects={projects} clientId={clientId} />
             )}
             {loading &&
               Array.from({ length: 3 }).map((_, i) => (

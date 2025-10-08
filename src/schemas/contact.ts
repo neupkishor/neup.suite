@@ -60,8 +60,7 @@ export const contactSchema = z.object({
   importantDates: z.array(contactDateSchema).optional(),
   notes: z.string().optional(),
   avatarUrl: z.string().url("Invalid URL").or(z.literal("")).optional(),
+  clientId: z.string().min(1, 'Client ID is required'),
 });
 
 export type Contact = z.infer<typeof contactSchema>;
-
-    

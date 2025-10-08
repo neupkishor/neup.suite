@@ -37,6 +37,7 @@ import Link from 'next/link';
 import { invoiceSchema } from '@/schemas/invoice';
 import { addInvoice } from '@/actions/billing/add-invoice';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Cookies from 'js-cookie';
 
 const generateInvoiceId = (clientName: string = '') => {
     const brandName = 'NEUP';
@@ -51,6 +52,11 @@ export default function AddInvoicePage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string|null>(null);
+
+  useEffect(() => {
+    setClientId(Cookies.get('client') || null);
+  }, []);
 
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
@@ -60,8 +66,13 @@ export default function AddInvoicePage() {
         clientName: '',
         amount: 0,
         currency: 'USD',
+        clientId: clientId || '',
     },
   });
+
+   useEffect(() => {
+    form.setValue('clientId', clientId || '');
+  }, [clientId, form]);
 
   const clientName = form.watch('clientName');
 
@@ -84,6 +95,20 @@ export default function AddInvoicePage() {
       setIsSubmitting(false);
       setSubmitError('An unexpected error occurred. Please try again.');
     }
+  }
+
+  if (!clientId) {
+    return <Card>
+        <CardHeader>
+            <CardTitle>No Client Selected</CardTitle>
+            <CardDescription>You must select a client before creating an invoice.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild>
+            <Link href="/clients">Select a Client</Link>
+          </Button>
+        </CardContent>
+    </Card>
   }
 
   return (

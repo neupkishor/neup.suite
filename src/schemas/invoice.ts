@@ -7,4 +7,5 @@ export const invoiceSchema = z.object({
   currency: z.enum(['USD', 'EUR', 'GBP', 'JPY', 'NRS']),
   dueDate: z.date({ required_error: 'Due date is required' }),
   status: z.enum(['Paid', 'Due', 'Overdue']),
+  clientId: z.string().min(1, 'Client ID is required'),
 });

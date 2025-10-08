@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { addReport } from '../actions/add-report';
 import { updateReport } from '../actions/update-report';
@@ -26,7 +26,7 @@ import { reportSchema } from '@/schemas/report';
 
 type Report = z.infer<typeof reportSchema> & { id?: string };
 
-export function ReportForm({ report }: { report?: Report }) {
+export function ReportForm({ report, clientId }: { report?: Report, clientId: string }) {
   const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,8 +36,22 @@ export function ReportForm({ report }: { report?: Report }) {
     defaultValues: report || {
       title: '',
       summary: '',
+      clientId: clientId,
     },
   });
+
+   useEffect(() => {
+    if (report) {
+        form.reset(report);
+    } else {
+        form.reset({
+            title: '',
+            summary: '',
+            clientId: clientId,
+        });
+    }
+  }, [report, clientId, form])
+
 
   async function onSubmit(values: z.infer<typeof reportSchema>) {
     if (!firestore) return;

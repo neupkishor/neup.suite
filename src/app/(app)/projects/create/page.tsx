@@ -23,17 +23,23 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useFirestore } from "@/firebase/provider";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { projectSchema } from "@/schemas/project";
 import { createProject } from "@/actions/projects/create-project";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Cookies from "js-cookie";
 
 export default function CreateProjectPage() {
     const firestore = useFirestore();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [clientId, setClientId] = useState<string | null>(null);
+
+    useEffect(() => {
+        setClientId(Cookies.get('client') || null);
+    }, []);
 
   const form = useForm<z.infer<typeof projectSchema>>({
     resolver: zodResolver(projectSchema),
@@ -45,7 +51,7 @@ export default function CreateProjectPage() {
   });
 
   async function onSubmit(values: z.infer<typeof projectSchema>) {
-    if (!firestore) return;
+    if (!firestore || !clientId) return;
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -53,12 +59,29 @@ export default function CreateProjectPage() {
         await createProject(firestore, {
             ...values,
             deadline: format(values.deadline, "yyyy-MM-dd"),
+            clientId: clientId,
         });
         router.push('/projects');
     } catch (error) {
         setIsSubmitting(false);
         setSubmitError("An unexpected error occurred. Please try again.");
     }
+  }
+
+  if (!clientId) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>No Client Selected</CardTitle>
+          <CardDescription>You must select a client before creating a project.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild>
+            <Link href="/clients">Select a Client</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

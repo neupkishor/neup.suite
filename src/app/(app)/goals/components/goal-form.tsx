@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { addGoal } from '../actions/add-goal';
 import { updateGoal } from '../actions/update-goal';
@@ -35,7 +35,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 type Goal = z.infer<typeof goalSchema> & { id?: string };
 
-export function GoalForm({ goal }: { goal?: Goal }) {
+export function GoalForm({ goal, clientId }: { goal?: Goal, clientId: string }) {
   const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,8 +46,23 @@ export function GoalForm({ goal }: { goal?: Goal }) {
       title: '',
       description: '',
       status: 'Not Started',
+      clientId: clientId,
     },
   });
+
+   useEffect(() => {
+    if (goal) {
+      form.reset({ ...goal, targetDate: new Date(goal.targetDate) });
+    } else {
+      form.reset({
+        title: '',
+        description: '',
+        status: 'Not Started',
+        clientId: clientId,
+      })
+    }
+  }, [goal, clientId, form]);
+
 
   async function onSubmit(values: z.infer<typeof goalSchema>) {
     if (!firestore) return;

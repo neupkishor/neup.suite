@@ -18,6 +18,7 @@ import {
   AlignLeft,
   Calendar as CalendarIconLucide,
   CalendarIcon,
+  Trash2,
 } from 'lucide-react';
 import {
   Popover,
@@ -33,6 +34,8 @@ import { updateTask } from '../actions/update-task';
 import { useFirestore } from '@/firebase/provider';
 import { placeholderImages } from '@/lib/placeholder-images';
 import type { Task } from '@/schemas/task';
+import { deleteDoc, doc } from 'firebase/firestore';
+import { Input } from '@/components/ui/input';
 
 type Project = {
   id: string;
@@ -84,6 +87,28 @@ export function TaskCard({
       console.error('Failed to update deadline', error);
     }
   };
+
+  const handleDelete = async () => {
+    if (!firestore) return;
+    if (window.confirm('Are you sure you want to delete this task?')) {
+        try {
+            await deleteDoc(doc(firestore, 'tasks', task.id));
+        } catch (error) {
+            console.error('Failed to delete task', error);
+        }
+    }
+  }
+
+  const handleSubtaskChange = async (subtaskIndex: number, completed: boolean) => {
+    if (!firestore) return;
+    const newSubtasks = [...(task.subtasks || [])];
+    newSubtasks[subtaskIndex] = { ...newSubtasks[subtaskIndex], completed };
+    try {
+        await updateTask(firestore, task.id, { subtasks: newSubtasks });
+    } catch (error) {
+        console.error('Failed to update subtask', error);
+    }
+  }
 
   return (
     <Collapsible
@@ -157,8 +182,8 @@ export function TaskCard({
               </div>
             )}
           </div>
-          <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
-            <MoreHorizontal />
+          <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
+            <Trash2 className="text-destructive"/>
           </Button>
         </div>
       </CollapsibleTrigger>
@@ -184,8 +209,8 @@ export function TaskCard({
                       key={index}
                       className="flex items-center gap-2 text-sm"
                     >
-                      <Checkbox checked={subtask.completed} />
-                      <span>{subtask.text}</span>
+                      <Checkbox checked={subtask.completed} onCheckedChange={(checked) => handleSubtaskChange(index, !!checked)} />
+                      <span className={cn(subtask.completed && 'line-through text-muted-foreground')}>{subtask.text}</span>
                     </div>
                   ))}
                 </div>
@@ -238,13 +263,6 @@ export function TaskCard({
                 />
               </PopoverContent>
             </Popover>
-            <div className="flex-1" />
-            <Button variant="ghost" size="icon">
-              <GripVertical className="text-muted-foreground" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Repeat className="text-muted-foreground" />
-            </Button>
           </div>
         </div>
       </CollapsibleContent>

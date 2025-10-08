@@ -9,6 +9,7 @@ export const documentSchema = z.object({
   size: z.number().optional(),
   uploadedBy: z.string().optional(),
   notes: z.string().optional(),
+  clientId: z.string().min(1, "Client ID is required"),
 });
 
 export type Document = z.infer<typeof documentSchema> & { id: string };

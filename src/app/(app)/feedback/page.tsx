@@ -3,12 +3,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
-import { collection, CollectionReference } from "firebase/firestore";
+import { collection, CollectionReference, query, where } from "firebase/firestore";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Megaphone } from "lucide-react";
 import { AddItemCard } from "@/components/add-item-card";
+import Cookies from "js-cookie";
+import { Button } from "@/components/ui/button";
 
 type Feedback = {
     id: string;
@@ -29,11 +31,19 @@ function FeedbackCard({ feedback }: { feedback: Feedback }) {
 
 export default function FeedbackPage() {
     const firestore = useFirestore();
+    const [clientId, setClientId] = useState<string|null>(null);
+
+    useEffect(() => {
+        setClientId(Cookies.get('client') || null);
+    }, []);
 
     const feedbackCollection = useMemo(() => {
-        if (!firestore) return null;
-        return collection(firestore, 'feedback') as CollectionReference<Feedback>;
-    }, [firestore]);
+        if (!firestore || !clientId) return null;
+        return query(
+            collection(firestore, 'feedback') as CollectionReference<Feedback>,
+            where('clientId', '==', clientId)
+        );
+    }, [firestore, clientId]);
 
     const { data: feedbackItems, loading } = useCollection<Feedback>(feedbackCollection);
 
@@ -49,6 +59,14 @@ export default function FeedbackPage() {
             </div>
         </div>
       </CardHeader>
+       {!clientId ? (
+            <Card>
+                <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground mb-4">Please select a client to manage their feedback.</p>
+                    <Button asChild><Link href="/clients">Select Client</Link></Button>
+                </CardContent>
+            </Card>
+        ) : (
       <div className="grid grid-cols-1 gap-4">
         {!loading && (
             <AddItemCard
@@ -59,13 +77,14 @@ export default function FeedbackPage() {
         )}
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         {feedbackItems?.map(item => <FeedbackCard key={item.id} feedback={item} />)}
+          {!loading && feedbackItems?.length === 0 && (
+            <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                    No feedback found for this client.
+                </CardContent>
+            </Card>
+        )}
       </div>
-      {!loading && feedbackItems?.length === 0 && (
-        <Card>
-            <CardContent className="p-6 text-center text-muted-foreground">
-                No feedback found.
-            </CardContent>
-        </Card>
       )}
     </div>
   );

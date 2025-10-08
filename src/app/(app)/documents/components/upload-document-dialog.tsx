@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import { useFirestore } from '@/firebase/provider';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { uploadFile } from '@/lib/upload-service';
 import { Textarea } from '@/components/ui/textarea';
+import Cookies from 'js-cookie';
 
 export function UploadDocumentDialog({ children }: { children: React.ReactNode }) {
   const [file, setFile] = useState<File | null>(null);
@@ -30,6 +31,13 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const firestore = useFirestore();
+  const [clientId, setClientId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+        setClientId(Cookies.get('client') || null);
+    }
+  }, [isOpen]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -50,8 +58,8 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
   }
 
   const handleUpload = async () => {
-    if (!file || !firestore) {
-      setError('Please select a file to upload.');
+    if (!file || !firestore || !clientId) {
+      setError('Please select a file and ensure a client is selected.');
       return;
     }
 
@@ -72,6 +80,7 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
         size: file.size,
         notes: notes,
         uploadedBy: 'Jane Doe', // Placeholder
+        clientId: clientId,
         createdOn: serverTimestamp(),
         updatedOn: serverTimestamp(),
       });

@@ -6,11 +6,12 @@ import Link from "next/link";
 import { DocumentCard } from "./components/document-card";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
-import { collection, CollectionReference } from "firebase/firestore";
+import { collection, CollectionReference, query, where } from "firebase/firestore";
 import type { Document } from "@/schemas/document";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UploadDocumentDialog } from "./components/upload-document-dialog";
+import Cookies from "js-cookie";
 
 function DocumentCardSkeleton() {
     return (
@@ -31,10 +32,19 @@ function DocumentCardSkeleton() {
 
 export default function DocumentsPage() {
     const firestore = useFirestore();
+    const [clientId, setClientId] = useState<string | null>(null);
+
+    useEffect(() => {
+        setClientId(Cookies.get('client') || null);
+    }, []);
+
     const documentsCollection = useMemo(() => {
-        if (!firestore) return null;
-        return collection(firestore, 'documents') as CollectionReference<Document>;
-    }, [firestore]);
+        if (!firestore || !clientId) return null;
+        return query(
+            collection(firestore, 'documents') as CollectionReference<Document>,
+            where('clientId', '==', clientId)
+        );
+    }, [firestore, clientId]);
 
     const { data: documents, loading } = useCollection<Document>(documentsCollection);
 
@@ -48,6 +58,14 @@ export default function DocumentsPage() {
             </div>
         </div>
       </CardHeader>
+      {!clientId ? (
+         <Card>
+            <CardContent className="p-6 text-center">
+                <p className="text-muted-foreground mb-4">Please select a client to manage their documents.</p>
+                <Button asChild><Link href="/clients">Select Client</Link></Button>
+            </CardContent>
+        </Card>
+      ) : (
       <div className="grid grid-cols-1 gap-4">
         {!loading && (
             <UploadDocumentDialog>
@@ -70,11 +88,12 @@ export default function DocumentsPage() {
          {!loading && documents?.length === 0 && (
             <Card>
                 <CardContent className="p-6 text-center text-muted-foreground">
-                    No documents found.
+                    No documents found for this client.
                 </CardContent>
             </Card>
         )}
       </div>
+      )}
     </div>
   );
 }

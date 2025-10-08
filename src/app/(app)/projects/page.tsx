@@ -1,14 +1,16 @@
 'use client';
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
-import { collection, CollectionReference } from "firebase/firestore";
-import { useMemo } from "react";
+import { collection, CollectionReference, query, where } from "firebase/firestore";
+import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { ProjectCard } from "./components/project-card";
 import { AddItemCard } from "@/components/add-item-card";
 import { FolderKanban } from "lucide-react";
+import Cookies from "js-cookie";
+import { Button } from "@/components/ui/button";
 
 type Project = {
     id: string;
@@ -36,49 +38,67 @@ function ProjectCardSkeleton() {
 
 export default function ProjectsPage() {
     const firestore = useFirestore();
+    const [clientId, setClientId] = useState<string | null>(Cookies.get('client') || null);
+
     const projectsCollection = useMemo(() => {
-        if (!firestore) return null;
-        return collection(firestore, 'projects') as CollectionReference<Project>;
-    }, [firestore]);
+        if (!firestore || !clientId) return null;
+        return query(
+            collection(firestore, 'projects') as CollectionReference<Project>,
+            where('clientId', '==', clientId)
+        );
+    }, [firestore, clientId]);
 
     const { data: projects, loading } = useCollection<Project>(projectsCollection);
 
   return (
     <div className="space-y-6">
-        <div className="flex items-center justify-between">
-            <div>
-                <h2 className="font-headline text-2xl font-semibold">Projects</h2>
-                <p className="text-muted-foreground">An overview of all your ongoing and past projects.</p>
+        <CardHeader className="p-0">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="font-headline text-2xl font-semibold">Projects</h2>
+                    <p className="text-muted-foreground">An overview of all your ongoing and past projects.</p>
+                </div>
             </div>
-        </div>
+        </CardHeader>
 
-        <div className="grid grid-cols-1 gap-4">
-             {!loading && (
-                <AddItemCard 
-                    title="New Project" 
-                    href="/projects/create" 
-                    icon={FolderKanban}
-                />
-            )}
-            {loading && (
-                <>
-                    <ProjectCardSkeleton />
-                    <ProjectCardSkeleton />
-                </>
-            )}
-            {!loading && projects && projects.map(project => (
-                <Link href={`/projects/${project.id}`} key={project.id}>
-                    <ProjectCard project={project} />
-                </Link>
-            ))}
-            {!loading && projects?.length === 0 && (
-                <Card>
-                    <CardContent className="p-4 text-center text-muted-foreground">
-                        No projects found. Create one to get started.
-                    </CardContent>
-                </Card>
-            )}
-        </div>
+        {!clientId ? (
+            <Card>
+                <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground mb-4">Please select a client to view their projects.</p>
+                    <Button asChild>
+                        <Link href="/clients">Select Client</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        ) : (
+            <div className="grid grid-cols-1 gap-4">
+                {!loading && (
+                    <AddItemCard 
+                        title="New Project" 
+                        href="/projects/create" 
+                        icon={FolderKanban}
+                    />
+                )}
+                {loading && (
+                    <>
+                        <ProjectCardSkeleton />
+                        <ProjectCardSkeleton />
+                    </>
+                )}
+                {!loading && projects && projects.map(project => (
+                    <Link href={`/projects/${project.id}`} key={project.id}>
+                        <ProjectCard project={project} />
+                    </Link>
+                ))}
+                {!loading && projects?.length === 0 && (
+                    <Card>
+                        <CardContent className="p-4 text-center text-muted-foreground">
+                            No projects found for this client. Create one to get started.
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+        )}
     </div>
   );
 }

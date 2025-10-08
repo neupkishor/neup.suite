@@ -39,23 +39,28 @@ import { uploadFile } from '@/lib/upload-service';
 type ContactFormValues = z.infer<typeof contactSchema>;
 
 // Convert date strings to Date objects for form
-const prepareDataForForm = (contact?: Contact & { id?: string }): ContactFormValues => {
+const prepareDataForForm = (contact?: Contact & { id?: string }, clientId?: string): ContactFormValues => {
+    const defaultValues = {
+        name: { firstName: '', middleName: '', lastName: '' },
+        role: '',
+        organization: '',
+        avatarUrl: '',
+        notes: '',
+        emails: [],
+        phoneNumbers: [],
+        addresses: [],
+        socialProfiles: [],
+        messaging: [],
+        importantDates: [],
+        clientId: clientId || '',
+    };
+
     if (!contact) {
-        return {
-            name: { firstName: '', middleName: '', lastName: '' },
-            role: '',
-            organization: '',
-            avatarUrl: '',
-            notes: '',
-            emails: [],
-            phoneNumbers: [],
-            addresses: [],
-            socialProfiles: [],
-            messaging: [],
-            importantDates: [],
-        };
+        return defaultValues;
     }
+
     return {
+        ...defaultValues,
         ...contact,
         name: {
             firstName: contact.name.firstName || '',
@@ -79,7 +84,7 @@ const prepareDataForForm = (contact?: Contact & { id?: string }): ContactFormVal
 }
 
 
-export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
+export function ContactForm({ contact, clientId }: { contact?: Contact & {id: string}, clientId: string }) {
   const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,7 +94,7 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
-    defaultValues: prepareDataForForm(contact),
+    defaultValues: prepareDataForForm(contact, clientId),
   });
 
   const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({ control: form.control, name: 'emails' });
@@ -100,11 +105,11 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
   const { fields: dateFields, append: appendDate, remove: removeDate } = useFieldArray({ control: form.control, name: 'importantDates' });
 
   useEffect(() => {
+    form.reset(prepareDataForForm(contact, clientId));
     if (contact) {
-      form.reset(prepareDataForForm(contact));
       setShowAvatarUrl(!!contact.avatarUrl);
     }
-  }, [contact, form]);
+  }, [contact, clientId, form]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

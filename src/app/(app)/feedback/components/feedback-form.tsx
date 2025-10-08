@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { addFeedback } from '../actions/add-feedback';
 import { updateFeedback } from '../actions/update-feedback';
@@ -26,7 +26,7 @@ import { feedbackSchema } from '@/schemas/feedback';
 
 type Feedback = z.infer<typeof feedbackSchema> & { id?: string };
 
-export function FeedbackForm({ feedback }: { feedback?: Feedback }) {
+export function FeedbackForm({ feedback, clientId }: { feedback?: Feedback, clientId: string }) {
   const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,8 +36,21 @@ export function FeedbackForm({ feedback }: { feedback?: Feedback }) {
     defaultValues: feedback || {
       title: '',
       comment: '',
+      clientId: clientId,
     },
   });
+
+  useEffect(() => {
+    if (feedback) {
+        form.reset(feedback);
+    } else {
+        form.reset({
+            title: '',
+            comment: '',
+            clientId: clientId,
+        });
+    }
+  }, [feedback, clientId, form])
 
   async function onSubmit(values: z.infer<typeof feedbackSchema>) {
     if (!firestore) return;

@@ -3,13 +3,15 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
-import { collection, CollectionReference } from "firebase/firestore";
+import { collection, CollectionReference, query, where } from "firebase/firestore";
 import { Receipt, Plus } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InvoiceCard } from "./components/invoice-card";
 import { AddItemCard } from "@/components/add-item-card";
+import Cookies from "js-cookie";
+import { Button } from "@/components/ui/button";
 
 type Invoice = {
     id: string;
@@ -41,11 +43,19 @@ function InvoiceCardSkeleton() {
 
 export default function BillingPage() {
     const firestore = useFirestore();
+    const [clientId, setClientId] = useState<string|null>(null);
+
+    useEffect(() => {
+        setClientId(Cookies.get('client') || null);
+    }, []);
 
     const invoicesCollection = useMemo(() => {
-        if (!firestore) return null;
-        return collection(firestore, 'invoices') as CollectionReference<Invoice>;
-    }, [firestore]);
+        if (!firestore || !clientId) return null;
+        return query(
+            collection(firestore, 'invoices') as CollectionReference<Invoice>,
+            where('clientId', '==', clientId)
+        );
+    }, [firestore, clientId]);
 
     const { data: invoices, loading } = useCollection<Invoice>(invoicesCollection);
 
@@ -59,6 +69,14 @@ export default function BillingPage() {
             </div>
         </div>
       </CardHeader>
+       {!clientId ? (
+            <Card>
+                <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground mb-4">Please select a client to manage their billing.</p>
+                    <Button asChild><Link href="/clients">Select Client</Link></Button>
+                </CardContent>
+            </Card>
+        ) : (
       <div className="grid grid-cols-1 gap-4">
         {!loading && (
             <AddItemCard 
@@ -76,11 +94,12 @@ export default function BillingPage() {
         {!loading && invoices?.length === 0 && (
             <Card>
                 <CardContent className="p-6 text-center text-muted-foreground">
-                    No invoices found. Create one to get started.
+                    No invoices found for this client. Create one to get started.
                 </CardContent>
             </Card>
         )}
       </div>
+        )}
     </div>
   );
 }
