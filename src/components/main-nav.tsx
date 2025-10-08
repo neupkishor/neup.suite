@@ -14,6 +14,9 @@ import {
   Settings,
   FolderKanban,
   CheckSquare,
+  FlaskConical,
+  Beaker,
+  BookOpen,
 } from "lucide-react";
 
 const mainLinks = [
@@ -29,6 +32,12 @@ const manageLinks = [
   { href: "/projects", icon: FolderKanban, label: "Projects" },
   { href: "/clients", icon: Briefcase, label: "Clients" },
   { href: "/team", icon: Users, label: "Team" },
+];
+
+const researchLinks = [
+  { href: "/knowledge", icon: BookOpen, label: "Knowledge" },
+  { href: "/testings", icon: Beaker, label: "Testings" },
+  { href: "/experiments", icon: FlaskConical, label: "Experiments" },
 ];
 
 const rootLinks = [
@@ -69,6 +78,14 @@ export function MainNav() {
          <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">Manage</h3>
         <div className="flex flex-col gap-1 mt-1">
           {manageLinks.map((link) => (
+            <NavLink key={link.href} {...link} />
+          ))}
+        </div>
+      </div>
+      <div>
+         <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">Research</h3>
+        <div className="flex flex-col gap-1 mt-1">
+          {researchLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
         </div>
