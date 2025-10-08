@@ -1,8 +1,7 @@
-
 'use client';
 import {
-  collection,
-  addDoc,
+  doc,
+  updateDoc,
   serverTimestamp,
   Firestore,
 } from 'firebase/firestore';
@@ -11,29 +10,27 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { z } from 'zod';
 import { projectSchema } from '@/schemas/project';
 
-
-type NewProject = Omit<z.infer<typeof projectSchema>, 'deadline'> & {
+type UpdatedProject = Omit<z.infer<typeof projectSchema>, 'deadline'> & {
     deadline: string;
 };
 
-export async function createProject(
+export async function updateProject(
   db: Firestore,
-  projectData: NewProject
+  projectId: string,
+  projectData: Partial<UpdatedProject>
 ) {
-  const projectsCollection = collection(db, 'projects');
+  const projectDoc = doc(db, 'projects', projectId);
   
-  return addDoc(projectsCollection, {
+  return updateDoc(projectDoc, {
     ...projectData,
-    createdBy: 'user_placeholder', // Will be replaced with auth user ID
-    createdOn: serverTimestamp(),
+    updatedOn: serverTimestamp(),
   }).catch((serverError) => {
     const permissionError = new FirestorePermissionError({
-      path: projectsCollection.path,
-      operation: 'create',
+      path: projectDoc.path,
+      operation: 'update',
       requestResourceData: projectData,
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Re-throw the error so the calling component knows there was a problem
     throw serverError;
   });
 }

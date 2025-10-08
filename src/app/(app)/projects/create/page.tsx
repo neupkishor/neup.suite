@@ -27,6 +27,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { projectSchema } from "@/schemas/project";
 import { createProject } from "@/actions/projects/create-project";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function CreateProjectPage() {
     const firestore = useFirestore();
@@ -39,6 +40,7 @@ export default function CreateProjectPage() {
     defaultValues: {
       name: "",
       identifier: "",
+      status: 'Planning',
     },
   });
 
@@ -51,7 +53,6 @@ export default function CreateProjectPage() {
         await createProject(firestore, {
             ...values,
             deadline: format(values.deadline, "yyyy-MM-dd"),
-            status: 'Planning'
         });
         router.push('/projects');
     } catch (error) {
@@ -144,6 +145,29 @@ export default function CreateProjectPage() {
                         <FormMessage />
                         </FormItem>
                     )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Status</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select a status" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="Planning">Planning</SelectItem>
+                                <SelectItem value="In Progress">In Progress</SelectItem>
+                                <SelectItem value="On Hold">On Hold</SelectItem>
+                                <SelectItem value="Completed">Completed</SelectItem>
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
                     />
                     <div className="flex gap-2">
                         <Button type="submit" disabled={isSubmitting}>

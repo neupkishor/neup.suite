@@ -11,4 +11,5 @@ export const projectSchema = z.object({
   deadline: z.date({
     required_error: "A deadline is required.",
   }),
+  status: z.enum(['Planning', 'In Progress', 'On Hold', 'Completed']),
 });
