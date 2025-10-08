@@ -42,7 +42,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     />
                 </form>
                 <UserNav />
-                <Button className="hidden md:flex">Contact Us</Button>
             </div>
         </div>
       </header>
