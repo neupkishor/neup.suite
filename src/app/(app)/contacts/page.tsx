@@ -6,13 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
-import { MoreHorizontal, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { placeholderImages } from "@/lib/placeholder-images";
-import { deleteContact } from "@/actions/contacts/delete-contact";
 
 type Contact = {
     id: string;
@@ -22,7 +20,7 @@ type Contact = {
     avatarId?: string;
 }
 
-function ContactCard({ contact, handleDelete }: { contact: Contact, handleDelete: (id: string) => void }) {
+function ContactCard({ contact }: { contact: Contact }) {
     const avatar = placeholderImages.find(p => p.id === contact.avatarId);
     return (
         <Card>
@@ -39,21 +37,6 @@ function ContactCard({ contact, handleDelete }: { contact: Contact, handleDelete
                 </div>
                 <div className="flex items-center gap-4">
                     <p className="text-sm text-muted-foreground hidden sm:block">{contact.role}</p>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/contacts/${contact.id}/edit`}>Edit</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDelete(contact.id)} className="text-destructive">
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
             </CardContent>
         </Card>
@@ -73,7 +56,6 @@ function ContactCardSkeleton() {
                 </div>
                 <div className="flex items-center gap-4">
                     <Skeleton className="h-5 w-24 hidden sm:block" />
-                    <Skeleton className="h-8 w-8" />
                 </div>
             </CardContent>
         </Card>
@@ -90,17 +72,6 @@ export default function ContactsPage() {
     }, [firestore]);
 
     const { data: contacts, loading } = useCollection<Contact>(contactsCollection);
-
-    const handleDelete = async (id: string) => {
-        if (!firestore) return;
-        if (confirm('Are you sure you want to delete this contact?')) {
-            try {
-                await deleteContact(firestore, id);
-            } catch (error) {
-                console.error("Error deleting contact: ", error);
-            }
-        }
-    }
 
   return (
     <div className="space-y-6">
@@ -121,7 +92,9 @@ export default function ContactsPage() {
       <div className="space-y-4">
         {loading && Array.from({ length: 4 }).map((_, i) => <ContactCardSkeleton key={i} />)}
         {!loading && contacts?.map((contact) => (
-            <ContactCard key={contact.id} contact={contact} handleDelete={handleDelete} />
+            <Link href={`/contacts/${contact.id}`} key={contact.id}>
+                <ContactCard contact={contact} />
+            </Link>
         ))}
         {!loading && contacts?.length === 0 && (
             <Card>

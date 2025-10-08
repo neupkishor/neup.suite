@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,17 +6,22 @@ import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { placeholderImages } from "@/lib/placeholder-images";
 import { z } from "zod";
 import { contactSchema } from "@/schemas/contact";
+import { useRouter } from "next/navigation";
+import { deleteContact } from "@/actions/contacts/delete-contact";
+import { Loader2 } from "lucide-react";
 
-type Contact = z.infer<typeof contactSchema>;
+type Contact = z.infer<typeof contactSchema> & { id: string };
 
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const contactRef = useMemo(() => {
     if (!firestore || !params.id) return null;
@@ -24,6 +30,20 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
 
   const { data: contact, loading } = useDoc<Contact>(contactRef);
   const avatar = placeholderImages.find(p => p.id === contact?.avatarId);
+
+  const handleDelete = async () => {
+    if (!firestore || !params.id) return;
+    if (confirm('Are you sure you want to delete this contact?')) {
+        setIsDeleting(true);
+        try {
+            await deleteContact(firestore, params.id);
+            router.push('/contacts');
+        } catch (error) {
+            console.error("Error deleting contact: ", error);
+            setIsDeleting(false);
+        }
+    }
+  }
 
 
   if (loading) {
@@ -47,7 +67,10 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   if (!contact) {
       return <Card>
           <CardHeader><CardTitle>Contact not found</CardTitle></CardHeader>
-          <CardContent><p>The requested contact could not be found.</p></CardContent>
+          <CardContent>
+            <p>The requested contact could not be found.</p>
+            <Button asChild className="mt-4"><Link href="/contacts">Go Back</Link></Button>
+          </CardContent>
       </Card>
   }
 
@@ -65,9 +88,15 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                     <CardDescription className="text-lg">{contact.role}</CardDescription>
                 </div>
             </div>
-            <Button asChild>
-                <Link href={`/contacts/${params.id}/edit`}>Edit Contact</Link>
-            </Button>
+            <div className="flex gap-2">
+                <Button asChild>
+                    <Link href={`/contacts/${params.id}/edit`}>Edit Contact</Link>
+                </Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                    {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Delete
+                </Button>
+            </div>
         </div>
       </CardHeader>
       <CardContent>

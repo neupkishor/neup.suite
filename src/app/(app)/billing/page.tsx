@@ -3,11 +3,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
-import { MoreHorizontal, Receipt } from "lucide-react";
+import { Receipt } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -55,20 +54,6 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
                 </div>
                 <div className="flex items-center gap-2">
                      <p className="text-sm text-muted-foreground">Due: {format(new Date(invoice.dueDate), 'PPP')}</p>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/billing/${invoice.id}/edit`}>Edit</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>Download PDF</DropdownMenuItem>
-                                {invoice.status === 'Due' && <DropdownMenuItem>Mark as Paid</DropdownMenuItem>}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
             </CardContent>
         </Card>
@@ -87,7 +72,6 @@ function InvoiceCardSkeleton() {
                 </div>
                 <div className="flex items-center gap-2">
                     <Skeleton className="h-5 w-24" />
-                    <Skeleton className="h-8 w-8" />
                 </div>
             </CardContent>
         </Card>
@@ -125,7 +109,11 @@ export default function BillingPage() {
       </CardHeader>
       <div className="space-y-4">
         {loading && Array.from({ length: 3 }).map((_, i) => <InvoiceCardSkeleton key={i} />)}
-        {!loading && invoices?.map((invoice) => <InvoiceCard key={invoice.id} invoice={invoice} />)}
+        {!loading && invoices?.map((invoice) => (
+            <Link href={`/billing/${invoice.id}`} key={invoice.id}>
+                <InvoiceCard invoice={invoice} />
+            </Link>
+        ))}
         {!loading && invoices?.length === 0 && (
             <Card>
                 <CardContent className="p-6 text-center text-muted-foreground">

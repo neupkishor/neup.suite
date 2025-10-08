@@ -1,15 +1,16 @@
 
+'use client';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Upload, FileText } from "lucide-react";
+import Link from "next/link";
 
 const documents = [
-    { name: 'Master Service Agreement.pdf', version: 'v2.1', updated: '2024-05-20', status: 'Signed' },
-    { name: 'Project Phoenix - SOW.docx', version: 'v1.3', updated: '2024-06-10', status: 'In Review' },
-    { name: 'Q3 Brand Assets.zip', version: 'v1.0', updated: '2024-07-02', status: 'Approved' },
-    { name: 'Initial Wireframes.fig', version: 'v0.8', updated: '2024-06-25', status: 'Archived' },
+    { id: '1', name: 'Master Service Agreement.pdf', version: 'v2.1', updated: '2024-05-20', status: 'Signed' },
+    { id: '2', name: 'Project Phoenix - SOW.docx', version: 'v1.3', updated: '2024-06-10', status: 'In Review' },
+    { id: '3', name: 'Q3 Brand Assets.zip', version: 'v1.0', updated: '2024-07-02', status: 'Approved' },
+    { id: '4', name: 'Initial Wireframes.fig', version: 'v0.8', updated: '2024-06-25', status: 'Archived' },
 ];
 
 const getStatusVariant = (status: string) => {
@@ -39,18 +40,6 @@ function DocumentCard({ document }: { document: typeof documents[0] }) {
                 </div>
                 <div className="flex items-center gap-4">
                      <Badge variant={getStatusVariant(document.status)}>{document.status}</Badge>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem>Download</DropdownMenuItem>
-                            <DropdownMenuItem>View History</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
             </CardContent>
         </Card>
@@ -74,7 +63,9 @@ export default function DocumentsPage() {
       </CardHeader>
       <div className="space-y-4">
         {documents.map((doc) => (
-            <DocumentCard key={doc.name} document={doc} />
+            <Link href={`/documents/${doc.id}`} key={doc.id}>
+                <DocumentCard document={doc} />
+            </Link>
         ))}
       </div>
     </div>
