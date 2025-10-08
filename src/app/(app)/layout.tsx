@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
 import { Logo } from "@/components/logo";
-import { Menu, X, Search } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { FirebaseClientProvider } from "@/firebase";
@@ -90,7 +90,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     <div className="flex items-center gap-4">
                         <form className="relative ml-auto hidden sm:flex-initial">
                             <Button variant="ghost" size="icon" className="absolute left-1.5 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground">
-                                <Search className="h-4 w-4" />
+                                <Menu className="h-4 w-4" />
                             </Button>
                             <Input
                                 type="search"
@@ -108,13 +108,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     <MainNav />
                 </div>
             </CollapsibleContent>
-
-            <div className="flex flex-1">
-                <div className="mx-auto flex w-full max-w-[1440px]">
-                    {showSidebar && <AppSidebar />}
-                    <main className='flex-1 p-6'>{children}</main>
-                </div>
-            </div>
+            
+            {!isMobileMenuOpen && (
+              <div className="flex flex-1">
+                  <div className="mx-auto flex w-full max-w-[1440px]">
+                      {showSidebar && <AppSidebar />}
+                      <main className='flex-1 p-6'>{children}</main>
+                  </div>
+              </div>
+            )}
         </div>
       </Collapsible>
     </div>
