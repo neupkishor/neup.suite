@@ -4,16 +4,18 @@ import type { ReactNode } from "react";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
 import { Logo } from "@/components/logo";
-import { Search } from "lucide-react";
+import { PanelLeft, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { FirebaseClientProvider } from "@/firebase";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePathname } from "next/navigation";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 function AppSidebar() {
   return (
-    <aside className="sticky top-16 h-[calc(100vh-4rem)] w-64 flex-shrink-0 border-r bg-card">
+    <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 flex-shrink-0 border-r bg-card md:block">
         <ScrollArea className="h-full w-full">
             <div className="p-4">
                 <MainNav />
@@ -23,17 +25,38 @@ function AppSidebar() {
   )
 }
 
+function MobileNav() {
+    return (
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="md:hidden">
+                    <PanelLeft className="h-5 w-5" />
+                    <span className="sr-only">Toggle Menu</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-64">
+                <div className="p-4">
+                    <Link href="/home" className="mb-4 block">
+                        <Logo />
+                    </Link>
+                    <MainNav />
+                </div>
+            </SheetContent>
+        </Sheet>
+    )
+}
+
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const showSidebar = pathname !== '/communication';
 
   return (
     <FirebaseClientProvider>
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen w-full flex-col bg-background">
       <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm shadow-md">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6">
             <div className="flex items-center gap-8">
-                <Link href="/home">
+                <Link href="/home" className="hidden md:block">
                     <Logo />
                 </Link>
             </div>
@@ -47,6 +70,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     />
                 </form>
                 <UserNav />
+                <MobileNav />
             </div>
         </div>
       </header>
