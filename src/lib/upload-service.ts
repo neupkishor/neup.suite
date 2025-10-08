@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 const UPLOAD_URL = 'https://neupgroup.com/content/bridge/api/upload.php';
@@ -26,7 +27,8 @@ export const uploadFile = async (file: File, contentid: string, name?: string): 
     });
 
     if (response.data.success && response.data.url) {
-      return response.data.url;
+      // The PHP script returns a path like /content/..., so we prepend the domain
+      return `https://neupgroup.com${response.data.url}`;
     } else {
       throw new Error(response.data.message || 'File upload failed.');
     }
