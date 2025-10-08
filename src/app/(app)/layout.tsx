@@ -7,13 +7,16 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FirebaseClientProvider } from "@/firebase";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 function AppSidebar() {
   return (
-    <aside className="w-64 flex-shrink-0 border-r bg-card p-4">
-        <div className="mb-8">
-        </div>
-        <MainNav />
+    <aside className="sticky top-16 h-[calc(100vh-4rem)] w-64 flex-shrink-0 border-r bg-card">
+        <ScrollArea className="h-full w-full">
+            <div className="p-4">
+                <MainNav />
+            </div>
+        </ScrollArea>
     </aside>
   )
 }
@@ -22,7 +25,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <FirebaseClientProvider>
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm shadow-sm">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-8">
                 <Link href="/dashboard">
