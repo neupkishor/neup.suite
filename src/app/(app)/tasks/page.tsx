@@ -73,6 +73,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { updateTask } from './actions/update-task';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type Task = {
   id: string;
@@ -417,7 +418,7 @@ function TaskCard({
 
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="rounded-lg border data-[state=open]:bg-muted/50">
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="rounded-lg border data-[state=open]:bg-muted/50 transition-colors">
         <CollapsibleTrigger asChild>
             <div className="flex items-start gap-4 p-4 cursor-pointer">
                 <Button variant="ghost" size="icon" className="shrink-0 h-6 w-6 mt-1" onClick={(e) => {
@@ -428,7 +429,8 @@ function TaskCard({
                     <StatusIcon
                         className={cn(
                         'h-5 w-5',
-                        statusConfig[task.status].color
+                        statusConfig[task.status].color,
+                        task.status === 'In Progress' && 'animate-spin'
                         )}
                     />
                 </Button>
@@ -464,7 +466,7 @@ function TaskCard({
                 </Button>
             </div>
         </CollapsibleTrigger>
-        <CollapsibleContent>
+        <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
             <div className="px-14 pb-4 space-y-4">
                 {(task.description || (task.subtasks && task.subtasks.length > 0)) ? (
                     <>
