@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -186,6 +187,52 @@
             "updatedOn": { "type": "string", "format": "date-time" }
         },
         "required": ["name", "email", "role"]
+    },
+    "Goal": {
+        "title": "Goal",
+        "description": "Represents a goal or milestone.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "targetDate": { "type": "string", "format": "date" },
+            "status": { "type": "string", "enum": ["Not Started", "In Progress", "Completed", "At Risk"] }
+        },
+        "required": ["title", "targetDate", "status"]
+    },
+    "Report": {
+        "title": "Report",
+        "description": "Represents a report.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "summary": { "type": "string" },
+            "generatedOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "generatedOn"]
+    },
+    "Feedback": {
+        "title": "Feedback",
+        "description": "Represents client feedback.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "comment": { "type": "string" },
+            "submittedBy": { "type": "string" },
+            "submittedOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "comment", "submittedBy", "submittedOn"]
+    },
+    "Discussion": {
+        "title": "Discussion",
+        "description": "Represents a discussion thread.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "createdBy": { "type": "string" },
+            "createdOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "createdBy", "createdOn"]
     }
   },
   "firestore": {
@@ -220,6 +267,22 @@
     "/contacts/{contactId}": {
       "schema": { "$ref": "#/backend/entities/Contact" },
       "description": "Stores contact information."
+    },
+    "/goals/{goalId}": {
+        "schema": { "$ref": "#/backend/entities/Goal" },
+        "description": "Stores goals and milestones."
+    },
+    "/reports/{reportId}": {
+        "schema": { "$ref": "#/backend/entities/Report" },
+        "description": "Stores reports."
+    },
+    "/feedback/{feedbackId}": {
+        "schema": { "$ref": "#/backend/entities/Feedback" },
+        "description": "Stores client feedback."
+    },
+    "/discussions/{discussionId}": {
+        "schema": { "$ref": "#/backend/entities/Discussion" },
+        "description": "Stores discussion threads."
     }
   }
 }

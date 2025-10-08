@@ -19,6 +19,10 @@ import {
   Beaker,
   BookOpen,
   Contact,
+  Target,
+  BarChart,
+  MessageCircle,
+  Megaphone,
 } from "lucide-react";
 
 const mainLinks = [
@@ -34,11 +38,18 @@ const manageLinks = [
   { href: "/projects", icon: FolderKanban, label: "Projects" },
   { href: "/contacts", icon: Contact, label: "Contacts" },
   { href: "/team", icon: Users, label: "Team" },
+  { href: "/goals", icon: Target, label: "Goals" },
 ];
 
 const researchLinks = [
   { href: "/knowledge", icon: BookOpen, label: "Knowledge" },
   { href: "/experiments", icon: FlaskConical, label: "Experiments" },
+  { href: "/reports", icon: BarChart, label: "Reports" },
+];
+
+const clientLinks = [
+  { href: "/feedback", icon: Megaphone, label: "Feedback" },
+  { href: "/discussions", icon: MessageCircle, label: "Discussions" },
 ];
 
 const rootLinks = [
@@ -79,6 +90,14 @@ export function MainNav() {
          <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">Manage</h3>
         <div className="flex flex-col gap-1 mt-1">
           {manageLinks.map((link) => (
+            <NavLink key={link.href} {...link} />
+          ))}
+        </div>
+      </div>
+       <div>
+         <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">Client</h3>
+        <div className="flex flex-col gap-1 mt-1">
+          {clientLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
         </div>
