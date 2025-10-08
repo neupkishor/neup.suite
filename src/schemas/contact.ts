@@ -18,7 +18,7 @@ export const contactPhoneSchema = z.object({
 });
 
 export const contactAddressSchema = z.object({
-    label: z.string().min(1, 'Label is required'),
+    label: z.string().optional(),
     street: z.string().optional(),
     city: z.string().optional(),
     state: z.string().optional(),
@@ -27,18 +27,18 @@ export const contactAddressSchema = z.object({
 });
 
 export const contactSocialProfileSchema = z.object({
-    label: z.string().min(1, 'Label is required'),
-    url: z.string().url('Invalid URL'),
+    label: z.string().optional(),
+    url: z.string().url('Invalid URL').or(z.literal('')),
 });
 
 export const contactMessagingSchema = z.object({
-    label: z.string().min(1, 'Label is required'),
-    address: z.string().min(1, 'Address is required'),
+    label: z.string().optional(),
+    address: z.string().optional(),
 });
 
 export const contactDateSchema = z.object({
-    label: z.string().min(1, 'Label is required'),
-    date: z.date(),
+    label: z.string().optional(),
+    date: z.date().optional(),
 });
 
 
@@ -59,7 +59,7 @@ export const contactSchema = z.object({
   messaging: z.array(contactMessagingSchema).optional(),
   importantDates: z.array(contactDateSchema).optional(),
   notes: z.string().optional(),
-  avatarUrl: z.string().url().optional(),
+  avatarUrl: z.string().url("Invalid URL").or(z.literal("")).optional(),
 });
 
 export type Contact = z.infer<typeof contactSchema>;
