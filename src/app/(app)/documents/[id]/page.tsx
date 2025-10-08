@@ -13,6 +13,7 @@ import type { Document } from '@/schemas/document';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { File, Calendar, User, FileText, Hash, HardDrive } from 'lucide-react';
+import { DocumentPreview } from '../components/document-preview';
 
 const getStatusVariant = (status: string) => {
     switch (status) {
@@ -87,32 +88,22 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className="space-y-6">
         <Card>
-        <CardHeader>
-            <div className="flex justify-between items-start">
-                <div>
-                    <CardTitle className="font-headline text-2xl">{document.name}</CardTitle>
-                    <CardDescription>
-                        Version {document.version || '1.0'}
-                    </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                    <Button asChild>
-                        <Link href={`/documents/${id}/edit`}>Edit</Link>
-                    </Button>
-                    <Button variant="destructive">Delete</Button>
-                </div>
-            </div>
-        </CardHeader>
-        <CardContent>
-            <div className="prose max-w-none">
-                <p>
-                    <a href={document.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        View or Download Document
-                    </a>
-                </p>
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">{document.name}</CardTitle>
+                <CardDescription>
+                    Version {document.version || '1.0'}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <DocumentPreview url={document.url} fileType={document.fileType || ''} />
                 {document.notes && <blockquote className="mt-4 border-l-2 pl-6 italic">{document.notes}</blockquote>}
-            </div>
-        </CardContent>
+            </CardContent>
+             <CardFooter className="flex justify-end gap-2">
+                <Button asChild>
+                    <Link href={`/documents/${id}/edit`}>Edit</Link>
+                </Button>
+                <Button variant="destructive">Delete</Button>
+            </CardFooter>
         </Card>
         <Card>
             <CardHeader>
