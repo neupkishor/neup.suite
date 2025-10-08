@@ -1,17 +1,36 @@
+'use client';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Receipt } from "lucide-react";
+import { useCollection } from "@/firebase";
+import { useFirestore } from "@/firebase/provider";
+import { collection, CollectionReference } from "firebase/firestore";
+import { Download, MoreHorizontal, Receipt } from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { format } from "date-fns";
+
+type Invoice = {
+    id: string;
+    invoiceId: string;
+    dueDate: string;
+    status: 'Paid' | 'Due' | 'Overdue';
+    amount: number;
+    clientName: string;
+}
 
 export default function BillingPage() {
-    const invoices = [
-        { id: 'INV-2024-005', dueDate: '2024-08-01', status: 'Paid', amount: '$1,500.00' },
-        { id: 'INV-2024-004', dueDate: '2024-07-15', status: 'Due', amount: '$2,500.00' },
-        { id: 'INV-2024-003', dueDate: '2024-07-01', status: 'Paid', amount: '$1,500.00' },
-        { id: 'INV-2024-002', dueDate: '2024-06-01', status: 'Paid', amount: '$1,500.00' },
-        { id: 'INV-2024-001', dueDate: '2024-05-15', status: 'Overdue', amount: '$500.00' },
-    ];
+    const firestore = useFirestore();
+
+    const invoicesCollection = useMemo(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'invoices') as CollectionReference<Invoice>;
+    }, [firestore]);
+
+    const { data: invoices, loading } = useCollection<Invoice>(invoicesCollection);
 
     const getStatusVariant = (status: string) => {
         switch (status) {
@@ -30,10 +49,15 @@ export default function BillingPage() {
                 <CardTitle className="font-headline text-2xl">Billing & Invoices</CardTitle>
                 <CardDescription>View your payment history and download invoices.</CardDescription>
             </div>
-            <Button variant="outline">
-                <Receipt className="mr-2 h-4 w-4"/>
-                Payment Methods
-            </Button>
+            <div className="flex gap-2">
+                <Button variant="outline">
+                    <Receipt className="mr-2 h-4 w-4"/>
+                    Payment Methods
+                </Button>
+                <Button asChild>
+                    <Link href="/billing/add">New Invoice</Link>
+                </Button>
+            </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -41,6 +65,7 @@ export default function BillingPage() {
             <TableHeader>
                 <TableRow>
                     <TableHead>Invoice ID</TableHead>
+                    <TableHead>Client</TableHead>
                     <TableHead>Due Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Amount</TableHead>
@@ -48,26 +73,50 @@ export default function BillingPage() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {invoices.map((invoice) => (
+                {loading && Array.from({ length: 3 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                    </TableRow>
+                ))}
+                {!loading && invoices?.map((invoice) => (
                     <TableRow key={invoice.id}>
-                        <TableCell className="font-medium">{invoice.id}</TableCell>
-                        <TableCell>{invoice.dueDate}</TableCell>
+                        <TableCell className="font-medium">{invoice.invoiceId}</TableCell>
+                        <TableCell>{invoice.clientName}</TableCell>
+                        <TableCell>{format(new Date(invoice.dueDate), 'PPP')}</TableCell>
                         <TableCell>
                             <Badge variant={getStatusVariant(invoice.status)}>{invoice.status}</Badge>
                         </TableCell>
-                        <TableCell>{invoice.amount}</TableCell>
+                        <TableCell>${invoice.amount.toFixed(2)}</TableCell>
                         <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                                {invoice.status === 'Due' && <Button size="sm">Pay Now</Button>}
-                                <Button variant="outline" size="icon">
-                                    <Download className="h-4 w-4" />
-                                </Button>
-                            </div>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem asChild>
+                                        <Link href={`/billing/${invoice.id}/edit`}>Edit</Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>Download PDF</DropdownMenuItem>
+                                     {invoice.status === 'Due' && <DropdownMenuItem>Mark as Paid</DropdownMenuItem>}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
         </Table>
+         {!loading && invoices?.length === 0 && (
+            <div className="text-center p-8 text-muted-foreground">
+                No invoices found.
+            </div>
+         )}
       </CardContent>
     </Card>
   );

@@ -139,19 +139,6 @@
       },
       "required": ["title", "content", "status", "createdBy", "createdOn"]
     },
-    "Testing": {
-      "title": "Testing",
-      "description": "Represents a test plan or result.",
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "status": { "type": "string", "enum": ["Planning", "Running", "Completed", "Cancelled"] },
-        "createdBy": { "type": "string" },
-        "createdOn": { "type": "string", "format": "date-time" }
-      },
-      "required": ["name", "status", "createdBy", "createdOn"]
-    },
     "Experiment": {
       "title": "Experiment",
       "description": "Represents an experiment.",
@@ -164,6 +151,21 @@
         "createdOn": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "hypothesis", "status", "createdBy", "createdOn"]
+    },
+    "Invoice": {
+        "title": "Invoice",
+        "description": "Represents a billing invoice.",
+        "type": "object",
+        "properties": {
+            "invoiceId": { "type": "string", "description": "The unique identifier for the invoice (e.g., INV-2024-001)." },
+            "amount": { "type": "number", "description": "The total amount due." },
+            "dueDate": { "type": "string", "format": "date", "description": "The date the invoice is due." },
+            "status": { "type": "string", "enum": ["Paid", "Due", "Overdue"], "description": "The current status of the invoice." },
+            "clientName": { "type": "string", "description": "The name of the client being invoiced." },
+            "createdOn": { "type": "string", "format": "date-time" },
+            "updatedOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["invoiceId", "amount", "dueDate", "status", "clientName", "createdOn"]
     }
   },
   "firestore": {
@@ -187,13 +189,13 @@
         "schema": { "$ref": "#/backend/entities/KnowledgeArticle" },
         "description": "Stores knowledge base articles."
     },
-    "/testings/{testingId}": {
-        "schema": { "$ref": "#/backend/entities/Testing" },
-        "description": "Stores testing data."
-    },
     "/experiments/{experimentId}": {
         "schema": { "$ref": "#/backend/entities/Experiment" },
         "description": "Stores experiment data."
+    },
+    "/invoices/{invoiceId}": {
+        "schema": { "$ref": "#/backend/entities/Invoice" },
+        "description": "Stores billing invoices."
     }
   }
 }
