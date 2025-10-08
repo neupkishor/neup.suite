@@ -13,11 +13,11 @@ type AddItemCardProps = {
 
 export function AddItemCard({ title, href, icon: Icon = Plus }: AddItemCardProps) {
   return (
-    <Link href={href}>
-      <Card className="h-full border-2 border-dashed border-muted-foreground/50 hover:border-primary hover:text-primary transition-all">
-        <CardContent className="flex h-full flex-col items-center justify-center p-6 text-center">
-          <Icon className="h-8 w-8 text-muted-foreground group-hover:text-primary" />
-          <p className="mt-2 font-medium">{title}</p>
+    <Link href={href} className="group">
+      <Card className="border border-input hover:border-primary hover:text-primary transition-all">
+        <CardContent className="flex flex-row items-center p-4 gap-3">
+          <Icon className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+          <p className="font-medium">{title}</p>
         </CardContent>
       </Card>
     </Link>
