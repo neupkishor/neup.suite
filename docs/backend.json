@@ -124,32 +124,59 @@
         }
       },
       "required": ["title", "project", "status", "createdBy", "createdOn"]
+    },
+    "KnowledgeArticle": {
+      "title": "Knowledge Article",
+      "description": "Represents an article in the knowledge base.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "status": { "type": "string", "enum": ["Draft", "Published", "Archived"] },
+        "createdBy": { "type": "string" },
+        "createdOn": { "type": "string", "format": "date-time" },
+        "updatedOn": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "status", "createdBy", "createdOn"]
+    },
+    "Experiment": {
+      "title": "Experiment",
+      "description": "Represents an experiment.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "hypothesis": { "type": "string" },
+        "status": { "type": "string", "enum": ["Planning", "Running", "Completed", "Cancelled"] },
+        "createdBy": { "type": "string" },
+        "createdOn": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "hypothesis", "status", "createdBy", "createdOn"]
     }
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": {
-        "$ref": "#/backend/entities/UserProfile"
-      },
+      "schema": { "$ref": "#/backend/entities/UserProfile" },
       "description": "Stores public information about a user."
     },
     "/ai_suggestions/{suggestionId}": {
-      "schema": {
-        "$ref": "#/backend/entities/AiSuggestion"
-      },
+      "schema": { "$ref": "#/backend/entities/AiSuggestion" },
       "description": "Stores AI generated suggestions."
     },
     "/projects/{projectId}": {
-      "schema": {
-        "$ref": "#/backend/entities/Project"
-      },
+      "schema": { "$ref": "#/backend/entities/Project" },
       "description": "Stores project data."
     },
     "/tasks/{taskId}": {
-      "schema": {
-        "$ref": "#/backend/entities/Task"
-      },
+      "schema": { "$ref": "#/backend/entities/Task" },
       "description": "Stores individual tasks for all projects."
+    },
+    "/knowledge/{articleId}": {
+        "schema": { "$ref": "#/backend/entities/KnowledgeArticle" },
+        "description": "Stores knowledge base articles."
+    },
+    "/experiments/{experimentId}": {
+        "schema": { "$ref": "#/backend/entities/Experiment" },
+        "description": "Stores experiment data."
     }
   }
 }

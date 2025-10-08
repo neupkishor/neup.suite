@@ -36,7 +36,6 @@ const manageLinks = [
 
 const researchLinks = [
   { href: "/knowledge", icon: BookOpen, label: "Knowledge" },
-  { href: "/testings", icon: Beaker, label: "Testings" },
   { href: "/experiments", icon: FlaskConical, label: "Experiments" },
 ];
 
