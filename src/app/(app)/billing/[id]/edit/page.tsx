@@ -45,6 +45,7 @@ type Invoice = {
     id: string;
     invoiceId: string;
     amount: number;
+    currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
     dueDate: string;
     status: 'Paid' | 'Due' | 'Overdue';
     clientName: string;
@@ -178,7 +179,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                     name="amount"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Amount ($)</FormLabel>
+                        <FormLabel>Amount</FormLabel>
                         <FormControl>
                             <Input type="number" placeholder="e.g. 1500" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                         </FormControl>
@@ -186,6 +187,34 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                         </FormItem>
                     )}
                 />
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Currency</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="USD">USD</SelectItem>
+                          <SelectItem value="EUR">EUR</SelectItem>
+                          <SelectItem value="GBP">GBP</SelectItem>
+                          <SelectItem value="JPY">JPY</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                 control={form.control}
                 name="dueDate"
@@ -224,8 +253,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                     </FormItem>
                 )}
                 />
-            </div>
-             <FormField
+                <FormField
                   control={form.control}
                   name="status"
                   render={({ field }) => (
@@ -250,6 +278,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                     </FormItem>
                   )}
                 />
+            </div>
 
             <div className="flex gap-2">
               <Button type="submit" disabled={isSubmitting}>

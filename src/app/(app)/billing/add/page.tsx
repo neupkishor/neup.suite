@@ -59,6 +59,7 @@ export default function AddInvoicePage() {
         status: 'Due',
         clientName: '',
         amount: 0,
+        currency: 'USD',
     },
   });
 
@@ -132,7 +133,7 @@ export default function AddInvoicePage() {
                     name="amount"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Amount ($)</FormLabel>
+                        <FormLabel>Amount</FormLabel>
                         <FormControl>
                             <Input type="number" placeholder="e.g. 1500" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
                         </FormControl>
@@ -140,6 +141,34 @@ export default function AddInvoicePage() {
                         </FormItem>
                     )}
                 />
+                 <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Currency</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="USD">USD</SelectItem>
+                          <SelectItem value="EUR">EUR</SelectItem>
+                          <SelectItem value="GBP">GBP</SelectItem>
+                          <SelectItem value="JPY">JPY</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                 control={form.control}
                 name="dueDate"
@@ -178,8 +207,7 @@ export default function AddInvoicePage() {
                     </FormItem>
                 )}
                 />
-            </div>
-             <FormField
+                <FormField
                   control={form.control}
                   name="status"
                   render={({ field }) => (
@@ -204,6 +232,7 @@ export default function AddInvoicePage() {
                     </FormItem>
                   )}
                 />
+             </div>
 
             <div className="flex gap-2">
               <Button type="submit" disabled={isSubmitting}>

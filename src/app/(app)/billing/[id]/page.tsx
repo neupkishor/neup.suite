@@ -11,12 +11,20 @@ import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
+const currencySymbols = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+};
+
 type Invoice = {
     id: string;
     invoiceId: string;
     dueDate: string;
     status: 'Paid' | 'Due' | 'Overdue';
     amount: number;
+    currency: keyof typeof currencySymbols;
     clientName: string;
 };
 
@@ -82,6 +90,8 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
             </CardContent>
         </Card>
     }
+  
+    const currencySymbol = currencySymbols[invoice.currency] || '$';
 
   return (
     <div className="space-y-6">
@@ -111,7 +121,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground font-medium">Amount</p>
-                        <p className="text-xl font-bold">${invoice.amount.toFixed(2)}</p>
+                        <p className="text-xl font-bold">{currencySymbol}{invoice.amount.toFixed(2)} <span className="text-sm text-muted-foreground">{invoice.currency}</span></p>
                     </div>
                  </div>
             </CardContent>

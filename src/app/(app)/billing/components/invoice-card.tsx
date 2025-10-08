@@ -4,12 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 
+const currencySymbols = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+};
+
 type Invoice = {
     id: string;
     invoiceId: string;
     dueDate: string;
     status: 'Paid' | 'Due' | 'Overdue';
     amount: number;
+    currency: keyof typeof currencySymbols;
     clientName: string;
 }
 
@@ -23,6 +31,7 @@ const getStatusVariant = (status: string) => {
 }
 
 export function InvoiceCard({ invoice }: { invoice: Invoice }) {
+    const currencySymbol = currencySymbols[invoice.currency] || '$';
     return (
         <Card>
             <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -41,7 +50,7 @@ export function InvoiceCard({ invoice }: { invoice: Invoice }) {
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground font-medium">Amount</p>
-                        <p className="font-semibold">${invoice.amount.toFixed(2)}</p>
+                        <p className="font-semibold">{currencySymbol}{invoice.amount.toFixed(2)}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
