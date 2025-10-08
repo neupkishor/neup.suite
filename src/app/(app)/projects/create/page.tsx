@@ -22,51 +22,42 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useFirestore } from "@/firebase/provider";
-import { createProject } from "@/firebase/firestore/projects";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Project name must be at least 2 characters.",
-  }),
-  identifier: z.string().regex(/^[a-z0-9-]+$/, {
-    message: "Identifier must be lowercase letters, numbers, and dashes only.",
-  }),
-  deadline: z.date({
-    required_error: "A deadline is required.",
-  }),
-});
+import { projectSchema } from "@/schemas/project";
+import { createProject } from "@/actions/projects/create-project";
 
 export default function CreateProjectPage() {
     const firestore = useFirestore();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof projectSchema>>({
+    resolver: zodResolver(projectSchema),
     defaultValues: {
       name: "",
       identifier: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!firestore) {
-        setIsSubmitting(false);
-        return;
-    };
+  async function onSubmit(values: z.infer<typeof projectSchema>) {
+    if (!firestore) return;
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    await createProject(firestore, {
-        ...values,
-        deadline: format(values.deadline, "yyyy-MM-dd"),
-        status: 'Planning'
-    });
-    
-    // This part will only be reached if createProject succeeds
-    router.push('/projects');
+    try {
+        await createProject(firestore, {
+            ...values,
+            deadline: format(values.deadline, "yyyy-MM-dd"),
+            status: 'Planning'
+        });
+        router.push('/projects');
+    } catch (error) {
+        setIsSubmitting(false);
+        setSubmitError("An unexpected error occurred. Please try again.");
+    }
   }
 
   return (
@@ -163,6 +154,7 @@ export default function CreateProjectPage() {
                             <Link href="/projects">Cancel</Link>
                         </Button>
                     </div>
+                     {submitError && <p className="text-sm font-medium text-destructive">{submitError}</p>}
                 </form>
             </Form>
         </CardContent>

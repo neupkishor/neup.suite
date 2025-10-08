@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,9 +8,9 @@ import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
 import { useEffect, useMemo } from "react";
-import { createProject } from "@/firebase/firestore/projects";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { createProject } from "@/actions/projects/create-project";
 
 type Project = {
     id: string;

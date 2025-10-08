@@ -1,3 +1,4 @@
+
 'use client';
 import {
   collection,
@@ -21,20 +22,18 @@ export async function createProject(
 ) {
   const projectsCollection = collection(db, 'projects');
   
-  try {
-    await addDoc(projectsCollection, {
-      ...projectData,
-      createdBy: 'user_placeholder', // Will be replaced with auth user ID
-      createdOn: serverTimestamp(),
-    });
-  } catch(serverError) {
+  return addDoc(projectsCollection, {
+    ...projectData,
+    createdBy: 'user_placeholder', // Will be replaced with auth user ID
+    createdOn: serverTimestamp(),
+  }).catch((serverError) => {
     const permissionError = new FirestorePermissionError({
       path: projectsCollection.path,
       operation: 'create',
       requestResourceData: projectData,
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Re-throw the error so the form knows there was a problem
+    // Re-throw the error so the calling component knows there was a problem
     throw serverError;
-  }
+  });
 }
