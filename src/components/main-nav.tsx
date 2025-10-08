@@ -14,38 +14,72 @@ import {
   Settings,
   FolderKanban,
 } from "lucide-react";
+import { Separator } from "./ui/separator";
 
-const links = [
+const mainLinks = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/projects", icon: FolderKanban, label: "Projects" },
   { href: "/communication", icon: MessageSquare, label: "Inbox" },
   { href: "/documents", icon: FileText, label: "Documents" },
   { href: "/billing", icon: Receipt, label: "Billing" },
-  { href: "/team", icon: Users, label: "Team" },
-  { href: "/clients", icon: Briefcase, label: "Clients" },
   { href: "/support", icon: LifeBuoy, label: "Support" },
+];
+
+const manageLinks = [
+  { href: "/clients", icon: Briefcase, label: "Clients" },
+  { href: "/team", icon: Users, label: "Team" },
+];
+
+const rootLinks = [
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
-export function MainNav() {
+const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => {
   const pathname = usePathname();
-
+  const isActive = pathname === href || (pathname.startsWith(href) && href !== '/dashboard');
+  
   return (
-    <nav className="flex flex-col gap-1">
-      {links.map((link) => (
-        <Link
-          key={link.href}
-          href={`/dashboard${link.href === '/dashboard' ? '' : link.href}`}
-          className={cn(
-            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-            (pathname === `/dashboard${link.href === '/dashboard' ? '' : link.href}` || (pathname.startsWith(`/dashboard${link.href}`) && link.href !== '/dashboard')) &&
-              "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
-          )}
-        >
-          <link.icon className="h-4 w-4" />
-          <span>{link.label}</span>
-        </Link>
-      ))}
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+        isActive && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      <span>{label}</span>
+    </Link>
+  );
+};
+
+
+export function MainNav() {
+  return (
+    <nav className="flex flex-col gap-4">
+      <div>
+         <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">Main</h3>
+         <div className="flex flex-col gap-1 mt-1">
+          {mainLinks.map((link) => (
+            <NavLink key={link.href} {...link} />
+          ))}
+        </div>
+      </div>
+      <div>
+         <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">Manage</h3>
+        <div className="flex flex-col gap-1 mt-1">
+          {manageLinks.map((link) => (
+            <NavLink key={link.href} {...link} />
+          ))}
+        </div>
+      </div>
+      <div>
+         <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">Root</h3>
+        <div className="flex flex-col gap-1 mt-1">
+          {rootLinks.map((link) => (
+            <NavLink key={link.href} {...link} />
+          ))}
+        </div>
+      </div>
     </nav>
   );
 }
