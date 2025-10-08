@@ -1,0 +1,101 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        }
+      },
+      "required": ["displayName", "email"]
+    },
+    "AiSuggestion": {
+      "title": "AI Suggestion",
+      "description": "Represents an AI-generated suggestion.",
+      "type": "object",
+      "properties": {
+        "suggestedActions": {
+          "type": "string",
+          "description": "A list of suggested actions for the client, prioritized by urgency and impact."
+        },
+        "pendingDeadlines": {
+          "type": "string",
+          "description": "A summary of upcoming deadlines and their potential impact."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the suggestion was created."
+        }
+      },
+      "required": ["suggestedActions", "pendingDeadlines", "createdAt"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Represents a project.",
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "string",
+          "description": "A unique, URL-friendly identifier for the project."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the project."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "The ID of the user who created the project."
+        },
+        "createdOn": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the project was created."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Planning", "In Progress", "On Hold", "Completed"]
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date",
+          "description": "The project deadline."
+        }
+      },
+      "required": ["name", "identifier", "createdBy", "createdOn", "status", "deadline"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/backend/entities/UserProfile"
+      },
+      "description": "Stores public information about a user."
+    },
+    "/ai_suggestions/{suggestionId}": {
+      "schema": {
+        "$ref": "#/backend/entities/AiSuggestion"
+      },
+      "description": "Stores AI generated suggestions."
+    },
+    "/projects/{projectId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Project"
+      },
+      "description": "Stores project data."
+    }
+  }
+}

@@ -2,13 +2,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FolderKanban, Loader2 } from "lucide-react";
+import { FolderKanban } from "lucide-react";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { createProject } from "@/firebase/firestore/projects";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 type Project = {
     id: string;
@@ -70,7 +71,6 @@ export default function ProjectsPage() {
     }, [firestore]);
 
     const { data: projects, loading } = useCollection<Project>(projectsCollection);
-    const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
         // Create a sample project if there are none.
@@ -85,18 +85,6 @@ export default function ProjectsPage() {
         }
     }, [loading, projects, firestore]);
 
-    const handleCreateProject = async () => {
-        if (!firestore) return;
-        setIsCreating(true);
-        const newProject = {
-            identifier: `new-project-${Date.now()}`,
-            name: `New Project ${projects ? projects.length + 1 : 1}`,
-            status: 'Planning',
-            deadline: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0], // 30 days from now
-        }
-        await createProject(firestore, newProject);
-        setIsCreating(false);
-    }
 
   return (
     <div className="space-y-6">
@@ -105,9 +93,11 @@ export default function ProjectsPage() {
                 <h2 className="font-headline text-2xl font-semibold">Projects</h2>
                 <p className="text-muted-foreground">An overview of all your ongoing and past projects.</p>
             </div>
-            <Button onClick={handleCreateProject} disabled={isCreating}>
-                {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FolderKanban className="mr-2 h-4 w-4"/>}
-                New Project
+            <Button asChild>
+                <Link href="/projects/create">
+                    <FolderKanban className="mr-2 h-4 w-4"/>
+                    New Project
+                </Link>
             </Button>
         </div>
 
@@ -119,7 +109,9 @@ export default function ProjectsPage() {
                 </>
             )}
             {!loading && projects && projects.map(project => (
-                <ProjectCard key={project.id} project={project} />
+                <Link href={`/projects/${project.id}`} key={project.id}>
+                    <ProjectCard project={project} />
+                </Link>
             ))}
             {!loading && projects?.length === 0 && (
                 <Card>

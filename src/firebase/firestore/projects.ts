@@ -15,24 +15,26 @@ type NewProject = {
     deadline: string;
 }
 
-export function createProject(
+export async function createProject(
   db: Firestore,
   projectData: NewProject
 ) {
   const projectsCollection = collection(db, 'projects');
   
-  // NOTE: We don't await this so it doesn't block.
-  // The optimistic update will be handled by the onSnapshot listener.
-  addDoc(projectsCollection, {
-    ...projectData,
-    createdBy: 'user_placeholder', // Will be replaced with auth user ID
-    createdOn: serverTimestamp(),
-  }).catch(async (serverError) => {
+  try {
+    await addDoc(projectsCollection, {
+      ...projectData,
+      createdBy: 'user_placeholder', // Will be replaced with auth user ID
+      createdOn: serverTimestamp(),
+    });
+  } catch(serverError) {
     const permissionError = new FirestorePermissionError({
       path: projectsCollection.path,
       operation: 'create',
       requestResourceData: projectData,
     });
     errorEmitter.emit('permission-error', permissionError);
-  });
+    // Re-throw the error so the form knows there was a problem
+    throw serverError;
+  }
 }

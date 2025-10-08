@@ -1,0 +1,170 @@
+
+'use client';
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { useFirestore } from "@/firebase/provider";
+import { createProject } from "@/firebase/firestore/projects";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import Link from "next/link";
+
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "Project name must be at least 2 characters.",
+  }),
+  identifier: z.string().regex(/^[a-z0-9-]+$/, {
+    message: "Identifier must be lowercase letters, numbers, and dashes only.",
+  }),
+  deadline: z.date({
+    required_error: "A deadline is required.",
+  }),
+});
+
+export default function CreateProjectPage() {
+    const firestore = useFirestore();
+    const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      identifier: "",
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!firestore) return;
+    setIsSubmitting(true);
+    try {
+        await createProject(firestore, {
+            ...values,
+            deadline: format(values.deadline, "yyyy-MM-dd"),
+            status: 'Planning'
+        });
+        router.push('/projects');
+    } catch (error) {
+        console.error("Error creating project:", error);
+        setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <Card>
+        <CardHeader>
+            <CardTitle className="font-headline text-2xl">Create a New Project</CardTitle>
+            <CardDescription>Fill out the details below to start a new project.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
+                    <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Project Name</FormLabel>
+                        <FormControl>
+                            <Input placeholder="E.g. Project Phoenix" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                            This is the public display name of your project.
+                        </FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="identifier"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Project Identifier</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g. project-phoenix" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                            A unique, URL-friendly identifier (lowercase, numbers, dashes).
+                        </FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="deadline"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                        <FormLabel>Deadline</FormLabel>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <FormControl>
+                                <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-[240px] pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                )}
+                                >
+                                {field.value ? (
+                                    format(field.value, "PPP")
+                                ) : (
+                                    <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                            </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                date < new Date() || date < new Date("1900-01-01")
+                                }
+                                initialFocus
+                            />
+                            </PopoverContent>
+                        </Popover>
+                        <FormDescription>
+                            The target completion date for the project.
+                        </FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <div className="flex gap-2">
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Create Project
+                        </Button>
+                        <Button variant="outline" asChild>
+                            <Link href="/projects">Cancel</Link>
+                        </Button>
+                    </div>
+                </form>
+            </Form>
+        </CardContent>
+    </Card>
+  );
+}
