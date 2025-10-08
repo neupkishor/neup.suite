@@ -1,16 +1,16 @@
+
 'use client';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
-import { Download, MoreHorizontal, Receipt } from "lucide-react";
+import { MoreHorizontal, Receipt } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 
 type Invoice = {
@@ -20,6 +20,78 @@ type Invoice = {
     status: 'Paid' | 'Due' | 'Overdue';
     amount: number;
     clientName: string;
+}
+
+const getStatusVariant = (status: string) => {
+    switch (status) {
+        case 'Paid': return 'default';
+        case 'Due': return 'secondary';
+        case 'Overdue': return 'destructive';
+        default: return 'outline';
+    }
+}
+
+function InvoiceCard({ invoice }: { invoice: Invoice }) {
+    return (
+        <Card>
+            <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 items-center">
+                    <div>
+                        <p className="text-sm text-muted-foreground font-medium">Invoice ID</p>
+                        <p className="font-semibold">{invoice.invoiceId}</p>
+                    </div>
+                    <div>
+                        <p className="text-sm text-muted-foreground font-medium">Client</p>
+                        <p>{invoice.clientName}</p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <p className="text-sm text-muted-foreground font-medium">Status</p>
+                        <Badge variant={getStatusVariant(invoice.status)} className="w-fit">{invoice.status}</Badge>
+                    </div>
+                    <div>
+                        <p className="text-sm text-muted-foreground font-medium">Amount</p>
+                        <p className="font-semibold">${invoice.amount.toFixed(2)}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                     <p className="text-sm text-muted-foreground">Due: {format(new Date(invoice.dueDate), 'PPP')}</p>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem asChild>
+                                <Link href={`/billing/${invoice.id}/edit`}>Edit</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>Download PDF</DropdownMenuItem>
+                                {invoice.status === 'Due' && <DropdownMenuItem>Mark as Paid</DropdownMenuItem>}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+function InvoiceCardSkeleton() {
+    return (
+        <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 items-center">
+                    <div className="space-y-1"><Skeleton className="h-4 w-16" /><Skeleton className="h-5 w-24" /></div>
+                    <div className="space-y-1"><Skeleton className="h-4 w-12" /><Skeleton className="h-5 w-32" /></div>
+                    <div className="space-y-1"><Skeleton className="h-4 w-14" /><Skeleton className="h-6 w-20" /></div>
+                    <div className="space-y-1"><Skeleton className="h-4 w-14" /><Skeleton className="h-5 w-28" /></div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-8 w-8" />
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
 
 export default function BillingPage() {
@@ -32,18 +104,9 @@ export default function BillingPage() {
 
     const { data: invoices, loading } = useCollection<Invoice>(invoicesCollection);
 
-    const getStatusVariant = (status: string) => {
-        switch (status) {
-            case 'Paid': return 'default';
-            case 'Due': return 'secondary';
-            case 'Overdue': return 'destructive';
-            default: return 'outline';
-        }
-    }
-
   return (
-    <Card>
-      <CardHeader>
+    <div className="space-y-6">
+      <CardHeader className="p-0">
         <div className="flex items-center justify-between">
             <div>
                 <CardTitle className="font-headline text-2xl">Billing & Invoices</CardTitle>
@@ -60,64 +123,17 @@ export default function BillingPage() {
             </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Invoice ID</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {loading && Array.from({ length: 3 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-28" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                    </TableRow>
-                ))}
-                {!loading && invoices?.map((invoice) => (
-                    <TableRow key={invoice.id}>
-                        <TableCell className="font-medium">{invoice.invoiceId}</TableCell>
-                        <TableCell>{invoice.clientName}</TableCell>
-                        <TableCell>{format(new Date(invoice.dueDate), 'PPP')}</TableCell>
-                        <TableCell>
-                            <Badge variant={getStatusVariant(invoice.status)}>{invoice.status}</Badge>
-                        </TableCell>
-                        <TableCell>${invoice.amount.toFixed(2)}</TableCell>
-                        <TableCell className="text-right">
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem asChild>
-                                        <Link href={`/billing/${invoice.id}/edit`}>Edit</Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>Download PDF</DropdownMenuItem>
-                                     {invoice.status === 'Due' && <DropdownMenuItem>Mark as Paid</DropdownMenuItem>}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-         {!loading && invoices?.length === 0 && (
-            <div className="text-center p-8 text-muted-foreground">
-                No invoices found.
-            </div>
-         )}
-      </CardContent>
-    </Card>
+      <div className="space-y-4">
+        {loading && Array.from({ length: 3 }).map((_, i) => <InvoiceCardSkeleton key={i} />)}
+        {!loading && invoices?.map((invoice) => <InvoiceCard key={invoice.id} invoice={invoice} />)}
+        {!loading && invoices?.length === 0 && (
+            <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                    No invoices found. Create one to get started.
+                </CardContent>
+            </Card>
+        )}
+      </div>
+    </div>
   );
 }

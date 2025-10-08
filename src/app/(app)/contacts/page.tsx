@@ -1,8 +1,8 @@
+
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
@@ -21,6 +21,65 @@ type Contact = {
     role: string;
     avatarId?: string;
 }
+
+function ContactCard({ contact, handleDelete }: { contact: Contact, handleDelete: (id: string) => void }) {
+    const avatar = placeholderImages.find(p => p.id === contact.avatarId);
+    return (
+        <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Avatar className="h-12 w-12">
+                        {avatar && <AvatarImage src={avatar.imageUrl} alt={contact.name} />}
+                        <AvatarFallback>{contact.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="font-semibold text-lg">{contact.name}</p>
+                        <p className="text-sm text-muted-foreground">{contact.email}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <p className="text-sm text-muted-foreground hidden sm:block">{contact.role}</p>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem asChild>
+                                <Link href={`/contacts/${contact.id}/edit`}>Edit</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDelete(contact.id)} className="text-destructive">
+                                Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+function ContactCardSkeleton() {
+    return (
+        <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="space-y-1">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-4 w-48" />
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Skeleton className="h-5 w-24 hidden sm:block" />
+                    <Skeleton className="h-8 w-8" />
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
 
 export default function ContactsPage() {
     const firestore = useFirestore();
@@ -44,8 +103,8 @@ export default function ContactsPage() {
     }
 
   return (
-    <Card>
-      <CardHeader>
+    <div className="space-y-6">
+      <CardHeader className="p-0">
         <div className="flex items-center justify-between">
             <div>
                 <CardTitle className="font-headline text-2xl">Contacts</CardTitle>
@@ -59,67 +118,19 @@ export default function ContactsPage() {
             </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {loading && Array.from({ length: 4 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><div className="flex items-center gap-3"><Skeleton className="h-10 w-10 rounded-full" /><div className="space-y-1"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-48" /></div></div></TableCell>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                    </TableRow>
-                ))}
-                {!loading && contacts?.map((contact) => {
-                    const avatar = placeholderImages.find(p => p.id === contact.avatarId);
-                    return (
-                    <TableRow key={contact.id}>
-                        <TableCell>
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                    {avatar && <AvatarImage src={avatar.imageUrl} alt={contact.name} />}
-                                    <AvatarFallback>{contact.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-medium">{contact.name}</p>
-                                    <p className="text-sm text-muted-foreground">{contact.email}</p>
-                                </div>
-                            </div>
-                        </TableCell>
-                        <TableCell>{contact.role}</TableCell>
-                        <TableCell className="text-right">
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem asChild>
-                                        <Link href={`/contacts/${contact.id}/edit`}>Edit</Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDelete(contact.id)} className="text-destructive">
-                                        Delete
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                    </TableRow>
-                )})}
-            </TableBody>
-        </Table>
-         {!loading && contacts?.length === 0 && (
-            <div className="text-center p-8 text-muted-foreground">
-                No contacts found.
-            </div>
+      <div className="space-y-4">
+        {loading && Array.from({ length: 4 }).map((_, i) => <ContactCardSkeleton key={i} />)}
+        {!loading && contacts?.map((contact) => (
+            <ContactCard key={contact.id} contact={contact} handleDelete={handleDelete} />
+        ))}
+        {!loading && contacts?.length === 0 && (
+            <Card>
+                <CardContent className="text-center p-8 text-muted-foreground">
+                    No contacts found.
+                </CardContent>
+            </Card>
          )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
