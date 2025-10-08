@@ -16,6 +16,10 @@ import type { Contact } from "@/schemas/contact";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
+const getDisplayName = (name: Contact['name'] = {}) => {
+    return [name.firstName, name.middleName, name.lastName].filter(Boolean).join(' ') || 'Unnamed Contact';
+}
+
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
   const router = useRouter();
@@ -72,8 +76,9 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
       </Card>
   }
 
-  const name = contact.name;
-  const hasFullNameDetails = name.firstName || name.middleName || name.lastName;
+  const displayName = getDisplayName(contact.name);
+  const hasNameDetails = contact.name.firstName || contact.name.middleName || contact.name.lastName;
+
 
   return (
     <div className="space-y-6">
@@ -82,11 +87,11 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                 <div className="flex items-center gap-6">
                     <Avatar className="h-24 w-24">
-                        {contact.avatarUrl && <AvatarImage src={contact.avatarUrl} alt={name.displayName} />}
-                        <AvatarFallback className="text-4xl">{name.displayName ? name.displayName.split(' ').map(n => n[0]).join('') : 'NA'}</AvatarFallback>
+                        {contact.avatarUrl && <AvatarImage src={contact.avatarUrl} alt={displayName} />}
+                        <AvatarFallback className="text-4xl">{displayName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <CardTitle className="font-headline text-3xl">{name.displayName}</CardTitle>
+                        <CardTitle className="font-headline text-3xl">{displayName}</CardTitle>
                         {contact.role && <p className="text-base text-muted-foreground">{contact.role}</p>}
                     </div>
                 </div>
@@ -105,14 +110,16 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-                {hasFullNameDetails && <Card>
-                     <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><UserIcon /> Full Name</CardTitle></CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div><p className="text-sm text-muted-foreground">First Name</p><p>{name.firstName || '-'}</p></div>
-                        <div><p className="text-sm text-muted-foreground">Middle Name</p><p>{name.middleName || '-'}</p></div>
-                        <div><p className="text-sm text-muted-foreground">Last Name</p><p>{name.lastName || '-'}</p></div>
-                    </CardContent>
-                </Card>}
+                {hasNameDetails && (
+                    <Card>
+                        <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><UserIcon /> Name Details</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div><p className="text-sm text-muted-foreground">First Name</p><p>{contact.name.firstName || '-'}</p></div>
+                            <div><p className="text-sm text-muted-foreground">Middle Name</p><p>{contact.name.middleName || '-'}</p></div>
+                            <div><p className="text-sm text-muted-foreground">Last Name</p><p>{contact.name.lastName || '-'}</p></div>
+                        </CardContent>
+                    </Card>
+                )}
 
                  {/* Notes */}
                 {contact.notes && <Card>
@@ -126,21 +133,21 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                 <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Briefcase/> Contact Info</CardTitle></CardHeader>
                     <CardContent className="space-y-3">
-                        {contact.emails?.map((item, i) => (
+                        {contact.emails?.map((item, i) => item.email && (
                             <div key={i} className="flex items-center gap-2 text-sm">
                                 <Mail className="h-4 w-4 text-muted-foreground"/>
                                 <a href={`mailto:${item.email}`} className="text-primary hover:underline">{item.email}</a>
-                                <Badge variant="secondary">{item.label}</Badge>
+                                {item.label && <Badge variant="secondary">{item.label}</Badge>}
                             </div>
                         ))}
-                        {contact.phoneNumbers?.map((item, i) => (
+                        {contact.phoneNumbers?.map((item, i) => item.phone && (
                             <div key={i} className="flex items-center gap-2 text-sm">
                                 <Phone className="h-4 w-4 text-muted-foreground"/>
                                 <span>{item.phone}</span>
-                                <Badge variant="secondary">{item.label}</Badge>
+                                {item.label && <Badge variant="secondary">{item.label}</Badge>}
                             </div>
                         ))}
-                         {(!contact.emails || contact.emails.length === 0) && (!contact.phoneNumbers || contact.phoneNumbers.length === 0) && (
+                         {(!contact.emails || contact.emails.every(e => !e.email)) && (!contact.phoneNumbers || contact.phoneNumbers.every(p => !p.phone)) && (
                             <p className="text-sm text-muted-foreground">No contact information provided.</p>
                         )}
                     </CardContent>

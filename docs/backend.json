@@ -184,10 +184,8 @@
           "properties": {
             "firstName": { "type": "string" },
             "middleName": { "type": "string" },
-            "lastName": { "type": "string" },
-            "displayName": { "type": "string" }
-          },
-          "required": ["displayName"]
+            "lastName": { "type": "string" }
+          }
         },
         "role": { "type": "string" },
         "emails": {
@@ -359,5 +357,3 @@
     }
   }
 }
-
-    

@@ -12,27 +12,31 @@ import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Contact } from "@/schemas/contact";
 
+const getDisplayName = (name: Contact['name']) => {
+    return [name.firstName, name.middleName, name.lastName].filter(Boolean).join(' ') || 'Unnamed Contact';
+}
 
 function ContactCard({ contact }: { contact: Contact & {id: string} }) {
+    const displayName = getDisplayName(contact.name);
     return (
         <Card>
             <CardContent className="p-4">
                 <Link href={`/contacts/${contact.id}`} className="flex items-center gap-4">
                     <Avatar className="h-12 w-12">
-                        {contact.avatarUrl && <AvatarImage src={contact.avatarUrl} alt={contact.name.displayName} />}
-                        <AvatarFallback>{contact.name.displayName ? contact.name.displayName.split(' ').map(n=>n[0]).join('') : "NA"}</AvatarFallback>
+                        {contact.avatarUrl && <AvatarImage src={contact.avatarUrl} alt={displayName} />}
+                        <AvatarFallback>{displayName.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                        <p className="font-semibold text-lg hover:underline">{contact.name.displayName}</p>
+                        <p className="font-semibold text-lg hover:underline">{displayName}</p>
                         <p className="text-sm text-muted-foreground">{contact.role}</p>
                         <div className="flex items-center gap-4 mt-1">
-                            {contact.emails?.[0] && (
+                            {contact.emails?.[0]?.email && (
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <Mail className="h-3 w-3" />
                                     <span>{contact.emails[0].email}</span>
                                 </div>
                             )}
-                            {contact.phoneNumbers?.[0] && (
+                            {contact.phoneNumbers?.[0]?.phone && (
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <Phone className="h-3 w-3" />
                                     <span>{contact.phoneNumbers[0].phone}</span>
@@ -88,13 +92,13 @@ export default function ContactsPage() {
             </Button>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
         {loading && Array.from({ length: 4 }).map((_, i) => <ContactCardSkeleton key={i} />)}
         {!loading && contacts?.map((contact) => (
             <ContactCard contact={contact} key={contact.id} />
         ))}
         {!loading && contacts?.length === 0 && (
-            <Card className="md:col-span-2 xl:col-span-3">
+            <Card>
                 <CardContent className="text-center p-8 text-muted-foreground">
                     No contacts found.
                 </CardContent>

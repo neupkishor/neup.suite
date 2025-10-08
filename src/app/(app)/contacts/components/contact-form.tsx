@@ -41,7 +41,7 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 const prepareDataForForm = (contact?: Contact & { id?: string }): ContactFormValues => {
     if (!contact) {
         return {
-            name: { displayName: '', firstName: '', middleName: '', lastName: '' },
+            name: { firstName: '', middleName: '', lastName: '' },
             role: '',
             avatarUrl: '',
             notes: '',
@@ -56,7 +56,6 @@ const prepareDataForForm = (contact?: Contact & { id?: string }): ContactFormVal
     return {
         ...contact,
         name: {
-            displayName: contact.name.displayName,
             firstName: contact.name.firstName || '',
             middleName: contact.name.middleName || '',
             lastName: contact.name.lastName || '',
@@ -131,13 +130,6 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
         <Card>
             <CardHeader><CardTitle>Basic Information</CardTitle></CardHeader>
             <CardContent className='space-y-4'>
-                <FormField control={form.control} name="name.displayName" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Display Name</FormLabel>
-                        <FormControl><Input placeholder="Jane Doe" {...field} /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}/>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="name.firstName" render={({ field }) => (
                         <FormItem><FormLabel>First Name</FormLabel><FormControl><Input placeholder="Jane" {...field} /></FormControl><FormMessage /></FormItem>

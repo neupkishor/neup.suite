@@ -5,17 +5,16 @@ export const contactNameSchema = z.object({
   firstName: z.string().optional(),
   middleName: z.string().optional(),
   lastName: z.string().optional(),
-  displayName: z.string().min(1, 'Display name is required'),
 });
 
 export const contactEmailSchema = z.object({
-  label: z.string().min(1, 'Label is required'),
-  email: z.string().email('Invalid email address'),
+  label: z.string().optional(),
+  email: z.string().email('Invalid email address').or(z.literal('')),
 });
 
 export const contactPhoneSchema = z.object({
-  label: z.string().min(1, 'Label is required'),
-  phone: z.string().min(1, 'Phone number is required'),
+  label: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 export const contactAddressSchema = z.object({
@@ -44,7 +43,13 @@ export const contactDateSchema = z.object({
 
 
 export const contactSchema = z.object({
-  name: contactNameSchema,
+  name: contactNameSchema.refine(
+    (data) => !!data.firstName || !!data.lastName,
+    {
+      message: 'At least a first name or last name is required.',
+      path: ['firstName'], 
+    }
+  ),
   role: z.string().optional(),
   emails: z.array(contactEmailSchema).optional(),
   phoneNumbers: z.array(contactPhoneSchema).optional(),

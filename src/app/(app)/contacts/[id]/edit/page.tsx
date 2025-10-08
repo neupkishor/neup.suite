@@ -9,13 +9,12 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { useFirestore } from '@/firebase/provider';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { useDoc } from '@/firebase';
 import { doc, DocumentReference } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ContactForm } from '../../components/contact-form';
+import { ContactForm } from '@/app/(app)/contacts/components/contact-form';
 import type { Contact } from '@/schemas/contact';
 import { Button } from '@/components/ui/button';
 
@@ -28,6 +27,10 @@ export default function EditContactPage({ params }: { params: { id: string } }) 
   }, [firestore, params.id]);
 
   const { data: contact, loading } = useDoc<Contact & { id: string }>(contactRef);
+
+  const getDisplayName = (name: Contact['name'] = {}) => {
+    return [name.firstName, name.middleName, name.lastName].filter(Boolean).join(' ') || 'Unnamed Contact';
+  }
   
   if (loading) {
     return <Card>
@@ -63,7 +66,7 @@ export default function EditContactPage({ params }: { params: { id: string } }) 
     <Card>
       <CardHeader>
         <CardTitle className="font-headline text-2xl">
-          Edit Contact: {contact?.name.displayName}
+          Edit Contact: {getDisplayName(contact?.name)}
         </CardTitle>
         <CardDescription>
           Update the details for this contact.
