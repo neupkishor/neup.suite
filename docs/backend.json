@@ -1,6 +1,31 @@
 
 {
   "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "Represents a client company or organization.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the client."
+        },
+        "contactEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "The primary email for the client."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Inactive", "Onboarding"]
+        },
+        "createdOn": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["name", "status", "createdOn"]
+    },
     "UserProfile": {
       "title": "User Profile",
       "description": "Represents a user's profile information.",
@@ -328,6 +353,10 @@
     }
   },
   "firestore": {
+    "/clients/{clientId}": {
+      "schema": { "$ref": "#/backend/entities/Client" },
+      "description": "Stores client information."
+    },
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/UserProfile" },
       "description": "Stores public information about a user."
