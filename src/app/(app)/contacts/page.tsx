@@ -20,7 +20,7 @@ function ContactCard({ contact }: { contact: Contact & {id: string} }) {
                 <Link href={`/contacts/${contact.id}`} className="flex items-center gap-4">
                     <Avatar className="h-12 w-12">
                         {contact.avatarUrl && <AvatarImage src={contact.avatarUrl} alt={contact.name.displayName} />}
-                        <AvatarFallback>{contact.name.displayName.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
+                        <AvatarFallback>{contact.name.displayName ? contact.name.displayName.split(' ').map(n=>n[0]).join('') : "NA"}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                         <p className="font-semibold text-lg hover:underline">{contact.name.displayName}</p>
