@@ -1,19 +1,19 @@
 
 'use client';
-import { use } from 'react';
+import { use, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useDoc } from '@/firebase';
 import { useFirestore } from '@/firebase/provider';
-import { doc, DocumentReference } from 'firebase/firestore';
+import { doc, DocumentReference, deleteDoc } from 'firebase/firestore';
 import { useMemo } from 'react';
 import type { Document } from '@/schemas/document';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { File, Calendar, User, FileText, Hash, HardDrive } from 'lucide-react';
-import { DocumentPreview } from '../components/document-preview';
+import { File, Calendar, User, FileText, Hash, HardDrive, Loader2, ExternalLink } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const getStatusVariant = (status: string) => {
     switch (status) {
@@ -40,12 +40,29 @@ const formatBytes = (bytes: number, decimals = 2) => {
 export default function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const firestore = useFirestore();
+    const router = useRouter();
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const documentRef = useMemo(() => {
         if (!firestore || !id) return null;
         return doc(firestore, 'documents', id) as DocumentReference<Document>;
     }, [firestore, id]);
 
     const { data: document, loading } = useDoc<Document & {createdOn: {seconds: number}, updatedOn: {seconds: number}}>(documentRef);
+
+    const handleDelete = async () => {
+      if (!documentRef) return;
+      if (confirm('Are you sure you want to delete this document?')) {
+        setIsDeleting(true);
+        try {
+          await deleteDoc(documentRef);
+          router.push('/documents');
+        } catch (error) {
+          console.error('Failed to delete document', error);
+          setIsDeleting(false);
+        }
+      }
+    };
     
     if (loading) {
         return (
@@ -95,14 +112,22 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <DocumentPreview url={document.url} fileType={document.fileType || ''} />
                 {document.notes && <blockquote className="mt-4 border-l-2 pl-6 italic">{document.notes}</blockquote>}
+                {!document.notes && <p className="text-sm text-muted-foreground">No notes for this document.</p>}
             </CardContent>
              <CardFooter className="flex justify-end gap-2">
+                <Button variant="outline" asChild>
+                  <Link href={document.url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink /> Preview File
+                  </Link>
+                </Button>
                 <Button asChild>
                     <Link href={`/documents/${id}/edit`}>Edit</Link>
                 </Button>
-                <Button variant="destructive">Delete</Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                    {isDeleting && <Loader2 className="animate-spin" />}
+                    Delete
+                </Button>
             </CardFooter>
         </Card>
         <Card>
