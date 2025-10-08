@@ -74,10 +74,6 @@
       "description": "Represents a project.",
       "type": "object",
       "properties": {
-        "identifier": {
-          "type": "string",
-          "description": "A unique, URL-friendly identifier for the project."
-        },
         "name": {
           "type": "string",
           "description": "The name of the project."
@@ -99,9 +95,12 @@
           "type": "string",
           "format": "date",
           "description": "The project deadline."
+        },
+        "clientId": {
+          "type": "string"
         }
       },
-      "required": ["name", "identifier", "createdBy", "createdOn", "status", "deadline"]
+      "required": ["name", "createdBy", "createdOn", "status", "deadline", "clientId"]
     },
     "Task": {
       "title": "Task",
@@ -154,9 +153,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "clientId": {
+            "type": "string"
         }
       },
-      "required": ["title", "status", "createdBy", "createdOn"]
+      "required": ["title", "status", "createdBy", "createdOn", "clientId"]
     },
     "KnowledgeArticle": {
       "title": "Knowledge Article",
@@ -168,9 +170,10 @@
         "status": { "type": "string", "enum": ["Draft", "Published", "Archived"] },
         "createdBy": { "type": "string" },
         "createdOn": { "type": "string", "format": "date-time" },
-        "updatedOn": { "type": "string", "format": "date-time" }
+        "updatedOn": { "type": "string", "format": "date-time" },
+        "clientId": { "type": "string" }
       },
-      "required": ["title", "content", "status", "createdBy", "createdOn"]
+      "required": ["title", "content", "status", "createdBy", "createdOn", "clientId"]
     },
     "Experiment": {
       "title": "Experiment",
@@ -181,9 +184,10 @@
         "hypothesis": { "type": "string" },
         "status": { "type": "string", "enum": ["Planning", "Running", "Completed", "Cancelled"] },
         "createdBy": { "type": "string" },
-        "createdOn": { "type": "string", "format": "date-time" }
+        "createdOn": { "type": "string", "format": "date-time" },
+        "clientId": { "type": "string" }
       },
-      "required": ["name", "hypothesis", "status", "createdBy", "createdOn"]
+      "required": ["name", "hypothesis", "status", "createdBy", "createdOn", "clientId"]
     },
     "Invoice": {
         "title": "Invoice",
@@ -197,9 +201,10 @@
             "status": { "type": "string", "enum": ["Paid", "Due", "Overdue"], "description": "The current status of the invoice." },
             "clientName": { "type": "string", "description": "The name of the client being invoiced." },
             "createdOn": { "type": "string", "format": "date-time" },
-            "updatedOn": { "type": "string", "format": "date-time" }
+            "updatedOn": { "type": "string", "format": "date-time" },
+            "clientId": { "type": "string" }
         },
-        "required": ["invoiceId", "amount", "currency", "dueDate", "status", "clientName", "createdOn"]
+        "required": ["invoiceId", "amount", "currency", "dueDate", "status", "clientName", "createdOn", "clientId"]
     },
     "Contact": {
       "title": "Contact",
@@ -283,9 +288,10 @@
         "notes": { "type": "string" },
         "avatarUrl": { "type": "string", "format": "uri" },
         "createdOn": { "type": "string", "format": "date-time" },
-        "updatedOn": { "type": "string", "format": "date-time" }
+        "updatedOn": { "type": "string", "format": "date-time" },
+        "clientId": { "type": "string" }
       },
-      "required": ["name"]
+      "required": ["name", "clientId"]
     },
     "Goal": {
         "title": "Goal",
@@ -295,9 +301,10 @@
             "title": { "type": "string" },
             "description": { "type": "string" },
             "targetDate": { "type": "string", "format": "date" },
-            "status": { "type": "string", "enum": ["Not Started", "In Progress", "Completed", "At Risk"] }
+            "status": { "type": "string", "enum": ["Not Started", "In Progress", "Completed", "At Risk"] },
+            "clientId": { "type": "string" }
         },
-        "required": ["title", "targetDate", "status"]
+        "required": ["title", "targetDate", "status", "clientId"]
     },
     "Report": {
         "title": "Report",
@@ -306,9 +313,10 @@
         "properties": {
             "title": { "type": "string" },
             "summary": { "type": "string" },
-            "generatedOn": { "type": "string", "format": "date-time" }
+            "generatedOn": { "type": "string", "format": "date-time" },
+            "clientId": { "type": "string" }
         },
-        "required": ["title", "generatedOn"]
+        "required": ["title", "generatedOn", "clientId"]
     },
     "Feedback": {
         "title": "Feedback",
@@ -318,9 +326,10 @@
             "title": { "type": "string" },
             "comment": { "type": "string" },
             "submittedBy": { "type": "string" },
-            "submittedOn": { "type": "string", "format": "date-time" }
+            "submittedOn": { "type": "string", "format": "date-time" },
+            "clientId": { "type": "string" }
         },
-        "required": ["title", "comment", "submittedBy", "submittedOn"]
+        "required": ["title", "comment", "submittedBy", "submittedOn", "clientId"]
     },
     "Discussion": {
         "title": "Discussion",
@@ -329,9 +338,10 @@
         "properties": {
             "title": { "type": "string" },
             "createdBy": { "type": "string" },
-            "createdOn": { "type": "string", "format": "date-time" }
+            "createdOn": { "type": "string", "format": "date-time" },
+            "clientId": { "type": "string" }
         },
-        "required": ["title", "createdBy", "createdOn"]
+        "required": ["title", "createdBy", "createdOn", "clientId"]
     },
     "Document": {
       "title": "Document",
@@ -347,9 +357,10 @@
         "uploadedBy": { "type": "string", "description": "The ID of the user who uploaded the file." },
         "notes": { "type": "string", "description": "Notes or comments about the file." },
         "createdOn": { "type": "string", "format": "date-time" },
-        "updatedOn": { "type": "string", "format": "date-time" }
+        "updatedOn": { "type": "string", "format": "date-time" },
+        "clientId": { "type": "string" }
       },
-      "required": ["name", "url", "status", "createdOn"]
+      "required": ["name", "url", "status", "createdOn", "clientId"]
     }
   },
   "firestore": {

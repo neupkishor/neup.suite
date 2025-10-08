@@ -17,7 +17,6 @@ import { format } from "date-fns";
 type Project = {
     id: string;
     name: string;
-    identifier: string;
     status: 'Planning' | 'In Progress' | 'On Hold' | 'Completed';
     deadline: string;
 };
@@ -109,7 +108,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div>
                         <CardTitle className="font-headline text-3xl">{project.name}</CardTitle>
-                        <CardDescription>#{project.identifier}</CardDescription>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                         <Button asChild>

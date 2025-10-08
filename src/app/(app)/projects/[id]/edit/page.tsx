@@ -44,13 +44,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 type Project = {
     id: string;
-    identifier: string;
     name: string;
     status: 'Planning' | 'In Progress' | 'On Hold' | 'Completed';
     deadline: string;
 }
 
-const editProjectSchema = projectSchema.extend({
+const editProjectSchema = projectSchema.omit({ identifier: true }).extend({
     status: z.enum(['Planning', 'In Progress', 'On Hold', 'Completed']),
 })
 
@@ -108,7 +107,6 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
             <Skeleton className="h-10" />
             <Skeleton className="h-10" />
             <Skeleton className="h-10" />
-            <Skeleton className="h-10" />
             <div className="flex gap-2">
                 <Skeleton className="h-10 w-32" />
                 <Skeleton className="h-10 w-24" />
@@ -154,22 +152,6 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
                 </FormControl>
                 <FormDescription>
                     This is the public display name of your project.
-                </FormDescription>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="identifier"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Project Identifier</FormLabel>
-                <FormControl>
-                    <Input placeholder="e.g. project-phoenix" {...field} />
-                </FormControl>
-                <FormDescription>
-                    A unique, URL-friendly identifier (lowercase, numbers, dashes).
                 </FormDescription>
                 <FormMessage />
                 </FormItem>

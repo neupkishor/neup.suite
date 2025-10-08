@@ -30,6 +30,9 @@ import { createProject } from "@/actions/projects/create-project";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Cookies from "js-cookie";
 
+const createProjectSchema = projectSchema.omit({ identifier: true });
+
+
 export default function CreateProjectPage() {
     const firestore = useFirestore();
     const router = useRouter();
@@ -41,16 +44,15 @@ export default function CreateProjectPage() {
         setClientId(Cookies.get('client') || null);
     }, []);
 
-  const form = useForm<z.infer<typeof projectSchema>>({
-    resolver: zodResolver(projectSchema),
+  const form = useForm<z.infer<typeof createProjectSchema>>({
+    resolver: zodResolver(createProjectSchema),
     defaultValues: {
       name: "",
-      identifier: "",
       status: 'Planning',
     },
   });
 
-  async function onSubmit(values: z.infer<typeof projectSchema>) {
+  async function onSubmit(values: z.infer<typeof createProjectSchema>) {
     if (!firestore || !clientId) return;
     setIsSubmitting(true);
     setSubmitError(null);
@@ -104,22 +106,6 @@ export default function CreateProjectPage() {
                         </FormControl>
                         <FormDescription>
                             This is the public display name of your project.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="identifier"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Project Identifier</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g. project-phoenix" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                            A unique, URL-friendly identifier (lowercase, numbers, dashes).
                         </FormDescription>
                         <FormMessage />
                         </FormItem>
