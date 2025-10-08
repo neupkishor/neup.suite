@@ -17,7 +17,6 @@ import {
 
 const mainLinks = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/projects", icon: FolderKanban, label: "Projects" },
   { href: "/communication", icon: MessageSquare, label: "Inbox" },
   { href: "/documents", icon: FileText, label: "Documents" },
   { href: "/billing", icon: Receipt, label: "Billing" },
@@ -25,6 +24,7 @@ const mainLinks = [
 ];
 
 const manageLinks = [
+  { href: "/projects", icon: FolderKanban, label: "Projects" },
   { href: "/clients", icon: Briefcase, label: "Clients" },
   { href: "/team", icon: Users, label: "Team" },
 ];
