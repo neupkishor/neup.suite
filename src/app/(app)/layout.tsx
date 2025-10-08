@@ -1,4 +1,3 @@
-
 'use client';
 import type { ReactNode } from "react";
 import { MainNav } from "@/components/main-nav";
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import NProgress from 'nprogress';
 
 function AppSidebar() {
   return (
@@ -41,6 +41,20 @@ function MobileNav({ isOpen, onToggle }: { isOpen: boolean, onToggle: () => void
     )
 }
 
+function NavLink({ href, children }: { href: string, children: React.ReactNode}) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname !== href) {
+      NProgress.start();
+    }
+  };
+
+  return <Link href={href} onClick={handleClick}>{children}</Link>;
+}
+
+
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const showSidebar = pathname !== '/communication';
@@ -59,16 +73,20 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <header className="sticky top-0 z-20 w-full border-b bg-background/80 backdrop-blur-sm shadow-md">
                 <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6">
                     <div className="flex items-center gap-8">
-                        <Link href="/home" className="hidden md:block">
-                            <Logo />
-                        </Link>
+                        <NavLink href="/home">
+                            <div className="hidden md:block">
+                                <Logo />
+                            </div>
+                        </NavLink>
                          <div className="md:hidden">
                             <MobileNav isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(prev => !prev)} />
                          </div>
                     </div>
-                     <Link href="/home" className="absolute left-1/2 -translate-x-1/2 md:hidden">
-                        <Logo />
-                     </Link>
+                     <NavLink href="/home">
+                        <div className="absolute left-1/2 -translate-x-1/2 md:hidden">
+                            <Logo />
+                        </div>
+                     </NavLink>
                     <div className="flex items-center gap-4">
                         <form className="relative ml-auto hidden sm:flex-initial">
                             <Button variant="ghost" size="icon" className="absolute left-1.5 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground">

@@ -9,9 +9,6 @@ export function NavigationEvents() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    NProgress.start();
-    const url = `${pathname}?${searchParams}`;
-    console.log(url);
     NProgress.done();
   }, [pathname, searchParams]);
 

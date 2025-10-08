@@ -1,9 +1,9 @@
-
 "use client";
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import NProgress from 'nprogress';
 import {
   LayoutDashboard,
   Users,
@@ -59,10 +59,17 @@ const rootLinks = [
 const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== '/home' && pathname.startsWith(href));
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname !== href) {
+      NProgress.start();
+    }
+  };
   
   return (
     <Link
       href={href}
+      onClick={handleClick}
       className={cn(
         "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 ease-in-out hover:bg-muted hover:text-foreground",
         isActive && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
