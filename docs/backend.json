@@ -21,6 +21,27 @@
         }
       },
       "required": ["displayName", "email"]
+    },
+    "AiSuggestion": {
+      "title": "AI Suggestion",
+      "description": "Represents an AI-generated suggestion.",
+      "type": "object",
+      "properties": {
+        "suggestedActions": {
+          "type": "string",
+          "description": "A list of suggested actions for the client, prioritized by urgency and impact."
+        },
+        "pendingDeadlines": {
+          "type": "string",
+          "description": "A summary of upcoming deadlines and their potential impact."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the suggestion was created."
+        }
+      },
+      "required": ["suggestedActions", "pendingDeadlines", "createdAt"]
     }
   },
   "firestore": {
@@ -29,6 +50,12 @@
         "$ref": "#/backend/entities/UserProfile"
       },
       "description": "Stores public information about a user."
+    },
+    "/ai_suggestions/{suggestionId}": {
+      "schema": {
+        "$ref": "#/backend/entities/AiSuggestion"
+      },
+      "description": "Stores AI generated suggestions."
     }
   }
 }
