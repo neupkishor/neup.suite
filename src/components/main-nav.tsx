@@ -1,3 +1,4 @@
+
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -27,7 +28,6 @@ import {
 
 const mainLinks = [
   { href: "/home", icon: LayoutDashboard, label: "Home" },
-  { href: "/clients", icon: Briefcase, label: "Clients" },
   { href: "/tasks", icon: CheckSquare, label: "Tasks" },
   { href: "/documents", icon: FileText, label: "Documents" },
   { href: "/billing", icon: Receipt, label: "Billing" },
@@ -53,6 +53,7 @@ const clientLinks = [
 ];
 
 const rootLinks = [
+  { href: "/clients", icon: Briefcase, label: "Clients" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
