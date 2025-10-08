@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { FirebaseClientProvider } from "@/firebase";
 
 function AppSidebar() {
   return (
@@ -19,6 +20,7 @@ function AppSidebar() {
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
+    <FirebaseClientProvider>
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -48,5 +50,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </div>
     </div>
+    </FirebaseClientProvider>
   );
 }
