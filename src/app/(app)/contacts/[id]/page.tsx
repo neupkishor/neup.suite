@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { deleteContact } from "@/actions/contacts/delete-contact";
-import { Loader2, Mail, Phone, Globe, Trash2, Pencil, Calendar, MessageSquare, Briefcase, MapPin, Notebook, Plus } from "lucide-react";
+import { Loader2, Mail, Phone, Globe, Trash2, Pencil, Calendar, MessageSquare, Briefcase, MapPin, Notebook, Plus, User as UserIcon } from "lucide-react";
 import type { Contact } from "@/schemas/contact";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -73,7 +73,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   }
 
   const name = contact.name;
-  const fullName = [name.firstName, name.middleName, name.lastName].filter(Boolean).join(' ');
+  const hasFullNameDetails = name.firstName || name.middleName || name.lastName;
 
   return (
     <div className="space-y-6">
@@ -83,11 +83,10 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                 <div className="flex items-center gap-6">
                     <Avatar className="h-24 w-24">
                         {contact.avatarUrl && <AvatarImage src={contact.avatarUrl} alt={name.displayName} />}
-                        <AvatarFallback className="text-4xl">{name.displayName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        <AvatarFallback className="text-4xl">{name.displayName ? name.displayName.split(' ').map(n => n[0]).join('') : 'NA'}</AvatarFallback>
                     </Avatar>
                     <div>
                         <CardTitle className="font-headline text-3xl">{name.displayName}</CardTitle>
-                        {fullName && <CardDescription className="text-lg">{fullName}</CardDescription>}
                         {contact.role && <p className="text-base text-muted-foreground">{contact.role}</p>}
                     </div>
                 </div>
@@ -106,6 +105,15 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
+                {hasFullNameDetails && <Card>
+                     <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><UserIcon /> Full Name</CardTitle></CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><p className="text-sm text-muted-foreground">First Name</p><p>{name.firstName || '-'}</p></div>
+                        <div><p className="text-sm text-muted-foreground">Middle Name</p><p>{name.middleName || '-'}</p></div>
+                        <div><p className="text-sm text-muted-foreground">Last Name</p><p>{name.lastName || '-'}</p></div>
+                    </CardContent>
+                </Card>}
+
                  {/* Notes */}
                 {contact.notes && <Card>
                     <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Notebook /> Notes</CardTitle></CardHeader>
@@ -132,6 +140,9 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                                 <Badge variant="secondary">{item.label}</Badge>
                             </div>
                         ))}
+                         {(!contact.emails || contact.emails.length === 0) && (!contact.phoneNumbers || contact.phoneNumbers.length === 0) && (
+                            <p className="text-sm text-muted-foreground">No contact information provided.</p>
+                        )}
                     </CardContent>
                 </Card>
 
