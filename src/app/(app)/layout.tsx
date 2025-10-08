@@ -52,8 +52,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </header>
       <div className="flex flex-1">
         <div className="mx-auto flex w-full max-w-[1440px]">
-            {!isCommunicationPage && <AppSidebar />}
-            <main className={`flex-1 ${!isCommunicationPage ? 'p-6' : ''}`}>{children}</main>
+            <AppSidebar />
+            <main className='flex-1 p-6'>{children}</main>
         </div>
       </div>
     </div>
