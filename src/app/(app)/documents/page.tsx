@@ -1,10 +1,10 @@
 
 'use client';
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MoreHorizontal, Upload, FileText } from "lucide-react";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Upload } from "lucide-react";
 import Link from "next/link";
+import { DocumentCard } from "./components/document-card";
 
 const documents = [
     { id: '1', name: 'Master Service Agreement.pdf', version: 'v2.1', updated: '2024-05-20', status: 'Signed' },
@@ -13,38 +13,6 @@ const documents = [
     { id: '4', name: 'Initial Wireframes.fig', version: 'v0.8', updated: '2024-06-25', status: 'Archived' },
 ];
 
-const getStatusVariant = (status: string) => {
-    switch (status) {
-        case 'Signed':
-        case 'Approved':
-            return 'default';
-        case 'In Review':
-            return 'secondary';
-        default:
-            return 'outline';
-    }
-};
-
-function DocumentCard({ document }: { document: typeof documents[0] }) {
-    return (
-        <Card>
-            <CardContent className="p-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 flex-1">
-                    <FileText className="h-8 w-8 text-muted-foreground" />
-                    <div className="flex-1">
-                        <p className="font-semibold">{document.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                            Version {document.version} - Updated {document.updated}
-                        </p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                     <Badge variant={getStatusVariant(document.status)}>{document.status}</Badge>
-                </div>
-            </CardContent>
-        </Card>
-    )
-}
 
 export default function DocumentsPage() {
   return (

@@ -1,54 +1,16 @@
 
 'use client';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
-import { UserPlus, Mail, Phone } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Contact } from "@/schemas/contact";
-
-const getDisplayName = (name: Contact['name']) => {
-    return [name.firstName, name.middleName, name.lastName].filter(Boolean).join(' ') || 'Unnamed Contact';
-}
-
-function ContactCard({ contact }: { contact: Contact & {id: string} }) {
-    const displayName = getDisplayName(contact.name);
-    return (
-        <Card>
-            <CardContent className="p-4">
-                <Link href={`/contacts/${contact.id}`} className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                        {contact.avatarUrl && <AvatarImage src={contact.avatarUrl} alt={displayName} />}
-                        <AvatarFallback>{displayName.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                        <p className="font-semibold text-lg hover:underline">{displayName}</p>
-                        <p className="text-sm text-muted-foreground">{contact.role}</p>
-                        <div className="flex items-center gap-4 mt-1">
-                            {contact.emails?.[0]?.email && (
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                    <Mail className="h-3 w-3" />
-                                    <span>{contact.emails[0].email}</span>
-                                </div>
-                            )}
-                            {contact.phoneNumbers?.[0]?.phone && (
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                    <Phone className="h-3 w-3" />
-                                    <span>{contact.phoneNumbers[0].phone}</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </Link>
-            </CardContent>
-        </Card>
-    )
-}
+import { ContactCard } from "./components/contact-card";
 
 function ContactCardSkeleton() {
     return (
@@ -92,7 +54,7 @@ export default function ContactsPage() {
             </Button>
         </div>
       </CardHeader>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-4">
         {loading && Array.from({ length: 4 }).map((_, i) => <ContactCardSkeleton key={i} />)}
         {!loading && contacts?.map((contact) => (
             <ContactCard contact={contact} key={contact.id} />

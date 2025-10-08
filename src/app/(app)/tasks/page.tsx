@@ -4,25 +4,14 @@ import {
   addDoc,
   collection,
   CollectionReference,
-  doc,
   serverTimestamp,
-  updateDoc,
 } from 'firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  CalendarIcon,
-  CheckCircle,
-  Circle,
   Loader2,
   PlusCircle,
-  XCircle,
-  Calendar as CalendarIconLucide,
-  Trash,
   MessageSquarePlus,
-  MoreHorizontal,
-  GripVertical,
-  Repeat,
-  AlignLeft,
+  Trash,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -61,30 +50,16 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { placeholderImages } from '@/lib/placeholder-images';
-import { taskSchema } from '@/schemas/task';
+import { taskSchema, type Task } from '@/schemas/task';
 import { Textarea } from '@/components/ui/textarea';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { updateTask } from './actions/update-task';
-import { Checkbox } from '@/components/ui/checkbox';
+import { CalendarIcon } from 'lucide-react';
+import { TaskCard } from './components/task-card';
 
-type Task = {
-  id: string;
-  title: string;
-  description?: string;
-  assignees: string[];
-  deadline?: string;
-  status: 'To Do' | 'In Progress' | 'Done' | 'Cancelled';
-  project?: string;
-  subtasks?: { text: string; completed?: boolean }[];
-};
 
 type Project = {
   id: string;
@@ -122,7 +97,7 @@ function NewTaskItem({
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "subtasks",
+    name: 'subtasks',
   });
   const [newSubtask, setNewSubtask] = useState('');
 
@@ -153,7 +128,7 @@ function NewTaskItem({
       setIsSubmitting(false);
     }
   }
-  
+
   const handleAddSubtask = () => {
     if (newSubtask.trim()) {
       append({ text: newSubtask.trim() });
@@ -179,26 +154,26 @@ function NewTaskItem({
                 </FormItem>
               )}
             />
-            
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-               <FormField
+              <FormField
                 control={form.control}
                 name="assignees"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Assign To</FormLabel>
-                     <MultiSelect
-                        selected={field.value}
-                        options={teamMembers}
-                        onChange={field.onChange}
-                        placeholder="Select team members..."
-                        className="w-full"
+                    <MultiSelect
+                      selected={field.value}
+                      options={teamMembers}
+                      onChange={field.onChange}
+                      placeholder="Select team members..."
+                      className="w-full"
                     />
                     <FormMessage />
                   </FormItem>
                 )}
               />
-               <FormField
+              <FormField
                 control={form.control}
                 name="deadline"
                 render={({ field }) => (
@@ -239,7 +214,11 @@ function NewTaskItem({
             </div>
 
             {!showDetails && (
-              <Button variant="outline" size="sm" onClick={() => setShowDetails(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDetails(true)}
+              >
                 <MessageSquarePlus className="mr-2 h-4 w-4" />
                 Add Details (Description, Subtasks...)
               </Button>
@@ -263,8 +242,8 @@ function NewTaskItem({
                     </FormItem>
                   )}
                 />
-                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <FormField
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <FormField
                     control={form.control}
                     name="project"
                     render={({ field }) => (
@@ -308,16 +287,20 @@ function NewTaskItem({
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="To Do">To Do</SelectItem>
-                            <SelectItem value="In Progress">In Progress</SelectItem>
+                            <SelectItem value="In Progress">
+                              In Progress
+                            </SelectItem>
                             <SelectItem value="Done">Done</SelectItem>
-                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                            <SelectItem value="Cancelled">
+                              Cancelled
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                 </div>
+                </div>
 
                 <div>
                   <FormLabel>Subtasks</FormLabel>
@@ -341,10 +324,10 @@ function NewTaskItem({
                         value={newSubtask}
                         onChange={(e) => setNewSubtask(e.target.value)}
                         onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleAddSubtask();
-                            }
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddSubtask();
+                          }
                         }}
                       />
                       <Button type="button" onClick={handleAddSubtask}>
@@ -355,7 +338,6 @@ function NewTaskItem({
                 </div>
               </div>
             )}
-
 
             <div className="flex justify-end gap-2">
               <Button
@@ -379,146 +361,6 @@ function NewTaskItem({
   );
 }
 
-const statusConfig = {
-  'To Do': { icon: Circle, color: 'text-muted-foreground' },
-  'In Progress': { icon: Loader2, color: 'text-primary' },
-  Done: { icon: CheckCircle, color: 'text-chart-2' },
-  Cancelled: { icon: XCircle, color: 'text-destructive' },
-};
-
-function TaskCard({
-  task,
-  projects,
-}: {
-  task: Task;
-  projects: Project[] | null;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const StatusIcon = statusConfig[task.status]?.icon || Circle;
-  const project = projects?.find((p) => p.id === task.project);
-  const firestore = useFirestore();
-
-  const handleStatusChange = async (newStatus: Task['status']) => {
-    if (!firestore) return;
-    try {
-      await updateTask(firestore, task.id, { status: newStatus });
-    } catch (error) {
-      console.error("Failed to update task status", error);
-    }
-  };
-  
-  const handleDateChange = async (date: Date | null) => {
-    if (!firestore) return;
-    try {
-        await updateTask(firestore, task.id, { deadline: date ? format(date, 'yyyy-MM-dd') : null });
-    } catch (error) {
-        console.error("Failed to update deadline", error);
-    }
-  }
-
-
-  return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="rounded-lg border data-[state=open]:bg-muted/50 transition-colors">
-        <CollapsibleTrigger asChild>
-            <div className="flex items-start gap-4 p-4 cursor-pointer">
-                <Button variant="ghost" size="icon" className="shrink-0 h-6 w-6 mt-1" onClick={(e) => {
-                    e.stopPropagation();
-                    const newStatus = task.status === 'Done' ? 'To Do' : 'Done';
-                    handleStatusChange(newStatus);
-                }}>
-                    <StatusIcon
-                        className={cn(
-                        'h-5 w-5',
-                        statusConfig[task.status].color,
-                        task.status === 'In Progress' && 'animate-spin'
-                        )}
-                    />
-                </Button>
-                <div className="flex-1">
-                    <p className={cn("font-medium", task.status === 'Done' && 'line-through text-muted-foreground')}>{task.title}</p>
-                    {project && (
-                    <p className="text-sm text-muted-foreground">{project.name}</p>
-                    )}
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex -space-x-2">
-                    {task.assignees?.map(assigneeName => {
-                        const member = teamMembers.find(m => m.value === assigneeName);
-                        if (!member) return null;
-                        const avatar = placeholderImages.find(p => p.id === member.avatarId);
-                        return (
-                        <Avatar key={assigneeName} className="h-6 w-6 border-2 border-background">
-                            {avatar && <AvatarImage src={avatar.imageUrl} alt={assigneeName} />}
-                            <AvatarFallback>{assigneeName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        )
-                    })}
-                    </div>
-                    {task.deadline && (
-                    <div className="flex items-center gap-1.5">
-                        <CalendarIconLucide className="h-4 w-4" />
-                        <span>{format(new Date(task.deadline), 'MMM d')}</span>
-                    </div>
-                    )}
-                </div>
-                <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
-                    <MoreHorizontal />
-                </Button>
-            </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-            <div className="px-14 pb-4 space-y-4">
-                {(task.description || (task.subtasks && task.subtasks.length > 0)) ? (
-                    <>
-                        {task.description && (
-                            <div className="flex items-start gap-3">
-                                <AlignLeft className="h-5 w-5 text-muted-foreground mt-1" />
-                                <p className="text-muted-foreground text-sm">{task.description}</p>
-                            </div>
-                        )}
-                        {task.subtasks && task.subtasks.length > 0 && (
-                            <div className="space-y-2">
-                                {task.subtasks.map((subtask, index) => (
-                                    <div key={index} className="flex items-center gap-2 text-sm">
-                                        <Checkbox checked={subtask.completed} />
-                                        <span>{subtask.text}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <p className="text-sm text-muted-foreground">No details for this task.</p>
-                )}
-                
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleDateChange(new Date())}>Today</Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDateChange(addDays(new Date(), 1))}>Tomorrow</Button>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm" className="w-auto justify-start text-left font-normal">
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          <span>{task.deadline ? format(new Date(task.deadline), "PPP") : "Pick a date"}</span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={task.deadline ? new Date(task.deadline) : undefined}
-                          onSelect={(day) => handleDateChange(day || null)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <div className="flex-1" />
-                    <Button variant="ghost" size="icon"><GripVertical className="text-muted-foreground" /></Button>
-                    <Button variant="ghost" size="icon"><Repeat className="text-muted-foreground" /></Button>
-                </div>
-            </div>
-        </CollapsibleContent>
-    </Collapsible>
-  );
-}
 
 function TaskCardSkeleton() {
   return (
@@ -545,8 +387,9 @@ export default function TasksPage() {
     if (!firestore) return null;
     return collection(firestore, 'tasks') as CollectionReference<Task>;
   }, [firestore]);
-  const { data: tasks, loading: tasksLoading } =
-    useCollection<Task>(tasksCollection);
+  const { data: tasks, loading: tasksLoading } = useCollection<Task & {id: string}>(
+    tasksCollection
+  );
 
   const projectsCollection = useMemo(() => {
     if (!firestore) return null;
@@ -575,7 +418,9 @@ export default function TasksPage() {
           </Button>
         </div>
       </CardHeader>
-       {isCreating && <NewTaskItem setIsCreating={setIsCreating} projects={projects} />}
+      {isCreating && (
+        <NewTaskItem setIsCreating={setIsCreating} projects={projects} />
+      )}
       <Card>
         <CardContent className="p-0">
           <div className="divide-y">
