@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +51,7 @@ export default function KnowledgePage() {
                 </Button>
             </div>
         </CardHeader>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         {articles?.map(article => <ArticleCard key={article.id} article={article} />)}
       </div>

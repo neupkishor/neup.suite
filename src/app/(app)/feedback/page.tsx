@@ -52,7 +52,7 @@ export default function FeedbackPage() {
             </Button>
         </div>
       </CardHeader>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         {feedbackItems?.map(item => <FeedbackCard key={item.id} feedback={item} />)}
       </div>

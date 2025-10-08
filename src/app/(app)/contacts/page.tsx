@@ -88,7 +88,7 @@ export default function ContactsPage() {
             </Button>
         </div>
       </CardHeader>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="space-y-4">
         {loading && Array.from({ length: 4 }).map((_, i) => <ContactCardSkeleton key={i} />)}
         {!loading && contacts?.map((contact) => (
             <ContactCard contact={contact} key={contact.id} />
@@ -104,5 +104,3 @@ export default function ContactsPage() {
     </div>
   );
 }
-
-    

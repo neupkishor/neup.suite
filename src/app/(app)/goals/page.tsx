@@ -52,7 +52,7 @@ export default function GoalsPage() {
             </Button>
         </div>
       </CardHeader>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         {goals?.map(goal => <GoalCard key={goal.id} goal={goal} />)}
       </div>
