@@ -1,3 +1,4 @@
+
 import type { ReactNode } from "react";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
@@ -27,7 +28,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm shadow-md">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6">
             <div className="flex items-center gap-8">
-                <Link href="/dashboard">
+                <Link href="/home">
                     <Logo />
                 </Link>
             </div>

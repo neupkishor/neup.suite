@@ -1,3 +1,4 @@
+
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -20,7 +21,7 @@ import {
 } from "lucide-react";
 
 const mainLinks = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/home", icon: LayoutDashboard, label: "Home" },
   { href: "/communication", icon: MessageSquare, label: "Inbox" },
   { href: "/tasks", icon: CheckSquare, label: "Tasks" },
   { href: "/documents", icon: FileText, label: "Documents" },
@@ -45,7 +46,7 @@ const rootLinks = [
 
 const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
+  const isActive = pathname === href || (href !== '/home' && pathname.startsWith(href));
   
   return (
     <Link
