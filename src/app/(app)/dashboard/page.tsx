@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/card";
 import { AIAssistant } from "./components/ai-assistant";
 import { ProjectProgress } from "./components/project-progress";
-import { AssignedTasks } from "./components/assigned-tasks";
 import { UpcomingMilestones } from "./components/upcoming-milestones";
 import { KeyContacts } from "./components/key-contacts";
 import { PaymentStatus } from "./components/payment-status";
@@ -21,7 +20,7 @@ export default function DashboardPage() {
   `;
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
         <Card>
           <CardHeader>
@@ -34,18 +33,11 @@ export default function DashboardPage() {
             <AIAssistant projectData={projectData} />
           </CardContent>
         </Card>
+        <KeyContacts />
       </div>
-      <div className="space-y-6">
+      <div className="space-y-6 lg:col-span-1">
         <PaymentStatus />
         <ProjectProgress />
-      </div>
-       <div className="space-y-6 lg:col-span-3">
-         <AssignedTasks />
-      </div>
-       <div className="space-y-6 lg:col-span-2">
-         <KeyContacts />
-      </div>
-       <div className="space-y-6">
         <UpcomingMilestones />
       </div>
     </div>
