@@ -1,15 +1,19 @@
-
 'use client';
 
-import { AppProgressBar as ProgressBar } from 'next-nprogress-bar';
+import { useEffect } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import NProgress from 'nprogress';
 
-const NextNProgressClient = () => {
-  return <ProgressBar
-    height="4px"
-    color="hsl(var(--primary))"
-    options={{ showSpinner: false }}
-    shallowRouting
-  />;
+export function NavigationEvents() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    NProgress.start();
+    const url = `${pathname}?${searchParams}`;
+    console.log(url);
+    NProgress.done();
+  }, [pathname, searchParams]);
+
+  return null;
 }
-
-export default NextNProgressClient;
