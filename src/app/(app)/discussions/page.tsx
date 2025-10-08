@@ -1,6 +1,5 @@
 
 'use client';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
@@ -9,6 +8,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle } from "lucide-react";
+import { AddItemCard } from "@/components/add-item-card";
 
 type Discussion = {
     id: string;
@@ -47,12 +47,16 @@ export default function DiscussionsPage() {
                 Start and participate in discussion threads.
                 </CardDescription>
             </div>
-            <Button asChild>
-                <Link href="/discussions/add"><MessageCircle className="mr-2 h-4 w-4"/>New Discussion</Link>
-            </Button>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        {!loading && (
+            <AddItemCard
+                title="New Discussion"
+                href="/discussions/add"
+                icon={MessageCircle}
+            />
+        )}
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         {discussions?.map(item => <DiscussionCard key={item.id} discussion={item} />)}
       </div>

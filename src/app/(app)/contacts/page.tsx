@@ -1,16 +1,15 @@
 
 'use client';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
 import { UserPlus } from "lucide-react";
-import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Contact } from "@/schemas/contact";
 import { ContactCard } from "./components/contact-card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { AddItemCard } from "@/components/add-item-card";
 
 function ContactCardSkeleton() {
     return (
@@ -46,15 +45,16 @@ export default function ContactsPage() {
                 <CardTitle className="font-headline text-2xl">Contacts</CardTitle>
                 <CardDescription>Manage your team and client contacts.</CardDescription>
             </div>
-            <Button asChild>
-                <Link href="/contacts/add">
-                    <UserPlus className="mr-2 h-4 w-4"/>
-                    New Contact
-                </Link>
-            </Button>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        {!loading && (
+            <AddItemCard
+                title="New Contact"
+                href="/contacts/add"
+                icon={UserPlus}
+            />
+        )}
         {loading && Array.from({ length: 4 }).map((_, i) => <ContactCardSkeleton key={i} />)}
         {!loading && contacts?.map((contact) => (
             <ContactCard contact={contact} key={contact.id} />

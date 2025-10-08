@@ -1,10 +1,11 @@
 
 'use client';
 import { Button } from "@/components/ui/button";
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle, Card, CardContent } from "@/components/ui/card";
 import { Upload } from "lucide-react";
 import Link from "next/link";
 import { DocumentCard } from "./components/document-card";
+import { AddItemCard } from "@/components/add-item-card";
 
 const documents = [
     { id: '1', name: 'Master Service Agreement.pdf', version: 'v2.1', updated: '2024-05-20', status: 'Signed' },
@@ -23,18 +24,22 @@ export default function DocumentsPage() {
                 <CardTitle className="font-headline text-2xl">File & Document Repository</CardTitle>
                 <CardDescription>Manage all your shared files, contracts, and assets.</CardDescription>
             </div>
-            <Button>
-                <Upload className="mr-2 h-4 w-4"/>
-                Upload File
-            </Button>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        <AddItemCard title="Upload File" href="#" icon={Upload} />
         {documents.map((doc) => (
             <Link href={`/documents/${doc.id}`} key={doc.id}>
                 <DocumentCard document={doc} />
             </Link>
         ))}
+         {documents.length === 0 && (
+            <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                    No documents found.
+                </CardContent>
+            </Card>
+        )}
       </div>
     </div>
   );

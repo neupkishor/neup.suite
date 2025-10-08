@@ -1,6 +1,5 @@
 
 'use client';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
@@ -9,6 +8,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Megaphone } from "lucide-react";
+import { AddItemCard } from "@/components/add-item-card";
 
 type Feedback = {
     id: string;
@@ -47,12 +47,16 @@ export default function FeedbackPage() {
                 Review comments and feedback from clients.
                 </CardDescription>
             </div>
-            <Button asChild>
-                <Link href="/feedback/add"><Megaphone className="mr-2 h-4 w-4"/>New Feedback</Link>
-            </Button>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        {!loading && (
+            <AddItemCard
+                title="New Feedback"
+                href="/feedback/add"
+                icon={Megaphone}
+            />
+        )}
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         {feedbackItems?.map(item => <FeedbackCard key={item.id} feedback={item} />)}
       </div>

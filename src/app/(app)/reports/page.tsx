@@ -1,6 +1,5 @@
 
 'use client';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
@@ -9,6 +8,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart } from "lucide-react";
+import { AddItemCard } from "@/components/add-item-card";
 
 type Report = {
     id: string;
@@ -47,12 +47,16 @@ export default function ReportsPage() {
                 View, create, and manage your reports.
                 </CardDescription>
             </div>
-            <Button asChild>
-                <Link href="/reports/add"><BarChart className="mr-2 h-4 w-4"/>New Report</Link>
-            </Button>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        {!loading && (
+            <AddItemCard
+                title="New Report"
+                href="/reports/add"
+                icon={BarChart}
+            />
+        )}
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         {reports?.map(report => <ReportCard key={report.id} report={report} />)}
       </div>

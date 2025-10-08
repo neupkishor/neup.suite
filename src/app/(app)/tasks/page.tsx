@@ -131,7 +131,7 @@ function NewTaskItem({
 
   const handleAddSubtask = () => {
     if (newSubtask.trim()) {
-      append({ text: newSubtask.trim() });
+      append({ text: newSubtask.trim(), completed: false });
       setNewSubtask('');
     }
   };
@@ -412,18 +412,21 @@ export default function TasksPage() {
               View, create, and manage all project tasks.
             </CardDescription>
           </div>
-          <Button onClick={() => setIsCreating(true)} disabled={isCreating}>
-            <PlusCircle />
-            New Task
-          </Button>
         </div>
       </CardHeader>
-      {isCreating && (
-        <NewTaskItem setIsCreating={setIsCreating} projects={projects} />
-      )}
-      <Card>
+       <Card>
         <CardContent className="p-0">
           <div className="divide-y">
+            {!isCreating && <button
+              onClick={() => setIsCreating(true)}
+              className="flex w-full items-center gap-2 p-4 text-muted-foreground transition-colors hover:bg-muted/50"
+            >
+              <PlusCircle className="h-5 w-5" />
+              <span className="font-medium">New Task</span>
+            </button>}
+            {isCreating && (
+                <NewTaskItem setIsCreating={setIsCreating} projects={projects} />
+            )}
             {loading &&
               Array.from({ length: 3 }).map((_, i) => (
                 <TaskCardSkeleton key={i} />

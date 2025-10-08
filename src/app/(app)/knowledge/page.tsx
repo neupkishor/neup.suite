@@ -8,6 +8,8 @@ import { collection, CollectionReference } from "firebase/firestore";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AddItemCard } from "@/components/add-item-card";
+import { BookOpen } from "lucide-react";
 
 type Article = {
     id: string;
@@ -46,12 +48,16 @@ export default function KnowledgePage() {
                     Browse and manage your internal knowledge base.
                     </CardDescription>
                 </div>
-                <Button asChild>
-                    <Link href="/knowledge/add">Add Article</Link>
-                </Button>
             </div>
         </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        {!loading && (
+            <AddItemCard
+                title="Add Article"
+                href="/knowledge/add"
+                icon={BookOpen}
+            />
+        )}
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         {articles?.map(article => <ArticleCard key={article.id} article={article} />)}
       </div>

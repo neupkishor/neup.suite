@@ -8,6 +8,8 @@ import { collection, CollectionReference } from "firebase/firestore";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AddItemCard } from "@/components/add-item-card";
+import { FlaskConical } from "lucide-react";
 
 type Experiment = {
     id: string;
@@ -46,12 +48,16 @@ export default function ExperimentsPage() {
                 Track your ongoing and completed experiments.
                 </CardDescription>
             </div>
-            <Button asChild>
-                <Link href="/experiments/add">Add Experiment</Link>
-            </Button>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        {!loading && (
+            <AddItemCard
+                title="Add Experiment"
+                href="/experiments/add"
+                icon={FlaskConical}
+            />
+        )}
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         {experiments?.map(exp => <ExperimentCard key={exp.id} experiment={exp} />)}
       </div>

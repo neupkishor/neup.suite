@@ -1,15 +1,15 @@
 
 'use client';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
-import { Receipt } from "lucide-react";
+import { Receipt, Plus } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InvoiceCard } from "./components/invoice-card";
+import { AddItemCard } from "@/components/add-item-card";
 
 type Invoice = {
     id: string;
@@ -56,18 +56,16 @@ export default function BillingPage() {
                 <CardTitle className="font-headline text-2xl">Billing & Invoices</CardTitle>
                 <CardDescription>View your payment history and download invoices.</CardDescription>
             </div>
-            <div className="flex gap-2">
-                <Button variant="outline">
-                    <Receipt className="mr-2 h-4 w-4"/>
-                    Payment Methods
-                </Button>
-                <Button asChild>
-                    <Link href="/billing/add">New Invoice</Link>
-                </Button>
-            </div>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        {!loading && (
+            <AddItemCard 
+                title="New Invoice" 
+                href="/billing/add" 
+                icon={Receipt}
+            />
+        )}
         {loading && Array.from({ length: 3 }).map((_, i) => <InvoiceCardSkeleton key={i} />)}
         {!loading && invoices?.map((invoice) => (
             <Link href={`/billing/${invoice.id}`} key={invoice.id}>

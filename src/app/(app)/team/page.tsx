@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { placeholderImages } from "@/lib/placeholder-images";
 import { UserPlus } from "lucide-react";
+import { AddItemCard } from "@/components/add-item-card";
 
 const teamMembers = [
     { name: 'Jane Doe', email: 'jane.doe@example.com', role: 'Admin', status: 'Active', avatarId: 'user-avatar' },
@@ -50,13 +51,10 @@ export default function TeamPage() {
                 <CardTitle className="font-headline text-2xl">Team Members</CardTitle>
                 <CardDescription>Manage who has access to this workspace.</CardDescription>
             </div>
-            <Button>
-                <UserPlus className="mr-2 h-4 w-4"/>
-                Invite Member
-            </Button>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        <AddItemCard title="Invite Member" href="#" icon={UserPlus} />
         {teamMembers.map((member) => (
             <TeamMemberCard key={member.email} member={member} />
         ))}

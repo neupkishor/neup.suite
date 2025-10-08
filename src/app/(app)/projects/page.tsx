@@ -1,7 +1,5 @@
 
 'use client';
-import { Button } from "@/components/ui/button";
-import { FolderKanban } from "lucide-react";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
@@ -10,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProjectCard } from "./components/project-card";
+import { AddItemCard } from "@/components/add-item-card";
+import { FolderKanban } from "lucide-react";
 
 type Project = {
     id: string;
@@ -51,15 +51,16 @@ export default function ProjectsPage() {
                 <h2 className="font-headline text-2xl font-semibold">Projects</h2>
                 <p className="text-muted-foreground">An overview of all your ongoing and past projects.</p>
             </div>
-            <Button asChild>
-                <Link href="/projects/create">
-                    <FolderKanban className="mr-2 h-4 w-4"/>
-                    New Project
-                </Link>
-            </Button>
         </div>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4">
+             {!loading && (
+                <AddItemCard 
+                    title="New Project" 
+                    href="/projects/create" 
+                    icon={FolderKanban}
+                />
+            )}
             {loading && (
                 <>
                     <ProjectCardSkeleton />
