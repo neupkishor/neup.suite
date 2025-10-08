@@ -147,12 +147,12 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                 control={form.control}
-                name="invoiceId"
+                name="clientName"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Invoice ID</FormLabel>
+                    <FormLabel>Client Name</FormLabel>
                     <FormControl>
-                        <Input placeholder="e.g. INV-2024-001" {...field} />
+                        <Input placeholder="e.g. Acme Inc." {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -160,12 +160,12 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                 />
                  <FormField
                 control={form.control}
-                name="clientName"
+                name="invoiceId"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Client Name</FormLabel>
+                    <FormLabel>Invoice ID</FormLabel>
                     <FormControl>
-                        <Input placeholder="e.g. Acme Inc." {...field} />
+                        <Input placeholder="e.g. INV-2024-001" {...field} disabled />
                     </FormControl>
                     <FormMessage />
                     </FormItem>

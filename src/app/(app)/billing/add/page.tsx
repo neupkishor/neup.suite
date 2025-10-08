@@ -32,11 +32,19 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { invoiceSchema } from '@/schemas/invoice';
 import { addInvoice } from '@/actions/billing/add-invoice';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const generateInvoiceId = (clientName: string = '') => {
+    const brandName = 'NEUP';
+    const clientPart = clientName.trim().replace(/\s+/g, '-').toLowerCase();
+    const uniquePart = `${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+    return `${brandName}-${clientPart || 'client'}-${uniquePart}`;
+}
+
 
 export default function AddInvoicePage() {
   const firestore = useFirestore();
@@ -47,10 +55,18 @@ export default function AddInvoicePage() {
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
-        invoiceId: `INV-${new Date().getFullYear()}-`,
+        invoiceId: generateInvoiceId(),
         status: 'Due',
+        clientName: '',
+        amount: 0,
     },
   });
+
+  const clientName = form.watch('clientName');
+
+  useEffect(() => {
+    form.setValue('invoiceId', generateInvoiceId(clientName));
+  }, [clientName, form]);
 
   async function onSubmit(values: z.infer<typeof invoiceSchema>) {
     if (!firestore) return;
@@ -85,12 +101,12 @@ export default function AddInvoicePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                 control={form.control}
-                name="invoiceId"
+                name="clientName"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Invoice ID</FormLabel>
+                    <FormLabel>Client Name</FormLabel>
                     <FormControl>
-                        <Input placeholder="e.g. INV-2024-001" {...field} />
+                        <Input placeholder="e.g. Acme Inc." {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -98,12 +114,12 @@ export default function AddInvoicePage() {
                 />
                  <FormField
                 control={form.control}
-                name="clientName"
+                name="invoiceId"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Client Name</FormLabel>
+                    <FormLabel>Invoice ID</FormLabel>
                     <FormControl>
-                        <Input placeholder="e.g. Acme Inc." {...field} />
+                        <Input disabled {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -118,7 +134,7 @@ export default function AddInvoicePage() {
                         <FormItem>
                         <FormLabel>Amount ($)</FormLabel>
                         <FormControl>
-                            <Input type="number" placeholder="e.g. 1500" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                            <Input type="number" placeholder="e.g. 1500" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
