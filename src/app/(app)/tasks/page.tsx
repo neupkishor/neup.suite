@@ -304,54 +304,49 @@ function TaskCard({ task, projects }: { task: Task, projects: Project[] | null }
     const project = projects?.find(p => p.id === task.project);
 
     return (
-        <Card>
-            <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4">
-                <div className="flex items-center gap-4 flex-1">
-                     <StatusIcon className={cn("h-6 w-6 shrink-0", statusConfig[task.status].color, task.status === 'In Progress' && 'animate-spin')} />
-                    <div>
-                        <p className="font-semibold">{task.title}</p>
-                        {project && <p className="text-sm text-muted-foreground">{project.name}</p>}
-                    </div>
+        <div className="flex items-center gap-4 border-b p-4">
+            <StatusIcon className={cn("h-6 w-6 shrink-0", statusConfig[task.status].color, task.status === 'In Progress' && 'animate-spin')} />
+            <div className="flex-1">
+                <p className="font-medium">{task.title}</p>
+                {project && <p className="text-sm text-muted-foreground">{project.name}</p>}
+            </div>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                        {avatar && <AvatarImage src={avatar.imageUrl} alt={task.assignee} />}
+                        <AvatarFallback>{task.assignee.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    <span className="hidden md:inline">{task.assignee}</span>
                 </div>
-                <div className="flex items-center gap-4 sm:gap-6 text-sm text-muted-foreground ml-10 sm:ml-0">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                            {avatar && <AvatarImage src={avatar.imageUrl} alt={task.assignee} />}
-                            <AvatarFallback>{task.assignee.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <span>{task.assignee}</span>
+                {task.deadline && (
+                    <div className="flex items-center gap-1.5">
+                        <CalendarIconLucide className="h-4 w-4" />
+                        <span>{format(new Date(task.deadline), 'MMM d')}</span>
                     </div>
-                    {task.deadline && (
-                        <div className="flex items-center gap-1.5">
-                            <CalendarIconLucide className="h-4 w-4" />
-                            <span>{format(new Date(task.deadline), 'MMM d')}</span>
-                        </div>
-                    )}
-                </div>
-                <Badge variant={getStatusVariant(task.status)} className="w-28 justify-center shrink-0 hidden lg:flex">
+                )}
+                <Badge variant={getStatusVariant(task.status)} className="w-24 justify-center shrink-0 hidden sm:flex">
                     {task.status}
                 </Badge>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
+
 function TaskCardSkeleton() {
     return (
-        <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-                <Skeleton className="h-6 w-6 rounded-full" />
-                <div className="flex-1 space-y-2">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                </div>
-                <div className="flex items-center gap-6">
-                     <Skeleton className="h-8 w-24" />
-                     <Skeleton className="h-5 w-20" />
-                </div>
-                <Skeleton className="h-6 w-28 hidden lg:block" />
-            </CardContent>
-        </Card>
+        <div className="flex items-center gap-4 border-b p-4">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <div className="flex-1 space-y-2">
+                <Skeleton className="h-5 w-3/5" />
+                <Skeleton className="h-4 w-2/5" />
+            </div>
+            <div className="flex items-center gap-4">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-6 w-24 hidden sm:flex" />
+            </div>
+        </div>
     );
 }
 
@@ -404,23 +399,25 @@ export default function TasksPage() {
           </Dialog>
         </div>
       </CardHeader>
-      <div className="space-y-4">
-        {loading &&
-            Array.from({ length: 3 }).map((_, i) => (
-                <TaskCardSkeleton key={i} />
-            ))
-        }
-        {!loading && tasks?.map((task) => (
-            <TaskCard key={task.id} task={task} projects={projects} />
-        ))}
-         {!loading && tasks?.length === 0 && (
-            <Card>
-                <CardContent className="p-6 text-center text-muted-foreground">
+      <Card>
+        <CardContent className="p-0">
+        <div className="space-y-0">
+            {loading &&
+                Array.from({ length: 3 }).map((_, i) => (
+                    <TaskCardSkeleton key={i} />
+                ))
+            }
+            {!loading && tasks?.map((task) => (
+                <TaskCard key={task.id} task={task} projects={projects} />
+            ))}
+            {!loading && tasks?.length === 0 && (
+                <div className="p-6 text-center text-muted-foreground">
                     No tasks found. Create one to get started.
-                </CardContent>
-            </Card>
-        )}
-      </div>
+                </div>
+            )}
+        </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
