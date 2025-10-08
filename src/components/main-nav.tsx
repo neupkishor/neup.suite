@@ -14,7 +14,6 @@ import {
   Settings,
   FolderKanban,
 } from "lucide-react";
-import { Separator } from "./ui/separator";
 
 const mainLinks = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -36,7 +35,7 @@ const rootLinks = [
 
 const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => {
   const pathname = usePathname();
-  const isActive = pathname === href || (pathname.startsWith(href) && href !== '/dashboard');
+  const isActive = pathname === href;
   
   return (
     <Link
