@@ -25,7 +25,7 @@ function AppSidebar() {
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isCommunicationPage = pathname.startsWith('/communication');
+  const showSidebar = pathname !== '/communication';
 
   return (
     <FirebaseClientProvider>
@@ -52,7 +52,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </header>
       <div className="flex flex-1">
         <div className="mx-auto flex w-full max-w-[1440px]">
-            <AppSidebar />
+            {showSidebar && <AppSidebar />}
             <main className='flex-1 p-6'>{children}</main>
         </div>
       </div>

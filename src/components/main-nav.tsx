@@ -27,7 +27,6 @@ import {
 
 const mainLinks = [
   { href: "/home", icon: LayoutDashboard, label: "Home" },
-  { href: "/communication", icon: MessageSquare, label: "Inbox" },
   { href: "/tasks", icon: CheckSquare, label: "Tasks" },
   { href: "/documents", icon: FileText, label: "Documents" },
   { href: "/billing", icon: Receipt, label: "Billing" },
