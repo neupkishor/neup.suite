@@ -9,6 +9,7 @@ const currencySymbols = {
     EUR: '€',
     GBP: '£',
     JPY: '¥',
+    NRS: 'रु',
 };
 
 type Invoice = {

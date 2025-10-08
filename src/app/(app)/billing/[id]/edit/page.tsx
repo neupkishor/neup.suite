@@ -45,7 +45,7 @@ type Invoice = {
     id: string;
     invoiceId: string;
     amount: number;
-    currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+    currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'NRS';
     dueDate: string;
     status: 'Paid' | 'Due' | 'Overdue';
     clientName: string;
@@ -207,6 +207,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                           <SelectItem value="EUR">EUR</SelectItem>
                           <SelectItem value="GBP">GBP</SelectItem>
                           <SelectItem value="JPY">JPY</SelectItem>
+                          <SelectItem value="NRS">NRS</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

@@ -161,6 +161,7 @@ export default function AddInvoicePage() {
                           <SelectItem value="EUR">EUR</SelectItem>
                           <SelectItem value="GBP">GBP</SelectItem>
                           <SelectItem value="JPY">JPY</SelectItem>
+                          <SelectItem value="NRS">NRS</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

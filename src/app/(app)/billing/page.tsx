@@ -17,7 +17,7 @@ type Invoice = {
     dueDate: string;
     status: 'Paid' | 'Due' | 'Overdue';
     amount: number;
-    currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+    currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'NRS';
     clientName: string;
 }
 

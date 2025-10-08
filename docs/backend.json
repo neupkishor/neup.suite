@@ -104,7 +104,8 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "text": { "type": "string" }
+                    "text": { "type": "string" },
+                    "completed": { "type": "boolean" }
                 }
             },
             "description": "A list of subtasks."
@@ -166,7 +167,7 @@
         "properties": {
             "invoiceId": { "type": "string", "description": "The unique identifier for the invoice (e.g., INV-2024-001)." },
             "amount": { "type": "number", "description": "The total amount due." },
-            "currency": { "type": "string", "description": "The currency of the amount.", "enum": ["USD", "EUR", "GBP", "JPY"] },
+            "currency": { "type": "string", "description": "The currency of the amount.", "enum": ["USD", "EUR", "GBP", "JPY", "NRS"] },
             "dueDate": { "type": "string", "format": "date", "description": "The date the invoice is due." },
             "status": { "type": "string", "enum": ["Paid", "Due", "Overdue"], "description": "The current status of the invoice." },
             "clientName": { "type": "string", "description": "The name of the client being invoiced." },
