@@ -7,3 +7,5 @@ export const goalSchema = z.object({
   targetDate: z.date({ required_error: 'Target date is required' }),
   status: z.enum(['Not Started', 'In Progress', 'Completed', 'At Risk']),
 });
+
+export type Goal = z.infer<typeof goalSchema> & { id: string };
