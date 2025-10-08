@@ -121,9 +121,15 @@
           "type": "string",
           "format": "date",
           "description": "The task deadline."
+        },
+        "assignees": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
-      "required": ["title", "project", "status", "createdBy", "createdOn"]
+      "required": ["title", "status", "createdBy", "createdOn"]
     },
     "KnowledgeArticle": {
       "title": "Knowledge Article",
@@ -166,6 +172,20 @@
             "updatedOn": { "type": "string", "format": "date-time" }
         },
         "required": ["invoiceId", "amount", "dueDate", "status", "clientName", "createdOn"]
+    },
+    "Contact": {
+        "title": "Contact",
+        "description": "Represents a contact person.",
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "role": { "type": "string" },
+            "avatarId": { "type": "string" },
+            "createdOn": { "type": "string", "format": "date-time" },
+            "updatedOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["name", "email", "role"]
     }
   },
   "firestore": {
@@ -196,6 +216,10 @@
     "/invoices/{invoiceId}": {
         "schema": { "$ref": "#/backend/entities/Invoice" },
         "description": "Stores billing invoices."
+    },
+    "/contacts/{contactId}": {
+      "schema": { "$ref": "#/backend/entities/Contact" },
+      "description": "Stores contact information."
     }
   }
 }

@@ -18,6 +18,7 @@ import {
   FlaskConical,
   Beaker,
   BookOpen,
+  Contact,
 } from "lucide-react";
 
 const mainLinks = [
@@ -31,7 +32,7 @@ const mainLinks = [
 
 const manageLinks = [
   { href: "/projects", icon: FolderKanban, label: "Projects" },
-  { href: "/clients", icon: Briefcase, label: "Clients" },
+  { href: "/contacts", icon: Contact, label: "Contacts" },
   { href: "/team", icon: Users, label: "Team" },
 ];
 

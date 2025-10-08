@@ -1,0 +1,78 @@
+'use client';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDoc } from "@/firebase";
+import { useFirestore } from "@/firebase/provider";
+import { doc, DocumentReference } from "firebase/firestore";
+import Link from "next/link";
+import { useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { placeholderImages } from "@/lib/placeholder-images";
+import { z } from "zod";
+import { contactSchema } from "@/schemas/contact";
+
+type Contact = z.infer<typeof contactSchema>;
+
+export default function ContactDetailPage({ params }: { params: { id: string } }) {
+  const firestore = useFirestore();
+
+  const contactRef = useMemo(() => {
+    if (!firestore || !params.id) return null;
+    return doc(firestore, 'contacts', params.id) as DocumentReference<Contact>;
+  }, [firestore, params.id]);
+
+  const { data: contact, loading } = useDoc<Contact>(contactRef);
+  const avatar = placeholderImages.find(p => p.id === contact?.avatarId);
+
+
+  if (loading) {
+      return <Card>
+          <CardHeader>
+             <div className="flex items-center gap-4">
+                <Skeleton className="h-20 w-20 rounded-full" />
+                <div className="space-y-2">
+                    <Skeleton className="h-8 w-48" />
+                    <Skeleton className="h-5 w-32" />
+                </div>
+             </div>
+          </CardHeader>
+          <CardContent>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full mt-2" />
+          </CardContent>
+      </Card>
+  }
+
+  if (!contact) {
+      return <Card>
+          <CardHeader><CardTitle>Contact not found</CardTitle></CardHeader>
+          <CardContent><p>The requested contact could not be found.</p></CardContent>
+      </Card>
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-start">
+            <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20">
+                    {avatar && <AvatarImage src={avatar.imageUrl} alt={contact.name} />}
+                    <AvatarFallback className="text-3xl">{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <CardTitle className="font-headline text-3xl">{contact.name}</CardTitle>
+                    <CardDescription className="text-lg">{contact.role}</CardDescription>
+                </div>
+            </div>
+            <Button asChild>
+                <Link href={`/contacts/${params.id}/edit`}>Edit Contact</Link>
+            </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p>Email: <a href={`mailto:${contact.email}`} className="text-primary hover:underline">{contact.email}</a></p>
+      </CardContent>
+    </Card>
+  );
+}
