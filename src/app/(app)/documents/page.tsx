@@ -34,7 +34,7 @@ export default function DocumentsPage() {
                 <CardDescription>Manage all your shared files, contracts, and assets.</CardDescription>
             </div>
             <Button>
-                <Upload />
+                <Upload className="mr-2 h-4 w-4"/>
                 Upload File
             </Button>
         </div>

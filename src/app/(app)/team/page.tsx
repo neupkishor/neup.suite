@@ -27,7 +27,7 @@ export default function TeamPage() {
                 <CardDescription>Manage who has access to this workspace.</CardDescription>
             </div>
             <Button>
-                <UserPlus />
+                <UserPlus className="mr-2 h-4 w-4"/>
                 Invite Member
             </Button>
         </div>

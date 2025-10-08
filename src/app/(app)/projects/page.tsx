@@ -31,7 +31,7 @@ export default function ProjectsPage() {
                 <CardDescription>An overview of all your ongoing and past projects.</CardDescription>
             </div>
             <Button>
-                <FolderKanban />
+                <FolderKanban className="mr-2 h-4 w-4"/>
                 New Project
             </Button>
         </div>

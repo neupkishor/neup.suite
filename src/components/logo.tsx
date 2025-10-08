@@ -19,7 +19,7 @@ export function Logo({ className }: { className?: string }) {
           fill="hsl(var(--primary-foreground))"
         />
       </svg>
-      <span className="font-headline text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+      <span className="font-headline text-lg font-semibold text-foreground">
         Neup.Suite
       </span>
     </div>

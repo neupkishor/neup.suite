@@ -31,7 +31,7 @@ export default function BillingPage() {
                 <CardDescription>View your payment history and download invoices.</CardDescription>
             </div>
             <Button variant="outline">
-                <Receipt />
+                <Receipt className="mr-2 h-4 w-4"/>
                 Payment Methods
             </Button>
         </div>

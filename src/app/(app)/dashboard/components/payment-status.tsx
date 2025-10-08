@@ -22,7 +22,7 @@ export function PaymentStatus() {
         <div className="flex gap-2">
             <Button className="flex-1">Pay Now</Button>
             <Button variant="outline" className="flex-1">
-                <Receipt /> View Invoices
+                <Receipt className="mr-2 h-4 w-4"/> View Invoices
             </Button>
         </div>
       </CardContent>
