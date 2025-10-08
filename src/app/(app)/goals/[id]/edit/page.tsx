@@ -5,7 +5,7 @@ import { GoalForm } from '../components/goal-form';
 import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Goal = {
@@ -17,12 +17,13 @@ type Goal = {
 };
 
 
-export default function EditGoalPage({ params }: { params: { id: string } }) {
+export default function EditGoalPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
     const goalRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'goals', params.id) as DocumentReference<Goal>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'goals', id) as DocumentReference<Goal>;
+    }, [firestore, id]);
 
     const { data: goal, loading } = useDoc<Goal>(goalRef);
 

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,7 +32,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
 import { invoiceSchema } from '@/schemas/invoice';
 import { updateInvoice } from '@/actions/billing/update-invoice';
@@ -49,16 +50,17 @@ type Invoice = {
     clientName: string;
 }
 
-export default function EditInvoicePage({ params }: { params: { id: string } }) {
+export default function EditInvoicePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const invoiceRef = useMemo(() => {
-    if (!firestore || !params.id) return null;
-    return doc(firestore, 'invoices', params.id) as DocumentReference<Invoice>;
-  }, [firestore, params.id]);
+    if (!firestore || !id) return null;
+    return doc(firestore, 'invoices', id) as DocumentReference<Invoice>;
+  }, [firestore, id]);
 
   const { data: invoice, loading } = useDoc<Invoice>(invoiceRef);
 
@@ -76,12 +78,12 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
   }, [invoice, form]);
 
   async function onSubmit(values: z.infer<typeof invoiceSchema>) {
-    if (!firestore || !params.id) return;
+    if (!firestore || !id) return;
     setIsSubmitting(true);
     setSubmitError(null);
 
     try {
-      await updateInvoice(firestore, params.id, {
+      await updateInvoice(firestore, id, {
         ...values,
         dueDate: format(values.dueDate, 'yyyy-MM-dd'),
       });

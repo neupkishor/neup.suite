@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { use } from "react";
 
 // Dummy data for a single document
 const document = { id: '1', name: 'Master Service Agreement.pdf', version: 'v2.1', updated: '2024-05-20', status: 'Signed', content: 'This is the content of the master service agreement.' };
@@ -20,8 +21,9 @@ const getStatusVariant = (status: string) => {
     }
 };
 
-export default function DocumentDetailPage({ params }: { params: { id: string } }) {
-    // In a real app, you would fetch the document data based on params.id
+export default function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
+    // In a real app, you would fetch the document data based on id
     // For now, we'll use the dummy data.
   return (
     <Card>
@@ -35,7 +37,7 @@ export default function DocumentDetailPage({ params }: { params: { id: string } 
             </div>
             <div className="flex gap-2">
                 <Button asChild>
-                    <Link href={`/documents/${params.id}/edit`}>Edit</Link>
+                    <Link href={`/documents/${id}/edit`}>Edit</Link>
                 </Button>
                  <Button variant="destructive">Delete</Button>
             </div>

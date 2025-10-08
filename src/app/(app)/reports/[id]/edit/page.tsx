@@ -5,7 +5,7 @@ import { ReportForm } from '../components/report-form';
 import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Report = {
@@ -15,12 +15,13 @@ type Report = {
 };
 
 
-export default function EditReportPage({ params }: { params: { id: string } }) {
+export default function EditReportPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
     const reportRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'reports', params.id) as DocumentReference<Report>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'reports', id) as DocumentReference<Report>;
+    }, [firestore, id]);
 
     const { data: report, loading } = useDoc<Report>(reportRef);
 

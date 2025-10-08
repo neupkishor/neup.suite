@@ -6,7 +6,7 @@ import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
@@ -20,24 +20,25 @@ const getDisplayName = (name: Contact['name'] = {}) => {
     return [name.firstName, name.middleName, name.lastName].filter(Boolean).join(' ') || 'Unnamed Contact';
 }
 
-export default function ContactDetailPage({ params }: { params: { id: string } }) {
+export default function ContactDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const firestore = useFirestore();
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const contactRef = useMemo(() => {
-    if (!firestore || !params.id) return null;
-    return doc(firestore, 'contacts', params.id) as DocumentReference<Contact>;
-  }, [firestore, params.id]);
+    if (!firestore || !id) return null;
+    return doc(firestore, 'contacts', id) as DocumentReference<Contact>;
+  }, [firestore, id]);
 
   const { data: contact, loading } = useDoc<Contact>(contactRef);
 
   const handleDelete = async () => {
-    if (!firestore || !params.id) return;
+    if (!firestore || !id) return;
     if (confirm('Are you sure you want to delete this contact?')) {
         setIsDeleting(true);
         try {
-            await deleteContact(firestore, params.id);
+            await deleteContact(firestore, id);
             router.push('/contacts');
         } catch (error) {
             console.error("Error deleting contact: ", error);
@@ -98,7 +99,7 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
                     <Button asChild>
-                        <Link href={`/contacts/${params.id}/edit`}><Pencil />Edit</Link>
+                        <Link href={`/contacts/${id}/edit`}><Pencil />Edit</Link>
                     </Button>
                     <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
                         {isDeleting && <Loader2 className="animate-spin" />}
@@ -214,5 +215,3 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
     </div>
   );
 }
-
-    

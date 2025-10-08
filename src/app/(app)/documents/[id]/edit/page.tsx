@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
+import { use } from "react";
 
 // Dummy data for a single document
 const document = { id: '1', name: 'Master Service Agreement.pdf', version: 'v2.1', updated: '2024-05-20', status: 'Signed' };
 
 
-export default function EditDocumentPage({ params }: { params: { id: string } }) {
+export default function EditDocumentPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   return (
     <Card>
       <CardHeader>
@@ -45,7 +47,7 @@ export default function EditDocumentPage({ params }: { params: { id: string } })
         </div>
         <div className="flex gap-2">
             <Button>Save Changes</Button>
-            <Button variant="outline" asChild><Link href={`/documents/${params.id}`}>Cancel</Link></Button>
+            <Button variant="outline" asChild><Link href={`/documents/${id}`}>Cancel</Link></Button>
         </div>
       </CardContent>
     </Card>

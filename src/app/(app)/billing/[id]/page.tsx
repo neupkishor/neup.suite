@@ -7,7 +7,7 @@ import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
@@ -30,13 +30,14 @@ const getStatusVariant = (status: string) => {
 }
 
 
-export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
+export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
 
     const invoiceRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'invoices', params.id) as DocumentReference<Invoice>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'invoices', id) as DocumentReference<Invoice>;
+    }, [firestore, id]);
 
     const { data: invoice, loading } = useDoc<Invoice>(invoiceRef);
 
@@ -93,7 +94,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                         <Button asChild>
-                            <Link href={`/billing/${params.id}/edit`}>Edit Invoice</Link>
+                            <Link href={`/billing/${id}/edit`}>Edit Invoice</Link>
                         </Button>
                     </div>
                 </div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,7 +33,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
 import { projectSchema } from '@/schemas/project';
 import { updateProject } from '@/actions/projects/update-project';
@@ -53,16 +54,17 @@ const editProjectSchema = projectSchema.extend({
     status: z.enum(['Planning', 'In Progress', 'On Hold', 'Completed']),
 })
 
-export default function EditProjectPage({ params }: { params: { id: string } }) {
+export default function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const projectRef = useMemo(() => {
-    if (!firestore || !params.id) return null;
-    return doc(firestore, 'projects', params.id) as DocumentReference<Project>;
-  }, [firestore, params.id]);
+    if (!firestore || !id) return null;
+    return doc(firestore, 'projects', id) as DocumentReference<Project>;
+  }, [firestore, id]);
 
   const { data: project, loading } = useDoc<Project>(projectRef);
 
@@ -80,16 +82,16 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
   }, [project, form]);
 
   async function onSubmit(values: z.infer<typeof editProjectSchema>) {
-    if (!firestore || !params.id) return;
+    if (!firestore || !id) return;
     setIsSubmitting(true);
     setSubmitError(null);
 
     try {
-      await updateProject(firestore, params.id, {
+      await updateProject(firestore, id, {
         ...values,
         deadline: format(values.deadline, 'yyyy-MM-dd'),
       });
-      router.push(`/projects/${params.id}`);
+      router.push(`/projects/${id}`);
     } catch (error) {
       setIsSubmitting(false);
       setSubmitError('An unexpected error occurred. Please try again.');
@@ -246,7 +248,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
                 Update Project
               </Button>
               <Button variant="outline" asChild>
-                <Link href={`/projects/${params.id}`}>Cancel</Link>
+                <Link href={`/projects/${id}`}>Cancel</Link>
               </Button>
             </div>
             {submitError && (

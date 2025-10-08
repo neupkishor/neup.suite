@@ -9,7 +9,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { useFirestore } from '@/firebase/provider';
-import { useMemo } from 'react';
+import { useMemo, use } from 'react';
 import Link from 'next/link';
 import { useDoc } from '@/firebase';
 import { doc, DocumentReference } from 'firebase/firestore';
@@ -18,13 +18,14 @@ import { ContactForm } from '@/app/(app)/contacts/components/contact-form';
 import type { Contact } from '@/schemas/contact';
 import { Button } from '@/components/ui/button';
 
-export default function EditContactPage({ params }: { params: { id: string } }) {
+export default function EditContactPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const firestore = useFirestore();
 
   const contactRef = useMemo(() => {
-    if (!firestore || !params.id) return null;
-    return doc(firestore, 'contacts', params.id) as DocumentReference<Contact>;
-  }, [firestore, params.id]);
+    if (!firestore || !id) return null;
+    return doc(firestore, 'contacts', id) as DocumentReference<Contact>;
+  }, [firestore, id]);
 
   const { data: contact, loading } = useDoc<Contact & { id: string }>(contactRef);
 

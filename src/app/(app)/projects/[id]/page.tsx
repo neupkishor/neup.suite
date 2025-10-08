@@ -1,3 +1,4 @@
+
 'use client';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import { deleteProject } from "@/actions/projects/delete-project";
@@ -31,24 +32,25 @@ const getStatusVariant = (status: string) => {
 }
 
 
-export default function ProjectDetailPage({ params }: { params: { id: string } }) {
+export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
     const router = useRouter();
     const [isDeleting, setIsDeleting] = useState(false);
 
     const projectRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'projects', params.id) as DocumentReference<Project>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'projects', id) as DocumentReference<Project>;
+    }, [firestore, id]);
 
     const { data: project, loading } = useDoc<Project>(projectRef);
 
     const handleDelete = async () => {
-        if (!firestore || !params.id) return;
+        if (!firestore || !id) return;
         if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
             setIsDeleting(true);
             try {
-                await deleteProject(firestore, params.id);
+                await deleteProject(firestore, id);
                 router.push('/projects');
             } catch (error) {
                 console.error("Error deleting project:", error);
@@ -111,7 +113,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                         <Button asChild>
-                            <Link href={`/projects/${params.id}/edit`}>Edit Project</Link>
+                            <Link href={`/projects/${id}/edit`}>Edit Project</Link>
                         </Button>
                         <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
                             {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

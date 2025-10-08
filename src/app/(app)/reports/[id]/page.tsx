@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { deleteReport } from '../actions/delete-report';
 import { useRouter } from "next/navigation";
@@ -18,21 +18,22 @@ type Report = {
     generatedOn: string;
 };
 
-export default function ReportDetailPage({ params }: { params: { id: string } }) {
+export default function ReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
     const router = useRouter();
 
     const reportRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'reports', params.id) as DocumentReference<Report>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'reports', id) as DocumentReference<Report>;
+    }, [firestore, id]);
 
     const { data: report, loading } = useDoc<Report>(reportRef);
 
     const handleDelete = async () => {
-        if (!firestore || !params.id) return;
+        if (!firestore || !id) return;
         if (confirm('Are you sure you want to delete this report?')) {
-            await deleteReport(firestore, params.id);
+            await deleteReport(firestore, id);
             router.push('/reports');
         }
     }
@@ -64,7 +65,7 @@ export default function ReportDetailPage({ params }: { params: { id: string } })
             </div>
             <div className="flex gap-2">
                 <Button asChild>
-                    <Link href={`/reports/${params.id}/edit`}>Edit Report</Link>
+                    <Link href={`/reports/${id}/edit`}>Edit Report</Link>
                 </Button>
                  <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>

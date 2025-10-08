@@ -5,7 +5,7 @@ import { FeedbackForm } from '../components/feedback-form';
 import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Feedback = {
@@ -15,12 +15,13 @@ type Feedback = {
 };
 
 
-export default function EditFeedbackPage({ params }: { params: { id: string } }) {
+export default function EditFeedbackPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
     const feedbackRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'feedback', params.id) as DocumentReference<Feedback>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'feedback', id) as DocumentReference<Feedback>;
+    }, [firestore, id]);
 
     const { data: feedback, loading } = useDoc<Feedback>(feedbackRef);
 

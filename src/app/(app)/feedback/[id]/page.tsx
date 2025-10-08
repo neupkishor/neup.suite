@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { deleteFeedback } from '../actions/delete-feedback';
 import { useRouter } from "next/navigation";
@@ -19,21 +19,22 @@ type Feedback = {
     submittedOn: string;
 };
 
-export default function FeedbackDetailPage({ params }: { params: { id: string } }) {
+export default function FeedbackDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
     const router = useRouter();
 
     const feedbackRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'feedback', params.id) as DocumentReference<Feedback>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'feedback', id) as DocumentReference<Feedback>;
+    }, [firestore, id]);
 
     const { data: feedback, loading } = useDoc<Feedback>(feedbackRef);
 
     const handleDelete = async () => {
-        if (!firestore || !params.id) return;
+        if (!firestore || !id) return;
         if (confirm('Are you sure you want to delete this feedback?')) {
-            await deleteFeedback(firestore, params.id);
+            await deleteFeedback(firestore, id);
             router.push('/feedback');
         }
     }
@@ -65,7 +66,7 @@ export default function FeedbackDetailPage({ params }: { params: { id: string } 
             </div>
             <div className="flex gap-2">
                 <Button asChild>
-                    <Link href={`/feedback/${params.id}/edit`}>Edit</Link>
+                    <Link href={`/feedback/${id}/edit`}>Edit</Link>
                 </Button>
                  <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>

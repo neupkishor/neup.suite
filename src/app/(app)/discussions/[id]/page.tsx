@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { deleteDiscussion } from '../actions/delete-discussion';
 import { useRouter } from "next/navigation";
@@ -18,21 +18,22 @@ type Discussion = {
     createdOn: string;
 };
 
-export default function DiscussionDetailPage({ params }: { params: { id: string } }) {
+export default function DiscussionDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
     const router = useRouter();
 
     const discussionRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'discussions', params.id) as DocumentReference<Discussion>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'discussions', id) as DocumentReference<Discussion>;
+    }, [firestore, id]);
 
     const { data: discussion, loading } = useDoc<Discussion>(discussionRef);
 
     const handleDelete = async () => {
-        if (!firestore || !params.id) return;
+        if (!firestore || !id) return;
         if (confirm('Are you sure you want to delete this discussion?')) {
-            await deleteDiscussion(firestore, params.id);
+            await deleteDiscussion(firestore, id);
             router.push('/discussions');
         }
     }
@@ -62,7 +63,7 @@ export default function DiscussionDetailPage({ params }: { params: { id: string 
             </div>
             <div className="flex gap-2">
                 <Button asChild>
-                    <Link href={`/discussions/${params.id}/edit`}>Edit</Link>
+                    <Link href={`/discussions/${id}/edit`}>Edit</Link>
                 </Button>
                  <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>

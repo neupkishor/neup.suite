@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { deleteGoal } from '../actions/delete-goal';
 import { useRouter } from "next/navigation";
@@ -19,21 +19,22 @@ type Goal = {
     status: string;
 };
 
-export default function GoalDetailPage({ params }: { params: { id: string } }) {
+export default function GoalDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
     const router = useRouter();
 
     const goalRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'goals', params.id) as DocumentReference<Goal>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'goals', id) as DocumentReference<Goal>;
+    }, [firestore, id]);
 
     const { data: goal, loading } = useDoc<Goal>(goalRef);
 
     const handleDelete = async () => {
-        if (!firestore || !params.id) return;
+        if (!firestore || !id) return;
         if (confirm('Are you sure you want to delete this goal?')) {
-            await deleteGoal(firestore, params.id);
+            await deleteGoal(firestore, id);
             router.push('/goals');
         }
     }
@@ -65,7 +66,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
             </div>
             <div className="flex gap-2">
                 <Button asChild>
-                    <Link href={`/goals/${params.id}/edit`}>Edit Goal</Link>
+                    <Link href={`/goals/${id}/edit`}>Edit Goal</Link>
                 </Button>
                  <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>

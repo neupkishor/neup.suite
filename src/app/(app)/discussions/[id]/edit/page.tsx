@@ -5,7 +5,7 @@ import { DiscussionForm } from '../components/discussion-form';
 import { useDoc } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo } from "react";
+import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Discussion = {
@@ -14,12 +14,13 @@ type Discussion = {
 };
 
 
-export default function EditDiscussionPage({ params }: { params: { id: string } }) {
+export default function EditDiscussionPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const firestore = useFirestore();
     const discussionRef = useMemo(() => {
-        if (!firestore || !params.id) return null;
-        return doc(firestore, 'discussions', params.id) as DocumentReference<Discussion>;
-    }, [firestore, params.id]);
+        if (!firestore || !id) return null;
+        return doc(firestore, 'discussions', id) as DocumentReference<Discussion>;
+    }, [firestore, id]);
 
     const { data: discussion, loading } = useDoc<Discussion>(discussionRef);
 
