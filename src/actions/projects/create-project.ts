@@ -18,13 +18,14 @@ type NewProject = Omit<z.infer<typeof projectSchema>, 'deadline'> & {
 
 export async function createProject(
   db: Firestore,
-  projectData: NewProject
+  projectData: NewProject,
+  userId: string
 ) {
   const projectsCollection = collection(db, 'projects');
   
   return addDoc(projectsCollection, {
     ...projectData,
-    createdBy: 'user_placeholder', // Will be replaced with auth user ID
+    createdBy: userId,
     createdOn: serverTimestamp(),
   }).catch((serverError) => {
     const permissionError = new FirestorePermissionError({

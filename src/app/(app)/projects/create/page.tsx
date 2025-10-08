@@ -30,9 +30,6 @@ import { createProject } from "@/actions/projects/create-project";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Cookies from "js-cookie";
 
-const createProjectSchema = projectSchema.omit({ identifier: true });
-
-
 export default function CreateProjectPage() {
     const firestore = useFirestore();
     const router = useRouter();
@@ -44,15 +41,22 @@ export default function CreateProjectPage() {
         setClientId(Cookies.get('client') || null);
     }, []);
 
-  const form = useForm<z.infer<typeof createProjectSchema>>({
-    resolver: zodResolver(createProjectSchema),
+  const form = useForm<z.infer<typeof projectSchema>>({
+    resolver: zodResolver(projectSchema),
     defaultValues: {
       name: "",
       status: 'Planning',
+      clientId: clientId || '',
     },
   });
 
-  async function onSubmit(values: z.infer<typeof createProjectSchema>) {
+  useEffect(() => {
+      if (clientId) {
+          form.setValue('clientId', clientId);
+      }
+  }, [clientId, form]);
+
+  async function onSubmit(values: z.infer<typeof projectSchema>) {
     if (!firestore || !clientId) return;
     setIsSubmitting(true);
     setSubmitError(null);
@@ -61,8 +65,7 @@ export default function CreateProjectPage() {
         await createProject(firestore, {
             ...values,
             deadline: format(values.deadline, "yyyy-MM-dd"),
-            clientId: clientId,
-        });
+        }, 'user_placeholder'); // Placeholder for auth user ID
         router.push('/projects');
     } catch (error) {
         setIsSubmitting(false);
