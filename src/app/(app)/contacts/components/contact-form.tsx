@@ -41,7 +41,10 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 const prepareDataForForm = (contact?: Contact & { id?: string }): ContactFormValues => {
     if (!contact) {
         return {
-            name: { displayName: '' },
+            name: { displayName: '', firstName: '', middleName: '', lastName: '' },
+            role: '',
+            avatarUrl: '',
+            notes: '',
             emails: [],
             phoneNumbers: [],
             addresses: [],
@@ -52,6 +55,15 @@ const prepareDataForForm = (contact?: Contact & { id?: string }): ContactFormVal
     }
     return {
         ...contact,
+        name: {
+            displayName: contact.name.displayName,
+            firstName: contact.name.firstName || '',
+            middleName: contact.name.middleName || '',
+            lastName: contact.name.lastName || '',
+        },
+        role: contact.role || '',
+        avatarUrl: contact.avatarUrl || '',
+        notes: contact.notes || '',
         importantDates: contact.importantDates?.map(d => ({
             ...d,
             date: new Date(d.date),
