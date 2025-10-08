@@ -1,3 +1,4 @@
+
 'use client';
 import {
   doc,
@@ -7,15 +8,12 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { z } from 'zod';
-import { contactSchema } from '@/schemas/contact';
-
-type UpdatedContact = z.infer<typeof contactSchema>;
+import type { Contact } from '@/schemas/contact';
 
 export async function updateContact(
   db: Firestore,
   contactId: string,
-  contactData: UpdatedContact
+  contactData: Contact
 ) {
   const contactDoc = doc(db, 'contacts', contactId);
   
@@ -32,3 +30,5 @@ export async function updateContact(
     throw serverError;
   });
 }
+
+    

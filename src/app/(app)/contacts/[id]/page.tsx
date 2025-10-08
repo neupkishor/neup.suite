@@ -9,14 +9,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { placeholderImages } from "@/lib/placeholder-images";
-import { z } from "zod";
-import { contactSchema } from "@/schemas/contact";
 import { useRouter } from "next/navigation";
 import { deleteContact } from "@/actions/contacts/delete-contact";
-import { Loader2 } from "lucide-react";
-
-type Contact = z.infer<typeof contactSchema> & { id: string };
+import { Loader2, Mail, Phone, Globe, Trash2, Pencil, Calendar, MessageSquare, Briefcase, MapPin, Notebook, Plus } from "lucide-react";
+import type { Contact } from "@/schemas/contact";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 export default function ContactDetailPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
@@ -29,7 +27,6 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
   }, [firestore, params.id]);
 
   const { data: contact, loading } = useDoc<Contact>(contactRef);
-  const avatar = placeholderImages.find(p => p.id === contact?.avatarId);
 
   const handleDelete = async () => {
     if (!firestore || !params.id) return;
@@ -50,16 +47,17 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
       return <Card>
           <CardHeader>
              <div className="flex items-center gap-4">
-                <Skeleton className="h-20 w-20 rounded-full" />
+                <Skeleton className="h-24 w-24 rounded-full" />
                 <div className="space-y-2">
                     <Skeleton className="h-8 w-48" />
                     <Skeleton className="h-5 w-32" />
                 </div>
              </div>
           </CardHeader>
-          <CardContent>
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full mt-2" />
+          <CardContent className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full mt-2" />
+              <Skeleton className="h-20 w-full mt-2" />
           </CardContent>
       </Card>
   }
@@ -74,34 +72,128 @@ export default function ContactDetailPage({ params }: { params: { id: string } }
       </Card>
   }
 
+  const name = contact.name;
+  const fullName = [name.firstName, name.middleName, name.lastName].filter(Boolean).join(' ');
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-            <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20">
-                    {avatar && <AvatarImage src={avatar.imageUrl} alt={contact.name} />}
-                    <AvatarFallback className="text-3xl">{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <CardTitle className="font-headline text-3xl">{contact.name}</CardTitle>
-                    <CardDescription className="text-lg">{contact.role}</CardDescription>
+    <div className="space-y-6">
+        <Card>
+        <CardHeader>
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                <div className="flex items-center gap-6">
+                    <Avatar className="h-24 w-24">
+                        {contact.avatarUrl && <AvatarImage src={contact.avatarUrl} alt={name.displayName} />}
+                        <AvatarFallback className="text-4xl">{name.displayName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <CardTitle className="font-headline text-3xl">{name.displayName}</CardTitle>
+                        {fullName && <CardDescription className="text-lg">{fullName}</CardDescription>}
+                        {contact.role && <p className="text-base text-muted-foreground">{contact.role}</p>}
+                    </div>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                    <Button asChild>
+                        <Link href={`/contacts/${params.id}/edit`}><Pencil />Edit</Link>
+                    </Button>
+                    <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                        {isDeleting && <Loader2 className="animate-spin" />}
+                        <Trash2 /> Delete
+                    </Button>
                 </div>
             </div>
-            <div className="flex gap-2">
-                <Button asChild>
-                    <Link href={`/contacts/${params.id}/edit`}>Edit Contact</Link>
-                </Button>
-                <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                    {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Delete
-                </Button>
+        </CardHeader>
+        </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+                 {/* Notes */}
+                {contact.notes && <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Notebook /> Notes</CardTitle></CardHeader>
+                    <CardContent><p className="whitespace-pre-wrap">{contact.notes}</p></CardContent>
+                </Card>}
+            </div>
+
+            <div className="space-y-6">
+                {/* Contact Info */}
+                <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Briefcase/> Contact Info</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                        {contact.emails?.map((item, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm">
+                                <Mail className="h-4 w-4 text-muted-foreground"/>
+                                <a href={`mailto:${item.email}`} className="text-primary hover:underline">{item.email}</a>
+                                <Badge variant="secondary">{item.label}</Badge>
+                            </div>
+                        ))}
+                        {contact.phoneNumbers?.map((item, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm">
+                                <Phone className="h-4 w-4 text-muted-foreground"/>
+                                <span>{item.phone}</span>
+                                <Badge variant="secondary">{item.label}</Badge>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+
+                {/* Address */}
+                {contact.addresses && contact.addresses.length > 0 && <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><MapPin /> Addresses</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                        {contact.addresses.map((addr, i) => (
+                            <div key={i} className="text-sm">
+                                <p className="font-semibold">{addr.label}</p>
+                                <p>{addr.street}</p>
+                                <p>{addr.city}, {addr.state} {addr.zip}</p>
+                                <p>{addr.country}</p>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>}
+                
+                {/* Social Profiles */}
+                {contact.socialProfiles && contact.socialProfiles.length > 0 && <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Globe /> Social Profiles</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                        {contact.socialProfiles.map((social, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm">
+                                <Globe className="h-4 w-4 text-muted-foreground"/>
+                                <a href={social.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{social.label}</a>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>}
+
+                {/* Messaging */}
+                {contact.messaging && contact.messaging.length > 0 && <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><MessageSquare /> Messaging</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                        {contact.messaging.map((msg, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm">
+                                <MessageSquare className="h-4 w-4 text-muted-foreground"/>
+                                <span>{msg.address}</span>
+                                <Badge variant="secondary">{msg.label}</Badge>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>}
+
+                 {/* Important Dates */}
+                {contact.importantDates && contact.importantDates.length > 0 && <Card>
+                    <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><Calendar /> Important Dates</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                        {contact.importantDates.map((d, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm">
+                                <Calendar className="h-4 w-4 text-muted-foreground"/>
+                                <span>{format(new Date(d.date), 'PPP')}</span>
+                                <Badge variant="secondary">{d.label}</Badge>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>}
             </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <p>Email: <a href={`mailto:${contact.email}`} className="text-primary hover:underline">{contact.email}</a></p>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
+
+    

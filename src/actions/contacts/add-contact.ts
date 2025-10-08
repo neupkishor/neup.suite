@@ -1,3 +1,4 @@
+
 'use client';
 import {
   collection,
@@ -7,14 +8,11 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { z } from 'zod';
-import { contactSchema } from '@/schemas/contact';
-
-type NewContact = z.infer<typeof contactSchema>;
+import type { Contact } from '@/schemas/contact';
 
 export async function addContact(
   db: Firestore,
-  contactData: NewContact
+  contactData: Contact
 ) {
   const contactsCollection = collection(db, 'contacts');
   
@@ -32,3 +30,5 @@ export async function addContact(
     throw serverError;
   });
 }
+
+    

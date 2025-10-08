@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -121,9 +122,15 @@
           "type": "string",
           "format": "date",
           "description": "The task deadline."
+        },
+        "assignees": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
-      "required": ["title", "project", "status", "createdBy", "createdOn"]
+      "required": ["title", "status", "createdBy", "createdOn"]
     },
     "KnowledgeArticle": {
       "title": "Knowledge Article",
@@ -151,6 +158,154 @@
         "createdOn": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "hypothesis", "status", "createdBy", "createdOn"]
+    },
+    "Invoice": {
+        "title": "Invoice",
+        "description": "Represents a billing invoice.",
+        "type": "object",
+        "properties": {
+            "invoiceId": { "type": "string", "description": "The unique identifier for the invoice (e.g., INV-2024-001)." },
+            "amount": { "type": "number", "description": "The total amount due." },
+            "dueDate": { "type": "string", "format": "date", "description": "The date the invoice is due." },
+            "status": { "type": "string", "enum": ["Paid", "Due", "Overdue"], "description": "The current status of the invoice." },
+            "clientName": { "type": "string", "description": "The name of the client being invoiced." },
+            "createdOn": { "type": "string", "format": "date-time" },
+            "updatedOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["invoiceId", "amount", "dueDate", "status", "clientName", "createdOn"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Represents a detailed contact profile.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "object",
+          "properties": {
+            "firstName": { "type": "string" },
+            "middleName": { "type": "string" },
+            "lastName": { "type": "string" },
+            "displayName": { "type": "string" }
+          },
+          "required": ["displayName"]
+        },
+        "role": { "type": "string" },
+        "emails": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "email": { "type": "string", "format": "email" }
+            }
+          }
+        },
+        "phoneNumbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "phone": { "type": "string" }
+            }
+          }
+        },
+        "addresses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "street": { "type": "string" },
+              "city": { "type": "string" },
+              "state": { "type": "string" },
+              "zip": { "type": "string" },
+              "country": { "type": "string" }
+            }
+          }
+        },
+        "socialProfiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "messaging": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "address": { "type": "string" }
+            }
+          }
+        },
+        "importantDates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "date": { "type": "string", "format": "date" }
+            }
+          }
+        },
+        "notes": { "type": "string" },
+        "avatarUrl": { "type": "string", "format": "uri" },
+        "createdOn": { "type": "string", "format": "date-time" },
+        "updatedOn": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "Goal": {
+        "title": "Goal",
+        "description": "Represents a goal or milestone.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "targetDate": { "type": "string", "format": "date" },
+            "status": { "type": "string", "enum": ["Not Started", "In Progress", "Completed", "At Risk"] }
+        },
+        "required": ["title", "targetDate", "status"]
+    },
+    "Report": {
+        "title": "Report",
+        "description": "Represents a report.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "summary": { "type": "string" },
+            "generatedOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "generatedOn"]
+    },
+    "Feedback": {
+        "title": "Feedback",
+        "description": "Represents client feedback.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "comment": { "type": "string" },
+            "submittedBy": { "type": "string" },
+            "submittedOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "comment", "submittedBy", "submittedOn"]
+    },
+    "Discussion": {
+        "title": "Discussion",
+        "description": "Represents a discussion thread.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "createdBy": { "type": "string" },
+            "createdOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "createdBy", "createdOn"]
     }
   },
   "firestore": {
@@ -177,6 +332,32 @@
     "/experiments/{experimentId}": {
         "schema": { "$ref": "#/backend/entities/Experiment" },
         "description": "Stores experiment data."
+    },
+    "/invoices/{invoiceId}": {
+        "schema": { "$ref": "#/backend/entities/Invoice" },
+        "description": "Stores billing invoices."
+    },
+    "/contacts/{contactId}": {
+      "schema": { "$ref": "#/backend/entities/Contact" },
+      "description": "Stores contact information."
+    },
+    "/goals/{goalId}": {
+        "schema": { "$ref": "#/backend/entities/Goal" },
+        "description": "Stores goals and milestones."
+    },
+    "/reports/{reportId}": {
+        "schema": { "$ref": "#/backend/entities/Report" },
+        "description": "Stores reports."
+    },
+    "/feedback/{feedbackId}": {
+        "schema": { "$ref": "#/backend/entities/Feedback" },
+        "description": "Stores client feedback."
+    },
+    "/discussions/{discussionId}": {
+        "schema": { "$ref": "#/backend/entities/Discussion" },
+        "description": "Stores discussion threads."
     }
   }
 }
+
+    

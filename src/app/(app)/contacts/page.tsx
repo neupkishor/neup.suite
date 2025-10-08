@@ -6,38 +6,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
 import { collection, CollectionReference } from "firebase/firestore";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { placeholderImages } from "@/lib/placeholder-images";
+import type { Contact } from "@/schemas/contact";
 
-type Contact = {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    avatarId?: string;
-}
 
-function ContactCard({ contact }: { contact: Contact }) {
-    const avatar = placeholderImages.find(p => p.id === contact.avatarId);
+function ContactCard({ contact }: { contact: Contact & {id: string} }) {
     return (
         <Card>
-            <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <CardContent className="p-4">
+                <Link href={`/contacts/${contact.id}`} className="flex items-center gap-4">
                     <Avatar className="h-12 w-12">
-                        {avatar && <AvatarImage src={avatar.imageUrl} alt={contact.name} />}
-                        <AvatarFallback>{contact.name.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
+                        {contact.avatarUrl && <AvatarImage src={contact.avatarUrl} alt={contact.name.displayName} />}
+                        <AvatarFallback>{contact.name.displayName.split(' ').map(n=>n[0]).join('')}</AvatarFallback>
                     </Avatar>
-                    <div>
-                        <p className="font-semibold text-lg">{contact.name}</p>
-                        <p className="text-sm text-muted-foreground">{contact.email}</p>
+                    <div className="flex-1">
+                        <p className="font-semibold text-lg hover:underline">{contact.name.displayName}</p>
+                        <p className="text-sm text-muted-foreground">{contact.role}</p>
+                        <div className="flex items-center gap-4 mt-1">
+                            {contact.emails?.[0] && (
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <Mail className="h-3 w-3" />
+                                    <span>{contact.emails[0].email}</span>
+                                </div>
+                            )}
+                            {contact.phoneNumbers?.[0] && (
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <Phone className="h-3 w-3" />
+                                    <span>{contact.phoneNumbers[0].phone}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <p className="text-sm text-muted-foreground hidden sm:block">{contact.role}</p>
-                </div>
+                </Link>
             </CardContent>
         </Card>
     )
@@ -46,16 +49,12 @@ function ContactCard({ contact }: { contact: Contact }) {
 function ContactCardSkeleton() {
     return (
         <Card>
-            <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="space-y-1">
-                        <Skeleton className="h-5 w-32" />
-                        <Skeleton className="h-4 w-48" />
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Skeleton className="h-5 w-24 hidden sm:block" />
+            <CardContent className="p-4 flex items-center gap-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2 flex-1">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-48" />
                 </div>
             </CardContent>
         </Card>
@@ -71,7 +70,7 @@ export default function ContactsPage() {
         return collection(firestore, 'contacts') as CollectionReference<Contact>;
     }, [firestore]);
 
-    const { data: contacts, loading } = useCollection<Contact>(contactsCollection);
+    const { data: contacts, loading } = useCollection<Contact & {id:string}>(contactsCollection);
 
   return (
     <div className="space-y-6">
@@ -89,15 +88,13 @@ export default function ContactsPage() {
             </Button>
         </div>
       </CardHeader>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {loading && Array.from({ length: 4 }).map((_, i) => <ContactCardSkeleton key={i} />)}
         {!loading && contacts?.map((contact) => (
-            <Link href={`/contacts/${contact.id}`} key={contact.id}>
-                <ContactCard contact={contact} />
-            </Link>
+            <ContactCard contact={contact} key={contact.id} />
         ))}
         {!loading && contacts?.length === 0 && (
-            <Card>
+            <Card className="md:col-span-2 xl:col-span-3">
                 <CardContent className="text-center p-8 text-muted-foreground">
                     No contacts found.
                 </CardContent>
@@ -107,3 +104,5 @@ export default function ContactsPage() {
     </div>
   );
 }
+
+    
