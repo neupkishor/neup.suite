@@ -141,26 +141,26 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
             <CardContent className='space-y-4'>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField control={form.control} name="name.firstName" render={({ field }) => (
-                        <FormItem><FormLabel>First Name</FormLabel><FormControl><Input placeholder="Jane" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>First Name</FormLabel><FormControl><Input placeholder="Jane" {...field} autoComplete="off" /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="name.middleName" render={({ field }) => (
-                        <FormItem><FormLabel>Middle Name</FormLabel><FormControl><Input placeholder="" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Middle Name</FormLabel><FormControl><Input placeholder="" {...field} autoComplete="off" /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="name.lastName" render={({ field }) => (
-                        <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input placeholder="Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input placeholder="Doe" {...field} autoComplete="off" /></FormControl><FormMessage /></FormItem>
                     )}/>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="role" render={({ field }) => (
-                      <FormItem><FormLabel>Role / Job Title</FormLabel><FormControl><Input placeholder="e.g. Project Manager" {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Role / Job Title</FormLabel><FormControl><Input placeholder="e.g. Project Manager" {...field} autoComplete="off" /></FormControl><FormMessage /></FormItem>
                   )}/>
                   <FormField control={form.control} name="organization" render={({ field }) => (
-                      <FormItem><FormLabel>Organization</FormLabel><FormControl><Input placeholder="e.g. Acme Inc." {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Organization</FormLabel><FormControl><Input placeholder="e.g. Acme Inc." {...field} autoComplete="off" /></FormControl><FormMessage /></FormItem>
                   )}/>
                 </div>
                  {showAvatarUrl ? (
                     <FormField control={form.control} name="avatarUrl" render={({ field }) => (
-                        <FormItem><FormLabel>Photo URL</FormLabel><FormControl><Input placeholder="https://example.com/photo.jpg" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Photo URL</FormLabel><FormControl><Input placeholder="https://example.com/photo.jpg" {...field} autoComplete="off" /></FormControl><FormMessage /></FormItem>
                     )}/>
                  ) : (
                     <Button type="button" variant="outline" onClick={() => setShowAvatarUrl(true)}>Add Photo</Button>
@@ -176,10 +176,10 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
                     {emailFields.map((field, index) => (
                         <div key={field.id} className="flex gap-2 items-end mt-2">
                            <FormField control={form.control} name={`emails.${index}.label`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Label</FormLabel><FormControl><Input placeholder="Work" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Label</FormLabel><FormControl><Input placeholder="Work" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                            <FormField control={form.control} name={`emails.${index}.email`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Email</FormLabel><FormControl><Input placeholder="jane.doe@example.com" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Email</FormLabel><FormControl><Input placeholder="jane.doe@example.com" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                             <Button type="button" variant="destructive" size="icon" onClick={() => removeEmail(index)}><Trash2/></Button>
                         </div>
@@ -191,10 +191,10 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
                     {phoneFields.map((field, index) => (
                         <div key={field.id} className="flex gap-2 items-end mt-2">
                            <FormField control={form.control} name={`phoneNumbers.${index}.label`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Label</FormLabel><FormControl><Input placeholder="Mobile" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Label</FormLabel><FormControl><Input placeholder="Mobile" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                            <FormField control={form.control} name={`phoneNumbers.${index}.phone`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Number</FormLabel><FormControl><Input placeholder="+1 (555) 123-4567" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Number</FormLabel><FormControl><Input placeholder="+1 (555) 123-4567" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                             <Button type="button" variant="destructive" size="icon" onClick={() => removePhone(index)}><Trash2/></Button>
                         </div>
@@ -212,10 +212,10 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
                     {socialFields.map((field, index) => (
                         <div key={field.id} className="flex gap-2 items-end mt-2">
                            <FormField control={form.control} name={`socialProfiles.${index}.label`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Platform</FormLabel><FormControl><Input placeholder="LinkedIn" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Platform</FormLabel><FormControl><Input placeholder="LinkedIn" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                            <FormField control={form.control} name={`socialProfiles.${index}.url`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">URL</FormLabel><FormControl><Input placeholder="https://linkedin.com/in/username" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">URL</FormLabel><FormControl><Input placeholder="https://linkedin.com/in/username" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                             <Button type="button" variant="destructive" size="icon" onClick={() => removeSocial(index)}><Trash2/></Button>
                         </div>
@@ -227,10 +227,10 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
                     {messagingFields.map((field, index) => (
                         <div key={field.id} className="flex gap-2 items-end mt-2">
                            <FormField control={form.control} name={`messaging.${index}.label`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">App</FormLabel><FormControl><Input placeholder="WhatsApp" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">App</FormLabel><FormControl><Input placeholder="WhatsApp" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                            <FormField control={form.control} name={`messaging.${index}.address`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Username/ID</FormLabel><FormControl><Input placeholder="+15551234567" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Username/ID</FormLabel><FormControl><Input placeholder="+15551234567" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                             <Button type="button" variant="destructive" size="icon" onClick={() => removeMessaging(index)}><Trash2/></Button>
                         </div>
@@ -248,7 +248,7 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
                     {dateFields.map((field, index) => (
                         <div key={field.id} className="flex gap-2 items-end mt-2">
                            <FormField control={form.control} name={`importantDates.${index}.label`} render={({ field }) => (
-                                <FormItem className="flex-1"><FormLabel className="text-xs">Label</FormLabel><FormControl><Input placeholder="Birthday" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-1"><FormLabel className="text-xs">Label</FormLabel><FormControl><Input placeholder="Birthday" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                             <FormField control={form.control} name={`importantDates.${index}.date`} render={({ field }) => (
                                 <FormItem className="flex flex-col flex-1"><FormLabel className="text-xs">Date</FormLabel>
