@@ -3,6 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText } from "lucide-react";
+import type { Document } from "@/schemas/document";
+import { format } from "date-fns";
 
 const getStatusVariant = (status: string) => {
     switch (status) {
@@ -16,15 +18,15 @@ const getStatusVariant = (status: string) => {
     }
 };
 
-type Document = {
-    id: string;
-    name: string;
-    version: string;
-    updated: string;
-    status: string;
-};
+type DocumentWithTimestamps = Document & {
+    createdOn?: { seconds: number; nanoseconds: number };
+}
 
-export function DocumentCard({ document }: { document: Document }) {
+export function DocumentCard({ document }: { document: DocumentWithTimestamps }) {
+    const updatedDate = document.createdOn
+    ? format(new Date(document.createdOn.seconds * 1000), 'yyyy-MM-dd')
+    : 'N/A';
+    
     return (
         <Card>
             <CardContent className="p-4 flex items-center justify-between gap-4">
@@ -33,7 +35,8 @@ export function DocumentCard({ document }: { document: Document }) {
                     <div className="flex-1">
                         <p className="font-semibold">{document.name}</p>
                         <p className="text-sm text-muted-foreground">
-                            Version {document.version} - Updated {document.updated}
+                            {document.version ? `Version ${document.version} - ` : ''}
+                            Updated {updatedDate}
                         </p>
                     </div>
                 </div>

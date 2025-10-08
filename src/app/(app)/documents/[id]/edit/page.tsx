@@ -1,19 +1,58 @@
 
 'use client';
+import { use } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { use } from "react";
-
-// Dummy data for a single document
-const document = { id: '1', name: 'Master Service Agreement.pdf', version: 'v2.1', updated: '2024-05-20', status: 'Signed' };
-
+import { useDoc } from '@/firebase';
+import { useFirestore } from '@/firebase/provider';
+import { doc, DocumentReference } from 'firebase/firestore';
+import { useMemo } from 'react';
+import type { Document } from "@/schemas/document";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EditDocumentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const firestore = useFirestore();
+  const documentRef = useMemo(() => {
+    if (!firestore || !id) return null;
+    return doc(firestore, 'documents', id) as DocumentReference<Document>;
+  }, [firestore, id]);
+
+  const { data: document, loading } = useDoc<Document>(documentRef);
+  
+  if (loading || !document) {
+    return (
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/2 mt-2" />
+            </CardHeader>
+            <CardContent className="space-y-6 mt-4">
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+                 <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+                 <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="flex gap-2">
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-24" />
+                </div>
+            </CardContent>
+        </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>

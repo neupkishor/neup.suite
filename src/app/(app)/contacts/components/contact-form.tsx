@@ -21,10 +21,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { CalendarIcon, Loader2, Trash2, PlusCircle } from 'lucide-react';
+import { CalendarIcon, Loader2, Trash2, PlusCircle, Upload } from 'lucide-react';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { contactSchema, type Contact } from '@/schemas/contact';
 import { addContact } from '@/actions/contacts/add-contact';
@@ -34,6 +34,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
+import { uploadFile } from '@/lib/upload-service';
 
 type ContactFormValues = z.infer<typeof contactSchema>;
 
@@ -84,6 +85,7 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showAvatarUrl, setShowAvatarUrl] = useState(!!contact?.avatarUrl);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
@@ -104,12 +106,29 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
     }
   }, [contact, form]);
 
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsSubmitting(true);
+      setSubmitError(null);
+      try {
+        const contentId = `contact-avatar-${Date.now()}`;
+        const url = await uploadFile(file, contentId);
+        form.setValue('avatarUrl', url);
+        setShowAvatarUrl(true);
+      } catch (error: any) {
+        setSubmitError(error.message || 'Failed to upload photo.');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
   async function onSubmit(values: ContactFormValues) {
     if (!firestore) return;
     setIsSubmitting(true);
     setSubmitError(null);
     
-    // Convert dates back to string format if necessary for Firestore
     const dataToSubmit = {
         ...values,
         importantDates: values.importantDates?.map(d => ({
@@ -163,7 +182,13 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
                         <FormItem><FormLabel>Photo URL</FormLabel><FormControl><Input placeholder="https://example.com/photo.jpg" {...field} autoComplete="off" /></FormControl><FormMessage /></FormItem>
                     )}/>
                  ) : (
-                    <Button type="button" variant="outline" onClick={() => setShowAvatarUrl(true)}>Add Photo</Button>
+                    <>
+                      <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isSubmitting}>
+                          {isSubmitting ? <Loader2 className="mr-2 animate-spin" /> : <Upload className="mr-2" />}
+                          Upload Photo
+                      </Button>
+                    </>
                  )}
             </CardContent>
         </Card>

@@ -1,13 +1,17 @@
 
 'use client';
+import { use } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { use } from "react";
-
-// Dummy data for a single document
-const document = { id: '1', name: 'Master Service Agreement.pdf', version: 'v2.1', updated: '2024-05-20', status: 'Signed', content: 'This is the content of the master service agreement.' };
+import { useDoc } from '@/firebase';
+import { useFirestore } from '@/firebase/provider';
+import { doc, DocumentReference } from 'firebase/firestore';
+import { useMemo } from 'react';
+import type { Document } from '@/schemas/document';
+import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
 
 const getStatusVariant = (status: string) => {
     switch (status) {
@@ -23,8 +27,49 @@ const getStatusVariant = (status: string) => {
 
 export default function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-    // In a real app, you would fetch the document data based on id
-    // For now, we'll use the dummy data.
+    const firestore = useFirestore();
+    const documentRef = useMemo(() => {
+        if (!firestore || !id) return null;
+        return doc(firestore, 'documents', id) as DocumentReference<Document>;
+    }, [firestore, id]);
+
+    const { data: document, loading } = useDoc<Document & {createdOn: {seconds: number}}>(documentRef);
+    
+    if (loading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-3/4" />
+                    <Skeleton className="h-4 w-1/2 mt-2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-6 w-24 mt-4" />
+                    <Skeleton className="h-40 w-full mt-4" />
+                </CardContent>
+            </Card>
+        )
+    }
+
+    if (!document) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Document Not Found</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p>The document you are looking for does not exist.</p>
+                    <Button asChild className="mt-4">
+                        <Link href="/documents">Back to Documents</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    const createdDate = document.createdOn
+    ? format(new Date(document.createdOn.seconds * 1000), 'PPP')
+    : 'N/A';
+
   return (
     <Card>
       <CardHeader>
@@ -32,7 +77,8 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
             <div>
                 <CardTitle className="font-headline text-2xl">{document.name}</CardTitle>
                 <CardDescription>
-                    Version {document.version} - Last updated on {document.updated}
+                    {document.version ? `Version ${document.version} - ` : ''} 
+                    Last updated on {createdDate}
                 </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -46,7 +92,8 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
       <CardContent>
         <Badge variant={getStatusVariant(document.status)}>{document.status}</Badge>
         <div className="mt-4 prose max-w-none">
-            <p>{document.content}</p>
+            <p>Document content preview will be available here.</p>
+            <p>URL: <a href={document.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{document.url}</a></p>
         </div>
       </CardContent>
     </Card>

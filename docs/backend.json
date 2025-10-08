@@ -307,6 +307,20 @@
             "createdOn": { "type": "string", "format": "date-time" }
         },
         "required": ["title", "createdBy", "createdOn"]
+    },
+    "Document": {
+      "title": "Document",
+      "description": "Represents a file in the document repository.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "version": { "type": "string" },
+        "status": { "type": "string", "enum": ["Signed", "Approved", "In Review", "Archived"] },
+        "createdOn": { "type": "string", "format": "date-time" },
+        "updatedOn": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "url", "status", "createdOn"]
     }
   },
   "firestore": {
@@ -357,6 +371,10 @@
     "/discussions/{discussionId}": {
         "schema": { "$ref": "#/backend/entities/Discussion" },
         "description": "Stores discussion threads."
+    },
+    "/documents/{documentId}": {
+        "schema": { "$ref": "#/backend/entities/Document" },
+        "description": "Stores documents and files."
     }
   }
 }
