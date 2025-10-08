@@ -1,3 +1,4 @@
+
 'use client';
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
@@ -10,6 +11,7 @@ import { Briefcase } from "lucide-react";
 import type { Client } from "@/schemas/client";
 import { cn } from "@/lib/utils";
 import Cookies from 'js-cookie';
+import { useRouter } from "next/navigation";
 
 function ClientCard({ client, isSelected, onSelect }: { client: Client, isSelected: boolean, onSelect: (id: string) => void }) {
     return (
@@ -28,6 +30,7 @@ function ClientCard({ client, isSelected, onSelect }: { client: Client, isSelect
 export default function ClientsPage() {
     const firestore = useFirestore();
     const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const savedClientId = Cookies.get('client');
@@ -46,6 +49,7 @@ export default function ClientsPage() {
     const handleSelectClient = (id: string) => {
         setSelectedClientId(id);
         Cookies.set('client', id, { expires: 365 });
+        router.push('/home');
     }
 
   return (
