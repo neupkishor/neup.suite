@@ -41,15 +41,15 @@ const manageLinks = [
   { href: "/goals", icon: Target, label: "Goals" },
 ];
 
+const clientLinks = [
+  { href: "/feedback", icon: Megaphone, label: "Feedback" },
+  { href: "/discussions", icon: MessageCircle, label: "Discussions" },
+];
+
 const researchLinks = [
   { href: "/knowledge", icon: BookOpen, label: "Knowledge" },
   { href: "/experiments", icon: FlaskConical, label: "Experiments" },
   { href: "/reports", icon: BarChart, label: "Reports" },
-];
-
-const clientLinks = [
-  { href: "/feedback", icon: Megaphone, label: "Feedback" },
-  { href: "/discussions", icon: MessageCircle, label: "Discussions" },
 ];
 
 const rootLinks = [
@@ -63,6 +63,7 @@ const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.Elemen
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname !== href) {
+      NProgress.configure({ showSpinner: false });
       NProgress.start();
     }
   };
