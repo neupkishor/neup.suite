@@ -13,11 +13,13 @@ import {
   LifeBuoy,
   Settings,
   FolderKanban,
+  CheckSquare,
 } from "lucide-react";
 
 const mainLinks = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/communication", icon: MessageSquare, label: "Inbox" },
+  { href: "/tasks", icon: CheckSquare, label: "Tasks" },
   { href: "/documents", icon: FileText, label: "Documents" },
   { href: "/billing", icon: Receipt, label: "Billing" },
   { href: "/support", icon: LifeBuoy, label: "Support" },
@@ -35,7 +37,7 @@ const rootLinks = [
 
 const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const isActive = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
   
   return (
     <Link

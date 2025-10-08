@@ -5,7 +5,6 @@ import { Logo } from "@/components/logo";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { FirebaseClientProvider } from "@/firebase";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -26,7 +25,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <FirebaseClientProvider>
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm shadow-md">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 md:px-6">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6">
             <div className="flex items-center gap-8">
                 <Link href="/dashboard">
                     <Logo />
@@ -48,7 +47,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <div className="flex-1">
         <div className="mx-auto flex max-w-[1440px]">
             <AppSidebar />
-            <main className="flex-1 p-4 md:p-6">{children}</main>
+            <main className="flex-1 p-6">{children}</main>
         </div>
       </div>
     </div>

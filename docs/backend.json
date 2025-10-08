@@ -76,6 +76,44 @@
         }
       },
       "required": ["name", "identifier", "createdBy", "createdOn", "status", "deadline"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Represents a single task or to-do item.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The description or name of the task."
+        },
+        "assignee": {
+          "type": "string",
+          "description": "Name of the user this task is assigned to."
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date",
+          "description": "The task deadline."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["To Do", "In Progress", "Done", "Cancelled"]
+        },
+        "projectId": {
+          "type": "string",
+          "description": "The ID of the project this task belongs to."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "The ID of the user who created the task."
+        },
+        "createdOn": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the task was created."
+        }
+      },
+      "required": ["name", "assignee", "deadline", "status", "createdBy", "createdOn"]
     }
   },
   "firestore": {
@@ -96,6 +134,12 @@
         "$ref": "#/backend/entities/Project"
       },
       "description": "Stores project data."
+    },
+    "/tasks/{taskId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Task"
+      },
+      "description": "Stores individual tasks for all projects."
     }
   }
 }

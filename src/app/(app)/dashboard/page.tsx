@@ -21,7 +21,7 @@ export default function DashboardPage() {
   `;
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
         <Card>
           <CardHeader>
@@ -34,12 +34,18 @@ export default function DashboardPage() {
             <AIAssistant projectData={projectData} />
           </CardContent>
         </Card>
-        <AssignedTasks />
-        <KeyContacts />
       </div>
       <div className="space-y-6">
         <PaymentStatus />
         <ProjectProgress />
+      </div>
+       <div className="space-y-6 lg:col-span-3">
+         <AssignedTasks />
+      </div>
+       <div className="space-y-6 lg:col-span-2">
+         <KeyContacts />
+      </div>
+       <div className="space-y-6">
         <UpcomingMilestones />
       </div>
     </div>
