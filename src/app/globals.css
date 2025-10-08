@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 210 20% 95%;
+    --background: 0 0% 100%;
     --foreground: 210 10% 23%;
     --card: 0 0% 100%;
     --card-foreground: 210 10% 23%;
@@ -12,16 +12,16 @@
     --popover-foreground: 210 10% 23%;
     --primary: 210 70% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 20% 90%;
+    --secondary: 210 20% 96%;
     --secondary-foreground: 210 10% 23%;
-    --muted: 210 20% 85%;
+    --muted: 210 20% 90%;
     --muted-foreground: 210 10% 45%;
     --accent: 180 60% 40%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 210 20% 80%;
-    --input: 210 20% 88%;
+    --border: 210 20% 88%;
+    --input: 210 20% 92%;
     --ring: 210 70% 50%;
     --chart-1: 210 70% 50%;
     --chart-2: 180 60% 40%;

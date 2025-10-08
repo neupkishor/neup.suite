@@ -11,7 +11,6 @@ function AppSidebar() {
   return (
     <aside className="w-64 flex-shrink-0 border-r bg-card p-4">
         <div className="mb-8">
-          <Logo />
         </div>
         <MainNav />
     </aside>
@@ -20,9 +19,9 @@ function AppSidebar() {
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-8">
                 <Link href="/dashboard">
                     <Logo />
@@ -43,7 +42,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
       <div className="flex-1">
-        <div className="mx-auto flex max-w-7xl">
+        <div className="mx-auto flex max-w-[1440px]">
             <AppSidebar />
             <main className="flex-1 p-4 md:p-6">{children}</main>
         </div>
