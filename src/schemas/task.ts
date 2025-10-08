@@ -7,5 +7,5 @@ export const taskSchema = z.object({
   assignee: z.string().min(1, 'Please assign the task'),
   deadline: z.date().optional(),
   status: z.enum(['To Do', 'In Progress', 'Done', 'Cancelled']),
-  subtasks: z.array(z.string()).optional(),
+  subtasks: z.array(z.object({ text: z.string() })).optional(),
 });
