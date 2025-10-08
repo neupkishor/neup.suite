@@ -63,6 +63,11 @@ const prepareDataForForm = (contact?: Contact & { id?: string }): ContactFormVal
         role: contact.role || '',
         avatarUrl: contact.avatarUrl || '',
         notes: contact.notes || '',
+        emails: contact.emails || [],
+        phoneNumbers: contact.phoneNumbers || [],
+        addresses: contact.addresses || [],
+        socialProfiles: contact.socialProfiles || [],
+        messaging: contact.messaging || [],
         importantDates: contact.importantDates?.map(d => ({
             ...d,
             date: new Date(d.date),
@@ -76,6 +81,7 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showAvatarUrl, setShowAvatarUrl] = useState(!!contact?.avatarUrl);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
@@ -92,6 +98,7 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
   useEffect(() => {
     if (contact) {
       form.reset(prepareDataForForm(contact));
+      setShowAvatarUrl(!!contact.avatarUrl);
     }
   }, [contact, form]);
 
@@ -144,9 +151,13 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
                 <FormField control={form.control} name="role" render={({ field }) => (
                     <FormItem><FormLabel>Role / Job Title</FormLabel><FormControl><Input placeholder="e.g. Project Manager" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
-                 <FormField control={form.control} name="avatarUrl" render={({ field }) => (
-                    <FormItem><FormLabel>Photo URL</FormLabel><FormControl><Input placeholder="https://example.com/photo.jpg" {...field} /></FormControl><FormMessage /></FormItem>
-                )}/>
+                 {showAvatarUrl ? (
+                    <FormField control={form.control} name="avatarUrl" render={({ field }) => (
+                        <FormItem><FormLabel>Photo URL</FormLabel><FormControl><Input placeholder="https://example.com/photo.jpg" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                 ) : (
+                    <Button type="button" variant="outline" onClick={() => setShowAvatarUrl(true)}>Add Photo</Button>
+                 )}
             </CardContent>
         </Card>
 
@@ -276,5 +287,3 @@ export function ContactForm({ contact }: { contact?: Contact & {id: string} }) {
     </Form>
   );
 }
-
-    
