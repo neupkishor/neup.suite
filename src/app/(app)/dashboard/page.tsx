@@ -21,24 +21,27 @@ export default function DashboardPage() {
   `;
 
   return (
-    <div className="grid gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-2xl">Welcome, Jane</CardTitle>
-          <CardDescription>
-            Here's a summary of your projects and pending actions.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AIAssistant projectData={projectData} />
-        </CardContent>
-      </Card>
-      
-      <PaymentStatus />
-      <ProjectProgress />
-      <AssignedTasks />
-      <UpcomingMilestones />
-      <KeyContacts />
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline text-2xl">Welcome, Jane</CardTitle>
+            <CardDescription>
+              Here's a summary of your projects and pending actions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AIAssistant projectData={projectData} />
+          </CardContent>
+        </Card>
+        <AssignedTasks />
+        <KeyContacts />
+      </div>
+      <div className="space-y-6">
+        <PaymentStatus />
+        <ProjectProgress />
+        <UpcomingMilestones />
+      </div>
     </div>
   );
 }
