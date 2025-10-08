@@ -16,6 +16,7 @@ import {
   XCircle,
   Calendar as CalendarIconLucide,
   Trash,
+  MessageSquarePlus,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -63,14 +64,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { taskSchema } from '@/schemas/task';
 import { Textarea } from '@/components/ui/textarea';
+import { MultiSelect } from '@/components/ui/multi-select';
 
 type Task = {
   id: string;
   title: string;
-  assignee: string;
+  assignees: string[];
   deadline?: string;
   status: 'To Do' | 'In Progress' | 'Done' | 'Cancelled';
-  project: string;
+  project?: string;
 };
 
 type Project = {
@@ -79,10 +81,10 @@ type Project = {
 };
 
 const teamMembers = [
-  { name: 'Jane Doe', avatarId: 'user-avatar' },
-  { name: 'Alex Ray', avatarId: 'contact-1' },
-  { name: 'Jordan Smith', avatarId: 'contact-2' },
-  { name: 'Casey Williams', avatarId: 'contact-4' },
+  { value: 'Jane Doe', label: 'Jane Doe', avatarId: 'user-avatar' },
+  { value: 'Alex Ray', label: 'Alex Ray', avatarId: 'contact-1' },
+  { value: 'Jordan Smith', label: 'Jordan Smith', avatarId: 'contact-2' },
+  { value: 'Casey Williams', label: 'Casey Williams', avatarId: 'contact-4' },
 ];
 
 function NewTaskItem({
@@ -94,6 +96,7 @@ function NewTaskItem({
 }) {
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const form = useForm<z.infer<typeof taskSchema>>({
     resolver: zodResolver(taskSchema),
@@ -101,7 +104,7 @@ function NewTaskItem({
       title: '',
       description: '',
       status: 'To Do',
-      assignee: 'Jane Doe',
+      assignees: ['Jane Doe'],
       subtasks: [],
     },
   });
@@ -165,78 +168,26 @@ function NewTaskItem({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Add a more detailed description..."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <FormField
+               <FormField
                 control={form.control}
-                name="project"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Project</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a project" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {projects?.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="assignee"
+                name="assignees"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Assign To</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a team member" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {teamMembers.map((member) => (
-                          <SelectItem key={member.name} value={member.name}>
-                            {member.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                     <MultiSelect
+                        selected={field.value}
+                        options={teamMembers}
+                        onChange={field.onChange}
+                        placeholder="Select team members..."
+                        className="w-full"
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
+               <FormField
                 control={form.control}
                 name="deadline"
                 render={({ field }) => (
@@ -274,68 +225,126 @@ function NewTaskItem({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="To Do">To Do</SelectItem>
-                        <SelectItem value="In Progress">In Progress</SelectItem>
-                        <SelectItem value="Done">Done</SelectItem>
-                        <SelectItem value="Cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
-            <div>
-              <FormLabel>Subtasks</FormLabel>
-              <div className="mt-2 space-y-2">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="flex items-center gap-2">
-                    <Input value={field.text} readOnly className="bg-muted" />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => remove(index)}
-                    >
-                      <Trash className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Add a new subtask..."
-                    value={newSubtask}
-                    onChange={(e) => setNewSubtask(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddSubtask();
-                        }
-                    }}
+            {!showDetails && (
+              <Button variant="outline" size="sm" onClick={() => setShowDetails(true)}>
+                <MessageSquarePlus className="mr-2 h-4 w-4" />
+                Add Details (Description, Subtasks...)
+              </Button>
+            )}
+
+            {showDetails && (
+              <div className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Add a more detailed description..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <FormField
+                    control={form.control}
+                    name="project"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Project (Optional)</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a project" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {projects?.map((project) => (
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  <Button type="button" onClick={handleAddSubtask}>
-                    Add
-                  </Button>
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="To Do">To Do</SelectItem>
+                            <SelectItem value="In Progress">In Progress</SelectItem>
+                            <SelectItem value="Done">Done</SelectItem>
+                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                 </div>
+
+                <div>
+                  <FormLabel>Subtasks</FormLabel>
+                  <div className="mt-2 space-y-2">
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="flex items-center gap-2">
+                        <Input value={field.text} readOnly className="bg-muted" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => remove(index)}
+                        >
+                          <Trash className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Add a new subtask..."
+                        value={newSubtask}
+                        onChange={(e) => setNewSubtask(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddSubtask();
+                            }
+                        }}
+                      />
+                      <Button type="button" onClick={handleAddSubtask}>
+                        Add
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
 
             <div className="flex justify-end gap-2">
               <Button
@@ -387,8 +396,6 @@ function TaskCard({
   projects: Project[] | null;
 }) {
   const StatusIcon = statusConfig[task.status]?.icon || Circle;
-  const assignee = teamMembers.find((m) => m.name === task.assignee);
-  const avatar = placeholderImages.find((p) => p.id === assignee?.avatarId);
   const project = projects?.find((p) => p.id === task.project);
 
   return (
@@ -407,19 +414,18 @@ function TaskCard({
         )}
       </div>
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-6 w-6">
-            {avatar && (
-              <AvatarImage src={avatar.imageUrl} alt={task.assignee} />
-            )}
-            <AvatarFallback>
-              {task.assignee
-                .split(' ')
-                .map((n) => n[0])
-                .join('')}
-            </AvatarFallback>
-          </Avatar>
-          <span className="hidden md:inline">{task.assignee}</span>
+        <div className="flex -space-x-2">
+          {task.assignees?.map(assigneeName => {
+            const member = teamMembers.find(m => m.value === assigneeName);
+            if (!member) return null;
+            const avatar = placeholderImages.find(p => p.id === member.avatarId);
+            return (
+              <Avatar key={assigneeName} className="h-6 w-6 border-2 border-background">
+                {avatar && <AvatarImage src={avatar.imageUrl} alt={assigneeName} />}
+                <AvatarFallback>{assigneeName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+              </Avatar>
+            )
+          })}
         </div>
         {task.deadline && (
           <div className="flex items-center gap-1.5">
@@ -516,3 +522,5 @@ export default function TasksPage() {
     </div>
   );
 }
+
+    
