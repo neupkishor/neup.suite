@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { FolderKanban, Loader2 } from "lucide-react";
 import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
-import { collection, serverTimestamp, addDoc, CollectionReference } from "firebase/firestore";
+import { collection, CollectionReference } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { createProject } from "@/firebase/firestore/projects";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Project = {
     id: string;
@@ -15,6 +16,51 @@ type Project = {
     status: string;
     deadline: string;
 };
+
+const getStatusVariant = (status: string) => {
+    switch(status) {
+        case 'Completed': return 'default';
+        case 'In Progress': return 'secondary';
+        case 'On Hold': return 'destructive';
+        default: return 'outline';
+    }
+}
+
+function ProjectCard({ project }: { project: Project }) {
+    return (
+        <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                    <h3 className="font-semibold text-lg">{project.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                        <Badge variant={getStatusVariant(project.status)}>{project.status}</Badge>
+                    </div>
+                </div>
+                <div className="text-right">
+                   <p className="text-sm text-muted-foreground">Deadline</p>
+                   <p className="font-medium">{project.deadline}</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function ProjectCardSkeleton() {
+    return (
+        <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                    <Skeleton className="h-6 w-48 mb-2" />
+                    <Skeleton className="h-5 w-24" />
+                </div>
+                <div className="text-right">
+                    <Skeleton className="h-4 w-20 mb-2" />
+                    <Skeleton className="h-5 w-28" />
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
 
 export default function ProjectsPage() {
     const firestore = useFirestore();
@@ -38,15 +84,6 @@ export default function ProjectsPage() {
             createProject(firestore, newProject);
         }
     }, [loading, projects, firestore]);
-
-    const getStatusVariant = (status: string) => {
-        switch(status) {
-            case 'Completed': return 'default';
-            case 'In Progress': return 'secondary';
-            case 'On Hold': return 'destructive';
-            default: return 'outline';
-        }
-    }
 
     const handleCreateProject = async () => {
         if (!firestore) return;
@@ -75,22 +112,14 @@ export default function ProjectsPage() {
         </div>
 
         <div className="space-y-4">
-            {loading && <p>Loading projects...</p>}
+            {loading && (
+                <>
+                    <ProjectCardSkeleton />
+                    <ProjectCardSkeleton />
+                </>
+            )}
             {!loading && projects && projects.map(project => (
-                <Card key={project.id}>
-                    <CardContent className="p-4 flex items-center justify-between">
-                        <div>
-                            <h3 className="font-semibold text-lg">{project.name}</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                                <Badge variant={getStatusVariant(project.status)}>{project.status}</Badge>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                           <p className="text-sm text-muted-foreground">Deadline</p>
-                           <p className="font-medium">{project.deadline}</p>
-                        </div>
-                    </CardContent>
-                </Card>
+                <ProjectCard key={project.id} project={project} />
             ))}
             {!loading && projects?.length === 0 && (
                 <Card>
