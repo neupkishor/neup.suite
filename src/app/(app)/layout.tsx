@@ -43,10 +43,10 @@ function MobileNav({ isOpen, onToggle }: { isOpen: boolean, onToggle: () => void
 
 function NavLink({ href, children }: { href: string, children: React.ReactNode}) {
   const pathname = usePathname();
-  const isActive = pathname === href;
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname !== href) {
+      NProgress.configure({ showSpinner: false });
       NProgress.start();
     }
   };
