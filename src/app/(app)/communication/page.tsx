@@ -14,7 +14,7 @@ export default function CommunicationPage() {
         { name: "Jordan Smith", role: "API Integration", lastMessage: "Can we schedule a call for tomorrow?", avatarId: 'contact-2', unread: 0 },
     ]
   return (
-    <div className="grid h-[calc(100vh-8rem)] grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
+    <div className="grid h-[calc(100vh-4rem)] grid-cols-1 md:grid-cols-3 lg:grid-cols-4 border-t">
         <div className="flex flex-col border-r bg-muted/20">
             <div className="p-4">
                 <h2 className="font-headline text-2xl">Inbox</h2>

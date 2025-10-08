@@ -1,4 +1,5 @@
 
+'use client';
 import type { ReactNode } from "react";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
@@ -8,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { FirebaseClientProvider } from "@/firebase";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { usePathname } from "next/navigation";
 
 function AppSidebar() {
   return (
@@ -22,6 +24,9 @@ function AppSidebar() {
 }
 
 export default function AppLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const isCommunicationPage = pathname.startsWith('/communication');
+
   return (
     <FirebaseClientProvider>
     <div className="flex min-h-screen flex-col bg-background">
@@ -47,8 +52,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </header>
       <div className="flex flex-1">
         <div className="mx-auto flex w-full max-w-[1440px]">
-            <AppSidebar />
-            <main className="flex-1 p-6">{children}</main>
+            {!isCommunicationPage && <AppSidebar />}
+            <main className={`flex-1 ${!isCommunicationPage ? 'p-6' : ''}`}>{children}</main>
         </div>
       </div>
     </div>
