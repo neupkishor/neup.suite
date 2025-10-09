@@ -70,6 +70,16 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
 
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
+    defaultValues: {
+      invoiceId: '',
+      title: '',
+      description: '',
+      clientName: '',
+      amount: 0,
+      currency: 'USD',
+      status: 'Due',
+      clientId: '',
+    },
   });
 
   useEffect(() => {
@@ -335,4 +345,3 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
   );
 }
 
-    
