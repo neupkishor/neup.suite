@@ -24,6 +24,7 @@ import {
   BarChart,
   MessageCircle,
   Megaphone,
+  Bell,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
@@ -33,6 +34,7 @@ const allMainLinks = [
   { href: "/tasks", icon: CheckSquare, label: "Tasks" },
   { href: "/documents", icon: FileText, label: "Documents", clientRequired: true },
   { href: "/billing", icon: Receipt, label: "Billing" },
+  { href: "/notifications", icon: Bell, label: "Notifications" },
   { href: "/support", icon: LifeBuoy, label: "Support", clientRequired: true },
 ];
 
