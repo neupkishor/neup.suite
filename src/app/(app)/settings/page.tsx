@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight, Palette, Bell, ShieldAlert, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import NProgress from 'nprogress';
+import { usePathname } from "next/navigation";
 
 const settingsItems = [
     { name: "Account", href: "/settings/account", icon: UserCircle, description: "Manage your personal information and preferences." },
@@ -13,9 +15,18 @@ const settingsItems = [
 ];
 
 function SettingsListItem({ item, isLast }: { item: typeof settingsItems[0], isLast: boolean }) {
+    const pathname = usePathname();
+    
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (pathname !== item.href) {
+            NProgress.configure({ showSpinner: false });
+            NProgress.start();
+        }
+    };
+
     return (
         <>
-            <Link href={item.href} className="group block">
+            <Link href={item.href} className="group block" onClick={handleClick}>
                 <div className="flex items-center justify-between p-4 hover:bg-muted/50 rounded-md">
                     <div className="flex items-center gap-4">
                         <item.icon className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
