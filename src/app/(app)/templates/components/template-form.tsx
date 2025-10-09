@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -49,7 +48,7 @@ const prepareDataForForm = (template?: Template, clientId?: string): TemplateFor
     };
 };
 
-export function TemplateForm({ template, clientId }: { template?: Template, clientId: string }) {
+export function TemplateForm({ template, clientId }: { template?: Template; clientId: string }) {
   const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
