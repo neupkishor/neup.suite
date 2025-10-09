@@ -3,41 +3,23 @@ import { z } from 'zod';
 
 const reportBlockBaseSchema = z.object({
   id: z.string(),
-  type: z.enum(['title', 'subtitle', 'paragraph', 'keyValue', 'chart']),
+  type: z.enum(['title', 'subtitle', 'paragraph', 'chart']),
 });
 
-const titleBlockSchema = reportBlockBaseSchema.extend({
-  type: z.literal('title'),
-  text: z.string(),
-});
-
-const subtitleBlockSchema = reportBlockBaseSchema.extend({
-  type: z.literal('subtitle'),
-  text: z.string(),
-});
-
-const paragraphBlockSchema = reportBlockBaseSchema.extend({
-  type: z.literal('paragraph'),
-  text: z.string(),
-});
-
-const keyValueBlockSchema = reportBlockBaseSchema.extend({
-  type: z.literal('keyValue'),
-  key: z.string(),
-  valueSource: z.string(), // e.g., 'project.name'
+const textBlockSchema = reportBlockBaseSchema.extend({
+  type: z.literal('title').or(z.literal('subtitle')).or(z.literal('paragraph')),
+  text: z.string().optional(),
 });
 
 const chartBlockSchema = reportBlockBaseSchema.extend({
   type: z.literal('chart'),
-  chartType: z.enum(['bar', 'pie', 'line']),
-  dataSource: z.string(), // e.g., 'tasks.byStatus'
+  chartType: z.enum(['bar', 'pie', 'line']).default('bar'),
+  dataSource: z.enum(['tasks.byStatus', 'projects.progress', 'activities.byProject']).optional(),
+  title: z.string().optional(),
 });
 
 const reportBlockSchema = z.discriminatedUnion('type', [
-    titleBlockSchema,
-    subtitleBlockSchema,
-    paragraphBlockSchema,
-    keyValueBlockSchema,
+    textBlockSchema,
     chartBlockSchema,
 ]);
 
