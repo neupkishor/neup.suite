@@ -3,14 +3,10 @@ import { z } from 'zod';
 
 export const reportSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  summary: z.string().min(1, 'Summary is required'),
+  content: z.string().min(1, 'HTML content is required'),
   clientId: z.string().min(1, 'Client ID is required'),
-  type: z.enum(['client', 'project', 'manual']).optional(),
-  dateRange: z.object({
-    from: z.date(),
-    to: z.date(),
-  }).optional(),
-  projectId: z.string().optional(),
+  templateId: z.string().optional(),
+  manualData: z.record(z.string(), z.any()).optional(),
   generatedOn: z.any().optional(),
 });
 

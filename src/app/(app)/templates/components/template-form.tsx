@@ -2,7 +2,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, useFieldArray, useFormContext } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,14 +15,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Plus, Trash2, Heading1, Heading2, Pilcrow, BarChart, GripVertical } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { addTemplate } from '../actions/add-template';
 import { templateSchema } from '@/schemas/template';
-import type { Template, ReportBlock } from '@/schemas/template';
+import type { Template } from '@/schemas/template';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -33,7 +33,7 @@ const prepareDataForForm = (template?: Template, clientId?: string): TemplateFor
       name: '',
       description: '',
       type: 'Report',
-      data: [],
+      body: '',
       version: 1,
       clientId: clientId || '',
     };
@@ -49,76 +49,6 @@ const prepareDataForForm = (template?: Template, clientId?: string): TemplateFor
     };
 }
 
-const blockConfigs = {
-    title: { icon: Heading1, label: 'Title' },
-    subtitle: { icon: Heading2, label: 'Subtitle' },
-    paragraph: { icon: Pilcrow, label: 'Paragraph' },
-    chart: { icon: BarChart, label: 'Chart' },
-};
-
-const dataSources = [
-    { value: 'tasks.byStatus', label: 'Tasks by Status' },
-    { value: 'projects.progress', label: 'Project Progress' },
-    { value: 'activities.byProject', label: 'Activities by Project' },
-]
-
-function ReportBlockItem({ index, remove }: { index: number, remove: (index: number) => void }) {
-    const { control, watch } = useFormContext<TemplateFormValues>();
-    const block = watch(`data.${index}`);
-    const Config = blockConfigs[block.type as keyof typeof blockConfigs];
-
-    return (
-        <div className="p-4 border rounded-lg space-y-4 relative bg-card">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground font-medium">
-                    <GripVertical className="h-5 w-5" />
-                    <Config.icon className="h-5 w-5" />
-                    <span>{Config.label}</span>
-                </div>
-                 <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => remove(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
-            </div>
-
-            {block.type === 'title' && (
-                <FormField control={control} name={`data.${index}.text`} render={({ field }) => (
-                    <FormItem><FormControl><Input placeholder="Main Report Title" {...field} className="text-2xl font-bold h-auto p-0 border-0" /></FormControl></FormItem>
-                )}/>
-            )}
-            {block.type === 'subtitle' && (
-                <FormField control={control} name={`data.${index}.text`} render={({ field }) => (
-                    <FormItem><FormControl><Input placeholder="Section Header" {...field} className="text-xl font-semibold h-auto p-0 border-0" /></FormControl></FormItem>
-                )}/>
-            )}
-            {block.type === 'paragraph' && (
-                <FormField control={control} name={`data.${index}.text`} render={({ field }) => (
-                    <FormItem><FormControl><Textarea placeholder="Introductory text or summary..." {...field} className="h-auto p-0 border-0" /></FormControl></FormItem>
-                )}/>
-            )}
-             {block.type === 'chart' && (
-                <div className="space-y-4">
-                    <FormField control={control} name={`data.${index}.title`} render={({ field }) => (
-                        <FormItem><FormLabel>Chart Title</FormLabel><FormControl><Input placeholder="e.g. Task Breakdown" {...field} /></FormControl></FormItem>
-                    )}/>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <FormField control={control} name={`data.${index}.chartType`} render={({ field }) => (
-                            <FormItem><FormLabel>Chart Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl>
-                                <SelectContent><SelectItem value="bar">Bar</SelectItem><SelectItem value="pie">Pie</SelectItem><SelectItem value="line">Line</SelectItem></SelectContent>
-                            </Select>
-                            </FormItem>
-                        )}/>
-                        <FormField control={control} name={`data.${index}.dataSource`} render={({ field }) => (
-                            <FormItem><FormLabel>Data Source</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select data..."/></SelectTrigger></FormControl>
-                                <SelectContent>{dataSources.map(ds => <SelectItem key={ds.value} value={ds.value}>{ds.label}</SelectItem>)}</SelectContent>
-                            </Select>
-                            </FormItem>
-                        )}/>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
 
 export function TemplateForm({ template, clientId }: { template?: Template, clientId: string }) {
   const firestore = useFirestore();
@@ -130,21 +60,9 @@ export function TemplateForm({ template, clientId }: { template?: Template, clie
     defaultValues: prepareDataForForm(template, clientId),
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "data"
-  });
-
   useEffect(() => {
     form.reset(prepareDataForForm(template, clientId));
   }, [template, clientId, form])
-
-  const addBlock = (type: ReportBlock['type']) => {
-    const newBlock: any = { id: crypto.randomUUID(), type };
-    if (type === 'title' || type === 'subtitle' || type === 'paragraph') newBlock.text = '';
-    if (type === 'chart') { newBlock.chartType = 'bar'; newBlock.dataSource = undefined; newBlock.title = ''; }
-    append(newBlock);
-  }
 
   async function onSubmit(values: TemplateFormValues) {
     if (!firestore) return;
@@ -154,7 +72,7 @@ export function TemplateForm({ template, clientId }: { template?: Template, clie
         const dataToSubmit = {
             ...values,
             version: (template?.version || 0) + 1,
-            createdBy: 'Jane Doe',
+            createdBy: 'Jane Doe', // Placeholder
         };
 
         await addTemplate(firestore, dataToSubmit as any);
@@ -208,7 +126,7 @@ export function TemplateForm({ template, clientId }: { template?: Template, clie
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Template Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!template}>
                         <FormControl>
                             <SelectTrigger>
                             <SelectValue placeholder="Select a type" />
@@ -230,27 +148,31 @@ export function TemplateForm({ template, clientId }: { template?: Template, clie
         
         <Card>
             <CardHeader>
-                <CardTitle>Report Builder</CardTitle>
-                <CardDescription>Add and arrange content blocks to design your report template.</CardDescription>
+                <CardTitle>Template Body</CardTitle>
+                <CardDescription>
+                    Write your report content using HTML. You can use Handlebars-style placeholders like 
+                    `{{client.name}}` for automatic data or `{{manual.yourFieldName}}` for fields that will be filled in manually when the report is generated.
+                </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4">
-                    {fields.map((field, index) => (
-                        <ReportBlockItem key={field.id} index={index} remove={remove} />
-                    ))}
-                </div>
-                 <div className="flex gap-2 flex-wrap mt-4 p-4 border-dashed border-2 rounded-lg justify-center">
-                    <Button type="button" variant="outline" size="sm" onClick={() => addBlock('title')}><Plus className="mr-2"/> Title</Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => addBlock('subtitle')}><Plus className="mr-2"/> Subtitle</Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => addBlock('paragraph')}><Plus className="mr-2"/> Paragraph</Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => addBlock('chart')}><Plus className="mr-2"/> Chart</Button>
-                </div>
+                <FormField
+                    control={form.control}
+                    name="body"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormControl>
+                            <Textarea {...field} rows={20} placeholder="<h1>Monthly Report for {{client.name}}</h1>" className="font-mono"/>
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
             </CardContent>
         </Card>
         
         <div className="flex gap-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting && <Loader2 className="mr-2 animate-spin" />}
             {template ? 'Save as New Version' : 'Create Template'}
           </Button>
           <Button variant="outline" asChild>

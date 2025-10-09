@@ -20,9 +20,9 @@ import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { addReport } from '../actions/add-report';
 import { updateReport } from '../actions/update-report';
 import { reportSchema } from '@/schemas/report';
+import { generateAndSaveReport } from '../actions/generate-report';
 
 type Report = z.infer<typeof reportSchema> & { id?: string };
 
@@ -35,7 +35,7 @@ export function ReportForm({ report, clientId }: { report?: Report, clientId: st
     resolver: zodResolver(reportSchema),
     defaultValues: report || {
       title: '',
-      summary: '',
+      content: '',
       clientId: clientId,
     },
   });
@@ -46,7 +46,7 @@ export function ReportForm({ report, clientId }: { report?: Report, clientId: st
     } else {
         form.reset({
             title: '',
-            summary: '',
+            content: '',
             clientId: clientId,
         });
     }
@@ -61,7 +61,7 @@ export function ReportForm({ report, clientId }: { report?: Report, clientId: st
       if (report?.id) {
         await updateReport(firestore, report.id, values);
       } else {
-        await addReport(firestore, values);
+        await generateAndSaveReport(firestore, values);
       }
       router.push('/reports');
       router.refresh();
@@ -89,12 +89,12 @@ export function ReportForm({ report, clientId }: { report?: Report, clientId: st
         />
         <FormField
           control={form.control}
-          name="summary"
+          name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Summary</FormLabel>
+              <FormLabel>Content (HTML)</FormLabel>
               <FormControl>
-                <Textarea placeholder="Provide a summary of the report..." {...field} />
+                <Textarea placeholder="<h1>Report Content</h1><p>Details...</p>" {...field} rows={15} />
               </FormControl>
               <FormMessage />
             </FormItem>

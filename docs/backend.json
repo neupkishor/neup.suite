@@ -19,12 +19,9 @@
           "enum": ["Project", "TaskList", "Document", "Report"],
           "description": "The type of entity this template creates."
         },
-        "data": {
-          "type": "array",
-          "description": "An array of content blocks that define the template structure.",
-           "items": {
-            "type": "object"
-          }
+        "body": {
+          "type": "string",
+          "description": "The HTML body of the template with placeholders."
         },
         "version": {
           "type": "number",
@@ -42,7 +39,7 @@
           "format": "date-time"
         }
       },
-      "required": ["name", "type", "data", "version", "createdBy", "createdOn", "clientId"]
+      "required": ["name", "type", "body", "version", "createdBy", "createdOn", "clientId"]
     },
     "Client": {
       "title": "Client",
@@ -357,20 +354,13 @@
         "type": "object",
         "properties": {
             "title": { "type": "string" },
-            "summary": { "type": "string" },
+            "content": { "type": "string", "description": "The final HTML content of the report." },
             "generatedOn": { "type": "string", "format": "date-time" },
             "clientId": { "type": "string" },
-            "type": { "type": "string", "enum": ["client", "project", "manual"]},
-            "dateRange": {
-                "type": "object",
-                "properties": {
-                    "from": { "type": "string", "format": "date-time" },
-                    "to": { "type": "string", "format": "date-time" }
-                }
-            },
-            "projectId": { "type": "string" }
+            "templateId": { "type": "string", "description": "The ID of the template used to generate this report." },
+            "manualData": { "type": "object", "description": "Data manually entered by the user when generating the report." }
         },
-        "required": ["title", "generatedOn", "clientId"]
+        "required": ["title", "content", "generatedOn", "clientId"]
     },
     "Feedback": {
         "title": "Feedback",

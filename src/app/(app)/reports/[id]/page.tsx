@@ -10,13 +10,7 @@ import { useMemo, use } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { deleteReport } from '../actions/delete-report';
 import { useRouter } from "next/navigation";
-
-type Report = {
-    id: string;
-    title: string;
-    summary: string;
-    generatedOn: string;
-};
+import type { Report } from "@/schemas/report";
 
 export default function ReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -28,7 +22,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
         return doc(firestore, 'reports', id) as DocumentReference<Report>;
     }, [firestore, id]);
 
-    const { data: report, loading } = useDoc<Report>(reportRef);
+    const { data: report, loading } = useDoc<Report & { generatedOn: { seconds: number } }>(reportRef);
 
     const handleDelete = async () => {
         if (!firestore || !id) return;
@@ -42,9 +36,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
     return <Card>
         <CardHeader><Skeleton className="h-8 w-3/4" /></CardHeader>
         <CardContent className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-40 w-full" />
         </CardContent>
     </Card>
   }
@@ -60,19 +52,16 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
             <div>
                 <CardTitle className="font-headline text-2xl">{report.title}</CardTitle>
                 <CardDescription>
-                    Generated on: {new Date(report.generatedOn).toLocaleString()}
+                    Generated on: {new Date(report.generatedOn.seconds * 1000).toLocaleString()}
                 </CardDescription>
             </div>
             <div className="flex gap-2">
-                <Button asChild>
-                    <Link href={`/reports/${id}/edit`}>Edit Report</Link>
-                </Button>
                  <Button variant="destructive" onClick={handleDelete}>Delete</Button>
             </div>
         </div>
       </CardHeader>
       <CardContent>
-        <p>{report.summary}</p>
+        <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: report.content }} />
       </CardContent>
     </Card>
   );

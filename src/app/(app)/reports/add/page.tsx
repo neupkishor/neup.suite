@@ -19,7 +19,7 @@ export default function AddReportPage() {
              <Card>
                 <CardHeader>
                     <CardTitle>Client Not Selected</CardTitle>
-                    <CardDescription>Please select a client before adding a new report.</CardDescription>
+                    <CardDescription>Please select a client before creating a new report.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Button asChild>
@@ -33,7 +33,7 @@ export default function AddReportPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Create New Report</CardTitle>
+        <CardTitle className="font-headline text-2xl">Create Manual Report</CardTitle>
         <CardDescription>
           Fill in the details to generate a new report.
         </CardDescription>
