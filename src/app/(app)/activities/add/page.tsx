@@ -59,17 +59,15 @@ export default function AddActivityPage() {
     }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Log a New Activity</CardTitle>
-        <CardDescription>
+    <div className="space-y-6">
+      <div className="space-y-1.5">
+        <h1 className="font-headline text-2xl font-semibold">Log a New Activity</h1>
+        <p className="text-muted-foreground text-sm">
           Record what you did, the results, and attach any relevant files or links.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ActivityForm clientId={clientId} projects={projects || []} />
-      </CardContent>
-    </Card>
+        </p>
+      </div>
+      <ActivityForm clientId={clientId} projects={projects || []} />
+    </div>
   );
 }
 
