@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { addTemplate } from '../actions/add-template';
-import { templateSchema, taskListItemSchema, type Template, type TaskListItem } from '@/schemas/template';
+import { templateSchema, taskListItemSchema, type Template } from '@/schemas/template';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { aiGenerateReportTemplate } from '@/ai/flows/ai-generate-report-template';
@@ -133,7 +133,7 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
     
     try {
       const response = await aiGenerateReportTemplate({ prompt: aiPrompt });
-      form.setValue('body', response.html);
+      form.setValue('body', response.html, { shouldValidate: true });
     } catch (error) {
         console.error("AI generation failed:", error);
         // Optionally, show a toast to the user
@@ -344,7 +344,7 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
         
         <div className="flex gap-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 animate-spin" />}
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {template ? 'Save as New Version' : 'Create Template'}
           </Button>
           <Button variant="outline" asChild>
