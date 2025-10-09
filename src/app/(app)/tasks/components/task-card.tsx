@@ -19,6 +19,7 @@ import {
   Calendar as CalendarIconLucide,
   CalendarIcon,
   Trash2,
+  Pencil,
 } from 'lucide-react';
 import {
   Popover,
@@ -182,6 +183,9 @@ export function TaskCard({
               </div>
             )}
           </div>
+          <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={(e) => { e.stopPropagation(); /* TODO: Navigate to edit page */ }} disabled>
+            <Pencil/>
+          </Button>
           <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
             <Trash2 className="text-destructive"/>
           </Button>

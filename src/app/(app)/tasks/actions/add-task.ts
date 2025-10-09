@@ -21,11 +21,15 @@ export async function addTask(
 ) {
   const taskCollection = collection(db, 'tasks');
   
-  const dataToSave = {
+  const dataToSave: Record<string, any> = {
     ...taskData,
     createdBy: userId,
     createdOn: serverTimestamp(),
   };
+
+  if (taskData.deadline === null) {
+    dataToSave.deadline = null;
+  }
 
   return addDoc(taskCollection, dataToSave).catch((serverError) => {
     const permissionError = new FirestorePermissionError({
