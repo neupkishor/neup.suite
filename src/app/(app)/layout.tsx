@@ -1,4 +1,3 @@
-
 'use client';
 import type { ReactNode } from "react";
 import { MainNav } from "@/components/main-nav";
@@ -23,27 +22,27 @@ import { BrandingProvider } from "@/context/branding-provider";
 function AppSidebar() {
   return (
     <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 flex-shrink-0 border-r bg-card md:block">
-        <ScrollArea className="h-full w-full">
-            <div className="p-4">
-                <MainNav />
-            </div>
-        </ScrollArea>
+      <ScrollArea className="h-full w-full">
+        <div className="p-4">
+          <MainNav />
+        </div>
+      </ScrollArea>
     </aside>
-  )
+  );
 }
 
 function MobileNav({ isOpen, onToggle }: { isOpen: boolean, onToggle: () => void }) {
-    return (
-        <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={onToggle}>
-                {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                <span className="sr-only">Toggle Menu</span>
-            </Button>
-        </CollapsibleTrigger>
-    )
+  return (
+    <CollapsibleTrigger asChild>
+      <Button variant="ghost" size="icon" className="md:hidden" onClick={onToggle}>
+        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        <span className="sr-only">Toggle Menu</span>
+      </Button>
+    </CollapsibleTrigger>
+  );
 }
 
-function NavLink({ href, children }: { href: string, children: React.ReactNode}) {
+function NavLink({ href, children }: { href: string, children: React.ReactNode }) {
   const pathname = usePathname();
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -56,14 +55,13 @@ function NavLink({ href, children }: { href: string, children: React.ReactNode})
   return <Link href={href} onClick={handleClick}>{children}</Link>;
 }
 
-
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const showSidebar = pathname !== '/communication';
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Close mobile menu on route change
+    // Stop loading bar and close menu on route change
     NProgress.done();
     setIsMobileMenuOpen(false);
   }, [pathname]);
@@ -79,67 +77,69 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     };
   }, [isMobileMenuOpen]);
 
-
   return (
     <FirebaseClientProvider>
-    <BrandingProvider>
-    <div className="flex min-h-screen w-full flex-col bg-background">
-       <Collapsible asChild open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <div className="relative w-full">
-            <header className="sticky top-0 z-20 w-full border-b bg-background/80 backdrop-blur-sm shadow-lg">
+      <BrandingProvider>
+        <div className="flex h-screen w-full flex-col bg-background overflow-hidden">
+          <Collapsible asChild open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <div className="relative w-full">
+              <header className="sticky top-0 z-20 w-full border-b bg-background/80 backdrop-blur-sm shadow-lg">
                 <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6">
-                    <div className="flex items-center gap-4 md:gap-8">
-                        <div className="md:hidden">
-                          <UserNav />
-                        </div>
-                        <NavLink href="/home">
-                            <div className="hidden md:block">
-                                <Logo />
-                            </div>
-                        </NavLink>
+                  <div className="flex items-center gap-4 md:gap-8">
+                    <div className="md:hidden">
+                      <UserNav />
                     </div>
-
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden">
-                        <NavLink href="/home">
-                            <Logo />
-                        </NavLink>
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                        <form className="relative ml-auto hidden sm:flex-initial">
-                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="search"
-                                placeholder="Search..."
-                                className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-                            />
-                        </form>
-                        <div className="hidden md:block">
-                            <UserNav />
-                        </div>
-                        <MobileNav isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(prev => !prev)} />
-                    </div>
-                </div>
-            </header>
-
-            <CollapsibleContent className="md:hidden absolute top-16 z-10 w-full bg-card border-b overflow-y-auto data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-                <div className="p-4 h-[calc(100vh-4rem)]">
-                    <MainNav />
-                </div>
-            </CollapsibleContent>
-            
-            {!isMobileMenuOpen && (
-              <div className="flex flex-1">
-                  <div className="mx-auto flex w-full max-w-[1440px]">
-                      {showSidebar && <AppSidebar />}
-                      <main className='flex-1 p-6'>{children}</main>
+                    <NavLink href="/home">
+                      <div className="hidden md:block">
+                        <Logo />
+                      </div>
+                    </NavLink>
                   </div>
+
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden">
+                    <NavLink href="/home">
+                      <Logo />
+                    </NavLink>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <form className="relative ml-auto hidden sm:flex-initial">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="search"
+                        placeholder="Search..."
+                        className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+                      />
+                    </form>
+                    <div className="hidden md:block">
+                      <UserNav />
+                    </div>
+                    <MobileNav
+                      isOpen={isMobileMenuOpen}
+                      onToggle={() => setIsMobileMenuOpen(prev => !prev)}
+                    />
+                  </div>
+                </div>
+              </header>
+
+              <CollapsibleContent className="md:hidden absolute top-16 z-10 w-full bg-card border-b overflow-y-auto data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+                <div className="p-4 h-[calc(100vh-4rem)]">
+                  <MainNav />
+                </div>
+              </CollapsibleContent>
+
+              <div className="flex flex-1 h-[calc(100vh-4rem)]">
+                <div className="mx-auto flex w-full max-w-[1440px]">
+                  {showSidebar && <AppSidebar />}
+                  <main className="flex-1 overflow-y-auto p-6">
+                    {children}
+                  </main>
+                </div>
               </div>
-            )}
+            </div>
+          </Collapsible>
         </div>
-      </Collapsible>
-    </div>
-    </BrandingProvider>
+      </BrandingProvider>
     </FirebaseClientProvider>
   );
 }
