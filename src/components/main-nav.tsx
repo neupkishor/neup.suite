@@ -26,6 +26,7 @@ import {
   Megaphone,
   Bell,
   Activity,
+  FileStack,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
@@ -45,6 +46,7 @@ const manageLinks = [
   { href: "/contacts", icon: Contact, label: "Contacts" },
   { href: "/team", icon: Users, label: "Team" },
   { href: "/goals", icon: Target, label: "Goals" },
+  { href: "/templates", icon: FileStack, label: "Templates" },
 ];
 
 const clientLinks = [
@@ -149,5 +151,3 @@ export function MainNav() {
     </nav>
   );
 }
-
-    

@@ -1,6 +1,38 @@
 
 {
   "entities": {
+    "Template": {
+      "title": "Template",
+      "description": "Represents a reusable template for creating new items like projects or tasks.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the template."
+        },
+        "description": {
+            "type": "string",
+            "description": "A short description of what the template is for."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Project", "TaskList", "Document"],
+          "description": "The type of entity this template creates."
+        },
+        "data": {
+          "type": "object",
+          "description": "The JSON object representing the template data."
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "createdOn": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["name", "type", "data", "createdBy", "createdOn"]
+    },
     "Client": {
       "title": "Client",
       "description": "Represents a client company or organization.",
@@ -316,7 +348,16 @@
             "title": { "type": "string" },
             "summary": { "type": "string" },
             "generatedOn": { "type": "string", "format": "date-time" },
-            "clientId": { "type": "string" }
+            "clientId": { "type": "string" },
+            "type": { "type": "string", "enum": ["client", "project", "manual"]},
+            "dateRange": {
+                "type": "object",
+                "properties": {
+                    "from": { "type": "string", "format": "date-time" },
+                    "to": { "type": "string", "format": "date-time" }
+                }
+            },
+            "projectId": { "type": "string" }
         },
         "required": ["title", "generatedOn", "clientId"]
     },
@@ -395,6 +436,10 @@
     }
   },
   "firestore": {
+    "/templates/{templateId}": {
+        "schema": { "$ref": "#/backend/entities/Template" },
+        "description": "Stores reusable templates."
+    },
     "/clients/{clientId}": {
       "schema": { "$ref": "#/backend/entities/Client" },
       "description": "Stores client information."
@@ -457,5 +502,3 @@
     }
   }
 }
-
-    
