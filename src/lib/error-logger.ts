@@ -1,6 +1,8 @@
 
 'use client';
 import Emitter from 'tiny-emitter';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '@/firebase';
 
 export interface AppError {
   id: string;
@@ -14,7 +16,7 @@ class ErrorLogger {
   private errors: AppError[] = [];
   private emitter = new Emitter();
 
-  public log(error: Error, context?: Record<string, any>) {
+  public async log(error: Error, context?: Record<string, any>) {
     console.error("Error Logged:", error);
     const newError: AppError = {
       id: Date.now().toString() + Math.random().toString(36).substring(2),
@@ -25,6 +27,13 @@ class ErrorLogger {
     };
     this.errors.unshift(newError); // Add to the beginning of the array
     this.emitter.emit('update', this.getErrors());
+
+    try {
+      const errorsCollection = collection(db, 'errors');
+      await addDoc(errorsCollection, newError);
+    } catch (firestoreError) {
+      console.error('Failed to log error to Firestore:', firestoreError);
+    }
   }
 
   public getErrors(): AppError[] {
