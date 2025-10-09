@@ -79,7 +79,7 @@ const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.Elemen
       href={href}
       onClick={handleClick}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 ease-in-out hover:bg-muted hover:text-foreground",
+        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 ease-in-out hover:bg-muted hover:text-foreground",
         isActive && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
       )}
     >
