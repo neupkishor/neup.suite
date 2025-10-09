@@ -6,14 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const router = useRouter();
 
     const handleProfileSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -44,6 +47,13 @@ export default function SettingsPage() {
             <CardDescription>Manage your account, branding, and notification preferences.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
+            <Tabs defaultValue="account" className="w-full" onValueChange={(value) => router.push(`/settings/${value === 'account' ? '' : value}`)}>
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="account">Account</TabsTrigger>
+                    <TabsTrigger value="branding">Branding</TabsTrigger>
+                    <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                </TabsList>
+            </Tabs>
             {/* Profile Section */}
             <section className="max-w-2xl space-y-6">
                 <div>
