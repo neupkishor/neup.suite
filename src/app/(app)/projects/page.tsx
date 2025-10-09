@@ -82,7 +82,7 @@ export default function ProjectsPage() {
         </CardHeader>
 
         <div className="grid grid-cols-1 gap-4">
-            {clientId && !loading && (
+            {!loading && (
                 <AddItemCard 
                     title="New Project" 
                     href="/projects/create" 

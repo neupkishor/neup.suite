@@ -23,41 +23,47 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useFirestore } from "@/firebase/provider";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { projectSchema } from "@/schemas/project";
 import { createProject } from "@/actions/projects/create-project";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Cookies from "js-cookie";
+import { useCollection } from "@/firebase";
+import { collection, CollectionReference } from "firebase/firestore";
+import type { Client } from "@/schemas/client";
 
 export default function CreateProjectPage() {
     const firestore = useFirestore();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
-    const [clientId, setClientId] = useState<string | null>(null);
-
-    useEffect(() => {
-        setClientId(Cookies.get('client') || null);
-    }, []);
+    const [clientIdFromCookie] = useState<string | null>(Cookies.get('client') || null);
 
   const form = useForm<z.infer<typeof projectSchema>>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
       name: "",
       status: 'Planning',
-      clientId: clientId || '',
+      clientId: clientIdFromCookie || '',
     },
   });
 
+  const clientsCollection = useMemo(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'clients') as CollectionReference<Client>;
+  }, [firestore]);
+  const { data: clients, loading: clientsLoading } = useCollection<Client>(clientsCollection);
+
+
   useEffect(() => {
-      if (clientId) {
-          form.setValue('clientId', clientId);
+      if (clientIdFromCookie) {
+          form.setValue('clientId', clientIdFromCookie);
       }
-  }, [clientId, form]);
+  }, [clientIdFromCookie, form]);
 
   async function onSubmit(values: z.infer<typeof projectSchema>) {
-    if (!firestore || !clientId) return;
+    if (!firestore) return;
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -73,22 +79,6 @@ export default function CreateProjectPage() {
     }
   }
 
-  if (!clientId) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>No Client Selected</CardTitle>
-          <CardDescription>You must select a client before creating a project.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild>
-            <Link href="/clients">Select a Client</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
         <CardHeader>
@@ -98,6 +88,30 @@ export default function CreateProjectPage() {
         <CardContent>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
+                    {!clientIdFromCookie && (
+                         <FormField
+                            control={form.control}
+                            name="clientId"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Client</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={clientsLoading}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Select a client" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {clients?.map((client) => (
+                                        <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                    )}
                     <FormField
                     control={form.control}
                     name="name"
