@@ -30,38 +30,60 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function HomePage() {
   const firestore = useFirestore();
   const [clientId, setClientId] = useState<string | null>(null);
+  const [isClientCheckDone, setIsClientCheckDone] = useState(false);
 
   useEffect(() => {
     setClientId(Cookies.get('client') || null);
+    setIsClientCheckDone(true);
   }, []);
 
   const projectsCollection = useMemo(() => {
-    if (!firestore || !clientId) return null;
-    return query(collection(firestore, 'projects') as CollectionReference<Project>, where('clientId', '==', clientId));
+    if (!firestore) return null;
+    let q = collection(firestore, 'projects') as CollectionReference<Project>;
+    if (clientId) {
+      return query(q, where('clientId', '==', clientId));
+    }
+    return query(q);
   }, [firestore, clientId]);
   const { data: projects, loading: projectsLoading } = useCollection<Project>(projectsCollection);
 
   const tasksCollection = useMemo(() => {
-    if (!firestore || !clientId) return null;
-    return query(collection(firestore, 'tasks') as CollectionReference<Task>, where('clientId', '==', clientId));
+    if (!firestore) return null;
+    let q = collection(firestore, 'tasks') as CollectionReference<Task>;
+     if (clientId) {
+      return query(q, where('clientId', '==', clientId));
+    }
+    return query(q);
   }, [firestore, clientId]);
   const { data: tasks, loading: tasksLoading } = useCollection<Task>(tasksCollection);
   
   const invoicesCollection = useMemo(() => {
-    if (!firestore || !clientId) return null;
-    return query(collection(firestore, 'invoices') as CollectionReference<Invoice>, where('clientId', '==', clientId));
+    if (!firestore) return null;
+    let q = collection(firestore, 'invoices') as CollectionReference<Invoice>;
+     if (clientId) {
+      return query(q, where('clientId', '==', clientId));
+    }
+    return query(q);
   }, [firestore, clientId]);
   const { data: invoices, loading: invoicesLoading } = useCollection<Invoice>(invoicesCollection);
 
   const contactsCollection = useMemo(() => {
-    if (!firestore || !clientId) return null;
-    return query(collection(firestore, 'contacts') as CollectionReference<Contact & {id: string}>, where('clientId', '==', clientId));
+    if (!firestore) return null;
+    let q = collection(firestore, 'contacts') as CollectionReference<Contact & {id: string}>;
+    if (clientId) {
+      return query(q, where('clientId', '==', clientId));
+    }
+    return query(q);
   }, [firestore, clientId]);
   const { data: contacts, loading: contactsLoading } = useCollection<Contact & {id: string}>(contactsCollection);
 
   const goalsCollection = useMemo(() => {
-    if (!firestore || !clientId) return null;
-    return query(collection(firestore, 'goals') as CollectionReference<Goal>, where('clientId', '==', clientId));
+    if (!firestore) return null;
+    let q = collection(firestore, 'goals') as CollectionReference<Goal>;
+    if (clientId) {
+      return query(q, where('clientId', '==', clientId));
+    }
+    return query(q);
   }, [firestore, clientId]);
   const { data: goals, loading: goalsLoading } = useCollection<Goal>(goalsCollection);
 
@@ -79,25 +101,7 @@ export default function HomePage() {
     return data;
   }, [projects, tasks, invoices]);
 
-  const loading = projectsLoading || tasksLoading || invoicesLoading || contactsLoading || goalsLoading;
-
-  if (!clientId && !loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Card className="w-full max-w-md text-center">
-            <CardHeader>
-                <CardTitle>Welcome to Neup.Suite</CardTitle>
-                <CardDescription>Select a client to view their dashboard and start managing projects.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Button asChild>
-                    <Link href="/clients">Select a Client</Link>
-                </Button>
-            </CardContent>
-        </Card>
-      </div>
-    )
-  }
+  const loading = projectsLoading || tasksLoading || invoicesLoading || contactsLoading || goalsLoading || !isClientCheckDone;
   
   if (loading) {
       return <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
