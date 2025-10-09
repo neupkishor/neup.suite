@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFirestore } from "@/firebase/provider";
@@ -7,14 +6,13 @@ import { useEffect, useMemo, useState } from "react";
 import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useCollection, useDoc } from "@/firebase";
+import { useCollection } from "@/firebase";
 import type { Template } from "@/schemas/template";
 import type { Client } from "@/schemas/client";
 import type { Task } from "@/schemas/task";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { generateAndSaveReport } from "../actions/generate-report";
 import { useRouter } from "next/navigation";
@@ -33,10 +31,9 @@ const renderTemplate = (templateBody: string, data: Record<string, any>): string
   let rendered = templateBody;
 
   // Replace simple placeholders like {{client.name}}
-  const simpleRegex = /\{\{(\w+\.\w+)\}\}/g;
-  rendered = rendered.replace(simpleRegex, (match, p1) => {
-    const [object, key] = p1.split('.');
-    return data[object]?.[key] || match;
+  const simpleRegex = /\{\{client\.(\w+)\}\}/g;
+  rendered = rendered.replace(simpleRegex, (match, key) => {
+    return data.client?.[key] || match;
   });
 
   // Replace manual placeholders like {{manual.customNote}}
@@ -50,13 +47,28 @@ const renderTemplate = (templateBody: string, data: Record<string, any>): string
     rendered = rendered.replace(loopRegex, (match, p1, innerTemplate) => {
         const items = data[p1];
         if (!Array.isArray(items)) return '';
-        return items.map(item => {
+        
+        let allItemsHtml = '';
+        for (const item of items) {
             let itemHtml = innerTemplate;
             const itemRegex = /\{\{this\.(\w+)\}\}/g;
-            return itemHtml.replace(itemRegex, (itemMatch, itemKey) => item[itemKey] || itemMatch);
-        }).join('');
+            itemHtml = itemHtml.replace(itemRegex, (itemMatch, itemKey) => {
+                // Access nested properties if any
+                const keys = itemKey.split('.');
+                let value = item;
+                for (const key of keys) {
+                    if (value && typeof value === 'object' && key in value) {
+                        value = value[key];
+                    } else {
+                        return itemMatch;
+                    }
+                }
+                return value;
+            });
+            allItemsHtml += itemHtml;
+        }
+        return allItemsHtml;
     });
-
 
   return rendered;
 };
@@ -97,6 +109,7 @@ export default function GenerateReportPage() {
             setManualFieldValues(fields.reduce((acc, field) => ({ ...acc, [field]: '' }), {}));
         } else {
             setManualFields([]);
+            setManualFieldValues({});
         }
     }, [selectedTemplate]);
 
@@ -114,7 +127,8 @@ export default function GenerateReportPage() {
 
         try {
             // 1. Fetch all required data
-            const clientDoc = await getDocs(query(collection(firestore, 'clients'), where('__name__', '==', clientId)));
+            const clientQuery = query(collection(firestore, 'clients'), where('__name__', '==', clientId));
+            const clientDoc = await getDocs(clientQuery);
             const clientData = clientDoc.docs[0]?.data() as Client;
 
             const tasksSnapshot = await getDocs(query(collection(firestore, 'tasks'), where('clientId', '==', clientId)));

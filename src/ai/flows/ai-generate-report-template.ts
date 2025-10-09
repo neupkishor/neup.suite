@@ -28,20 +28,39 @@ const prompt = ai.definePrompt({
   name: 'aiGenerateReportTemplatePrompt',
   input: {schema: AIGenerateReportTemplateInputSchema},
   output: {schema: AIGenerateReportTemplateOutputSchema},
-  prompt: `You are an expert at creating HTML report templates that use Handlebars-style syntax for placeholders.
+  prompt: `You are an expert at creating beautiful, modern, and well-structured HTML report templates. The templates use Handlebars-style syntax for placeholders.
 
-  Your task is to generate a clean, modern, and well-structured HTML document based on the user's prompt. The HTML should use simple tags and can include inline styles for basic formatting if necessary, but prefer using semantic HTML.
+  Your task is to generate a full, self-contained HTML document based on the user's prompt. The styling should be clean, professional, and included directly in the HTML file using a <style> tag in the <head>.
 
-  You have access to the following data objects and their fields:
-  - 'client': Represents the client with fields like 'name', 'contactEmail'.
-  - 'tasks': An array of task objects. You can loop through them using '{{#each tasks}}...{{/each}}'. Inside the loop, you can access task fields like 'title', 'description', 'status', and 'deadline'.
-  - 'manual': An object for data that the user will enter manually when generating the report. Use placeholders like '{{manual.custom_note}}' or '{{manual.summary_text}}' for these.
+  **Styling Guidelines:**
+  - Use a modern, clean design aesthetic.
+  - For colors, use CSS variables that are already defined in the app to ensure brand consistency. Key variables include:
+    - \`--primary\`: For main headers, links, and highlights. (e.g., \`color: hsl(var(--primary));\`)
+    - \`--foreground\`: For primary body text.
+    - \`--muted-foreground\`: For secondary or less important text.
+    - \`--background\`: For the page background.
+    - \`--card\`: For the background of card-like elements.
+    - \`--border\`: For borders.
+  - Do NOT use external CSS files. All styles must be inside a <style> block.
 
-  **Instructions:**
-  1.  Analyze the user's prompt: {{{prompt}}}
-  2.  Create a full HTML document.
-  3.  Use Handlebars-style placeholders '{{...}}' to inject dynamic data from the 'client', 'tasks', and 'manual' objects. Use '{{#each tasks}}' for loops.
-  4.  The output must be a single block of valid HTML. Do not include any explanation or markdown formatting around the HTML.
+  **Data Placeholders:**
+  You have access to the following data objects. Use Handlebars-style placeholders '{{...}}' to inject this data.
+
+  1.  **Dynamic Data (pre-filled by the system):**
+      - \`client\`: Represents the client. Access fields like \`{{client.name}}\` and \`{{client.contactEmail}}\`.
+      - \`tasks\`: An array of task objects. Loop through them using \`{{#each tasks}}...{{/each}}\`. Inside the loop, access task fields like \`{{this.title}}\`, \`{{this.description}}\`, \`{{this.status}}\`, and \`{{this.deadline}}\`.
+
+  2.  **Manual Entry Data (will be collected from the user):**
+      - **CRITICAL:** For any data that needs to be manually entered by the user when they generate the report, you MUST use the \`{{manual.your_field_name}}\` format. The system will automatically create a form field for each unique \`manual\` placeholder.
+      - Example: For a user to add a custom summary, you would include a placeholder like \`{{manual.report_summary}}\`. For an introductory paragraph, use \`{{manual.introduction_text}}\`.
+
+  **User's Prompt:**
+  {{{prompt}}}
+
+  **Output Instructions:**
+  - The final output must be a single block of valid, complete HTML.
+  - Do not include any explanation, comments, or markdown formatting around the HTML code.
+  - Start with \`<!DOCTYPE html>\` and include \`<head>\` and \`<body>\` sections.
   `,
 });
 
