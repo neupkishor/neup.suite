@@ -73,7 +73,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     defaultValues: {
       invoiceId: '',
       title: '',
-      description: '',
+      description: undefined,
       clientName: '',
       amount: 0,
       currency: 'USD',
@@ -86,6 +86,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     if (invoice) {
       form.reset({
         ...invoice,
+        description: invoice.description || undefined,
         dueDate: new Date(invoice.dueDate),
       });
     }
@@ -344,4 +345,3 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     </Card>
   );
 }
-

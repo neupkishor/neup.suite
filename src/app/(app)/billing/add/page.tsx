@@ -76,7 +76,7 @@ export default function AddInvoicePage() {
     defaultValues: {
         invoiceId: generateInvoiceId(),
         title: '',
-        description: '',
+        description: undefined,
         status: 'Due',
         clientName: '',
         amount: 0,
