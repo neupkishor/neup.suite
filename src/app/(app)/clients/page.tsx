@@ -73,11 +73,6 @@ export default function ClientsPage() {
             </div>
         </div>
       </CardHeader>
-      {!selectedClientId && !loading && (
-          <div className="p-4 bg-yellow-100 dark:bg-yellow-900/50 border border-yellow-300 dark:border-yellow-700 rounded-lg">
-            <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Please select a client to begin managing their work.</p>
-        </div>
-      )}
       <div className="grid grid-cols-1 gap-4">
         {!loading && (
             <AddItemCard
