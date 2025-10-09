@@ -22,12 +22,18 @@ export async function createProject(
   userId: string
 ) {
   const projectsCollection = collection(db, 'projects');
-  
-  return addDoc(projectsCollection, {
+
+  const dataToSave = {
     ...projectData,
     createdBy: userId,
     createdOn: serverTimestamp(),
-  }).catch((serverError) => {
+  };
+
+  if (dataToSave.clientId === 'no-client') {
+    delete dataToSave.clientId;
+  }
+  
+  return addDoc(projectsCollection, dataToSave).catch((serverError) => {
     const permissionError = new FirestorePermissionError({
       path: projectsCollection.path,
       operation: 'create',

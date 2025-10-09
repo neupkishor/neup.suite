@@ -9,5 +9,5 @@ export const projectSchema = z.object({
     required_error: "A deadline is required.",
   }),
   status: z.enum(['Planning', 'In Progress', 'On Hold', 'Completed']),
-  clientId: z.string().min(1, 'Client ID is required'),
+  clientId: z.string().optional(),
 });

@@ -1,6 +1,49 @@
 
 {
   "entities": {
+    "Template": {
+      "title": "Template",
+      "description": "Represents a reusable template for creating new items like projects or tasks.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the template."
+        },
+        "description": {
+            "type": "string",
+            "description": "A short description of what the template is for."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Project", "TaskList", "Document", "Report"],
+          "description": "The type of entity this template creates."
+        },
+        "data": {
+          "type": "array",
+          "description": "An array of content blocks that define the template structure.",
+           "items": {
+            "type": "object"
+          }
+        },
+        "version": {
+          "type": "number",
+          "description": "The version of the template."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "The ID of the client this template belongs to."
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "createdOn": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["name", "type", "data", "version", "createdBy", "createdOn", "clientId"]
+    },
     "Client": {
       "title": "Client",
       "description": "Represents a client company or organization.",
@@ -100,7 +143,7 @@
           "type": "string"
         }
       },
-      "required": ["name", "createdBy", "createdOn", "status", "deadline", "clientId"]
+      "required": ["name", "createdBy", "createdOn", "status", "deadline"]
     },
     "Task": {
       "title": "Task",
@@ -404,6 +447,10 @@
     }
   },
   "firestore": {
+    "/templates/{templateId}": {
+        "schema": { "$ref": "#/backend/entities/Template" },
+        "description": "Stores reusable templates."
+    },
     "/clients/{clientId}": {
       "schema": { "$ref": "#/backend/entities/Client" },
       "description": "Stores client information."

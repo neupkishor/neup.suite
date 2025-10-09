@@ -45,7 +45,7 @@ export default function CreateProjectPage() {
     defaultValues: {
       name: "",
       status: 'Planning',
-      clientId: clientIdFromCookie || '',
+      clientId: clientIdFromCookie || undefined,
     },
   });
 
@@ -88,30 +88,29 @@ export default function CreateProjectPage() {
         <CardContent>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
-                    {!clientIdFromCookie && (
-                         <FormField
-                            control={form.control}
-                            name="clientId"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Client</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={clientsLoading}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                    <SelectValue placeholder="Select a client" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {clients?.map((client) => (
-                                        <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                    )}
+                    <FormField
+                        control={form.control}
+                        name="clientId"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Client (Optional)</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={clientsLoading}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select a client" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="no-client">No Client</SelectItem>
+                                {clients?.map((client) => (
+                                    <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
                     <FormField
                     control={form.control}
                     name="name"
