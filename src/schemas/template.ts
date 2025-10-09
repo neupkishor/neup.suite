@@ -1,6 +1,11 @@
 
 import { z } from 'zod';
 
+export const taskListItemSchema = z.object({
+  title: z.string().min(1, 'Task title is required'),
+  description: z.string().optional(),
+});
+
 export const templateSchema = z.object({
   name: z.string().min(1, 'Template name is required'),
   description: z.string().optional(),
@@ -11,3 +16,4 @@ export const templateSchema = z.object({
 });
 
 export type Template = z.infer<typeof templateSchema> & { id: string };
+export type TaskListItem = z.infer<typeof taskListItemSchema>;

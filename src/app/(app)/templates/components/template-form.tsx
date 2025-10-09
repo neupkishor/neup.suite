@@ -2,7 +2,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,51 +15,39 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { addTemplate } from '../actions/add-template';
-import { templateSchema } from '@/schemas/template';
-import type { Template } from '@/schemas/template';
+import { templateSchema, taskListItemSchema, type Template, type TaskListItem } from '@/schemas/template';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-type TemplateFormValues = z.infer<typeof templateSchema>;
 
-const prepareDataForForm = (template?: Template, clientId?: string): TemplateFormValues => {
-    const defaultValues: TemplateFormValues = {
-      name: '',
-      description: '',
-      type: 'Report',
-      body: '',
-      version: 1,
-      clientId: clientId || '',
-    };
+const formSchema = z.discriminatedUnion('type', [
+  z.object({
+    name: z.string().min(1, 'Template name is required'),
+    description: z.string().optional(),
+    type: z.literal('TaskList'),
+    tasks: z.array(taskListItemSchema).min(1, 'At least one task is required.'),
+    version: z.number().default(1),
+    clientId: z.string().min(1, 'Client ID is required'),
+  }),
+  z.object({
+    name: z.string().min(1, 'Template name is required'),
+    description: z.string().optional(),
+    type: z.enum(['Project', 'Document', 'Report']),
+    body: z.string().min(1, 'Body is required'),
+    version: z.number().default(1),
+    clientId: z.string().min(1, 'Client ID is required'),
+  }),
+]);
 
-    if (!template) {
-        return defaultValues;
-    }
 
-    return {
-        ...defaultValues,
-        ...template,
-        version: (template.version || 0) + 1,
-        description: template.description || '',
-    };
-};
+type TemplateFormValues = z.infer<typeof formSchema>;
 
-const taskListPlaceholder = `[
-  {
-    "title": "Onboarding Call",
-    "description": "Initial call with the client to discuss project goals."
-  },
-  {
-    "title": "Send Welcome Packet",
-    "assignees": ["Jane Doe"]
-  }
-]`;
 
 const reportPlaceHolder = `<h1>Monthly Report for {{{{client.name}}}}</h1>
 
@@ -81,8 +69,44 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<TemplateFormValues>({
-    resolver: zodResolver(templateSchema),
-    defaultValues: prepareDataForForm(template, clientId),
+    resolver: zodResolver(formSchema),
+    defaultValues: (() => {
+      if (!template) {
+        return {
+          name: '',
+          description: '',
+          type: 'Report',
+          body: '',
+          version: 1,
+          clientId: clientId,
+        };
+      }
+      if (template.type === 'TaskList') {
+        try {
+          const tasks = JSON.parse(template.body);
+          return {
+            ...template,
+            version: (template.version || 0) + 1,
+            description: template.description || '',
+            tasks,
+          }
+        } catch(e) {
+          // Fallback if JSON is invalid
+           return {
+            ...template,
+            type: 'TaskList',
+            version: (template.version || 0) + 1,
+            description: template.description || '',
+            tasks: [],
+          }
+        }
+      }
+      return {
+        ...template,
+        version: (template.version || 0) + 1,
+        description: template.description || '',
+      }
+    })() as TemplateFormValues,
   });
 
   const templateType = useWatch({
@@ -90,35 +114,40 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
       name: 'type',
   });
 
+   const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: templateType === 'TaskList' ? 'tasks' : 'body' as never, // Conditional name
+  });
+
+
   useEffect(() => {
-    form.reset(prepareDataForForm(template, clientId));
+    // We don't need to reset form on type change as discriminated union handles it
   }, [template, clientId, form]);
 
   async function onSubmit(values: TemplateFormValues) {
     if (!firestore) return;
     setIsSubmitting(true);
     
+    let body = '';
+    if (values.type === 'TaskList') {
+      body = JSON.stringify(values.tasks, null, 2);
+    } else {
+      body = values.body;
+    }
+
     try {
-        // For TaskList, validate that body is valid JSON
-        if (values.type === 'TaskList') {
-            try {
-                JSON.parse(values.body);
-            } catch (e) {
-                form.setError('body', { type: 'manual', message: 'Task List body must be valid JSON.' });
-                setIsSubmitting(false);
-                return;
-            }
-        }
+      const dataToSubmit: z.infer<typeof templateSchema> = {
+          name: values.name,
+          description: values.description,
+          type: values.type,
+          version: (template?.version || 0) + 1,
+          clientId: values.clientId,
+          body: body,
+      };
 
-        const dataToSubmit = {
-            ...values,
-            version: (template?.version || 0) + 1,
-            createdBy: 'Jane Doe', // Placeholder
-        };
-
-        await addTemplate(firestore, dataToSubmit as any);
-        router.push('/templates');
-        router.refresh();
+      await addTemplate(firestore, {...dataToSubmit, createdBy: 'Jane Doe'});
+      router.push('/templates');
+      router.refresh();
 
     } catch (error) {
       console.error(error);
@@ -129,7 +158,7 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
   const getBodyLabel = () => {
     switch(templateType) {
         case 'Report': return 'Report Body (HTML)';
-        case 'TaskList': return 'Task List (JSON)';
+        case 'TaskList': return 'Tasks';
         default: return 'Template Body';
     }
   }
@@ -137,7 +166,7 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
   const getBodyDescription = () => {
     switch(templateType) {
         case 'Report': return 'Write your report content using HTML. Use Handlebars-style placeholders like {{{{client.name}}}} for auto-data or {{{{manual.yourFieldName}}}} for manual entry fields.';
-        case 'TaskList': return 'Define tasks as a JSON array. Each object should represent a task with properties like "title", "description", "assignees", etc.';
+        case 'TaskList': return 'Add, edit, and reorder the tasks that will be created when this template is used.';
         default: return 'Define the template content.';
     }
   }
@@ -145,7 +174,6 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
     const getBodyPlaceholder = () => {
         switch(templateType) {
             case 'Report': return reportPlaceHolder;
-            case 'TaskList': return taskListPlaceholder;
             default: return '';
         }
     }
@@ -219,18 +247,57 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <FormField
-                    control={form.control}
-                    name="body"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormControl>
-                            <Textarea {...field} rows={20} placeholder={getBodyPlaceholder()} className="font-mono"/>
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                {templateType === 'TaskList' ? (
+                     <div className="space-y-4">
+                        {fields.map((field, index) => (
+                           <div key={field.id} className="p-4 border rounded-lg space-y-3 bg-muted/50">
+                                <div className="flex justify-between items-center">
+                                    <h4 className="font-semibold">Task {index + 1}</h4>
+                                    <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}><Trash2/></Button>
+                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name={`tasks.${index}.title` as const}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Title</FormLabel>
+                                        <FormControl><Input placeholder="Task title" {...field} /></FormControl>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name={`tasks.${index}.description` as const}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Description</FormLabel>
+                                        <FormControl><Textarea placeholder="Optional: describe the task..." {...field} /></FormControl>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                           </div>
+                        ))}
+                        <Button type="button" variant="outline" onClick={() => append({ title: '', description: '' })}>
+                            <PlusCircle className="mr-2" /> Add Task
+                        </Button>
+                        <FormMessage>{form.formState.errors.tasks?.root?.message}</FormMessage>
+                    </div>
+                ) : (
+                    <FormField
+                        control={form.control}
+                        name="body"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormControl>
+                                <Textarea {...field} rows={20} placeholder={getBodyPlaceholder()} className="font-mono"/>
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
             </CardContent>
         </Card>
         
