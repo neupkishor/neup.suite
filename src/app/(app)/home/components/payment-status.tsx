@@ -24,9 +24,9 @@ export function PaymentStatus({ invoices }: { invoices: Invoice[] | null }) {
             </CardHeader>
             <CardContent className="space-y-4">
                 <Skeleton className="h-20 w-full" />
-                <div className="flex gap-2">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
+                <div className="flex flex-wrap gap-2">
+                    <Skeleton className="h-10 flex-1" />
+                    <Skeleton className="h-10 flex-1" />
                 </div>
             </CardContent>
         </Card>
@@ -65,7 +65,7 @@ export function PaymentStatus({ invoices }: { invoices: Invoice[] | null }) {
                  <p className="text-muted-foreground">No outstanding payments.</p>
              </div>
         )}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
             <Button className="flex-1" disabled={!nextDueInvoice}>Pay Now</Button>
             <Button variant="outline" className="flex-1" asChild>
                 <Link href="/billing"><Receipt className="mr-2 h-4 w-4"/> View Invoices</Link>
