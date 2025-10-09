@@ -1,3 +1,4 @@
+
 'use client';
 import type { ReactNode } from "react";
 import { MainNav } from "@/components/main-nav";
@@ -131,7 +132,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <div className="flex flex-1 h-[calc(100vh-4rem)]">
                 <div className="mx-auto flex w-full max-w-[1440px]">
                   {showSidebar && <AppSidebar />}
-                  <main className="flex-1 overflow-y-auto p-6">
+                  <main className="flex-1 overflow-y-auto p-6 pb-16">
                     {children}
                   </main>
                 </div>
