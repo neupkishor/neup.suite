@@ -1,13 +1,12 @@
 
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCollection } from "@/firebase";
 import { useFirestore } from "@/firebase/provider";
-import { collection, CollectionReference, query, where, orderBy } from "firebase/firestore";
+import { collection, query, where, orderBy, limit, getDocs, startAfter, endBefore, limitToLast, DocumentSnapshot } from "firebase/firestore";
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Activity } from "lucide-react";
+import { Activity, ArrowLeft, ArrowRight } from "lucide-react";
 import { AddItemCard } from "@/components/add-item-card";
 import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
@@ -34,24 +33,102 @@ function ActivityCard({ activity }: { activity: ActivityType & { createdOn: { se
     )
 }
 
+const ACTIVITIES_PER_PAGE = 10;
+
 export default function ActivitiesPage() {
     const firestore = useFirestore();
     const [clientId, setClientId] = useState<string|null>(null);
+    const [activities, setActivities] = useState<(ActivityType & { createdOn: { seconds: number } })[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
+    const [firstDoc, setFirstDoc] = useState<DocumentSnapshot | null>(null);
+    const [isFirstPage, setIsFirstPage] = useState(true);
+    const [isLastPage, setIsLastPage] = useState(false);
+
 
     useEffect(() => {
         setClientId(Cookies.get('client') || null);
     }, []);
 
-    const activitiesCollection = useMemo(() => {
-        if (!firestore || !clientId) return null;
-        return query(
-            collection(firestore, 'activities') as CollectionReference<ActivityType>,
-            where('clientId', '==', clientId),
-            orderBy('createdOn', 'desc')
-        );
-    }, [firestore, clientId]);
+    const fetchActivities = async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
+        if (!firestore || !clientId) {
+            setLoading(false);
+            return;
+        }
+        
+        setLoading(true);
 
-    const { data: activities, loading } = useCollection<ActivityType & { createdOn: { seconds: number } }>(activitiesCollection);
+        try {
+            const activitiesCollection = collection(firestore, 'activities');
+            let q;
+
+            if (direction === 'next' && lastDoc) {
+                 q = query(
+                    activitiesCollection,
+                    where('clientId', '==', clientId),
+                    orderBy('createdOn', 'desc'),
+                    startAfter(lastDoc),
+                    limit(ACTIVITIES_PER_PAGE)
+                );
+            } else if (direction === 'prev' && firstDoc) {
+                 q = query(
+                    activitiesCollection,
+                    where('clientId', '==', clientId),
+                    orderBy('createdOn', 'desc'),
+                    endBefore(firstDoc),
+                    limitToLast(ACTIVITIES_PER_PAGE)
+                );
+            } else {
+                 q = query(
+                    activitiesCollection,
+                    where('clientId', '==', clientId),
+                    orderBy('createdOn', 'desc'),
+                    limit(ACTIVITIES_PER_PAGE)
+                );
+            }
+
+            const documentSnapshots = await getDocs(q);
+            const fetchedActivities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ActivityType & { createdOn: { seconds: number } }));
+            
+            setActivities(fetchedActivities);
+
+            const newFirstDoc = documentSnapshots.docs[0];
+            const newLastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+            setFirstDoc(newFirstDoc || null);
+            setLastDoc(newLastDoc || null);
+            
+            if (direction === 'initial' || direction === 'prev') {
+                const prevQuery = query(activitiesCollection, where('clientId', '==', clientId), orderBy('createdOn', 'desc'), endBefore(newFirstDoc), limitToLast(1));
+                const prevSnap = await getDocs(prevQuery);
+                setIsFirstPage(prevSnap.empty);
+            } else {
+                 setIsFirstPage(false);
+            }
+            
+            if (direction === 'initial' || direction === 'next') {
+                const nextQuery = query(activitiesCollection, where('clientId', '==', clientId), orderBy('createdOn', 'desc'), startAfter(newLastDoc), limit(1));
+                const nextSnap = await getDocs(nextQuery);
+                setIsLastPage(nextSnap.empty);
+            } else {
+                setIsLastPage(false);
+            }
+
+        } catch (error) {
+            console.error("Error fetching activities:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if(clientId) {
+            fetchActivities();
+        } else {
+            setActivities([]);
+            setLoading(false);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [clientId, firestore]);
 
   return (
     <div className="space-y-6">
@@ -73,27 +150,31 @@ export default function ActivitiesPage() {
                 </CardContent>
             </Card>
         ) : (
-      <div className="grid grid-cols-1 gap-4">
-        {!loading && (
-            <AddItemCard
-                title="New Activity"
-                href="/activities/add"
-                icon={Activity}
-            />
-        )}
-        {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
-        {activities?.map(item => <ActivityCard key={item.id} activity={item} />)}
-          {!loading && activities?.length === 0 && (
-            <Card>
-                <CardContent className="p-6 text-center text-muted-foreground">
-                    No activities found for this client.
-                </CardContent>
-            </Card>
-        )}
-      </div>
+        <>
+            <div className="grid grid-cols-1 gap-4">
+                {!loading && (
+                    <AddItemCard
+                        title="New Activity"
+                        href="/activities/add"
+                        icon={Activity}
+                    />
+                )}
+                {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
+                {activities?.map(item => <ActivityCard key={item.id} activity={item} />)}
+                {!loading && activities?.length === 0 && (
+                    <Card>
+                        <CardContent className="p-6 text-center text-muted-foreground">
+                            No activities found for this client.
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+            <div className="flex justify-end gap-2">
+                <Button onClick={() => fetchActivities('prev')} disabled={loading || isFirstPage} variant="outline"><ArrowLeft/> Previous</Button>
+                <Button onClick={() => fetchActivities('next')} disabled={loading || isLastPage} variant="outline">Next <ArrowRight/></Button>
+            </div>
+        </>
       )}
     </div>
   );
 }
-
-    
