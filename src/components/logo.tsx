@@ -1,6 +1,10 @@
+
+'use client';
+import { useBranding } from "@/context/branding-provider";
 import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
+  const { appName } = useBranding();
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <svg
@@ -20,7 +24,7 @@ export function Logo({ className }: { className?: string }) {
         />
       </svg>
       <span className="font-headline text-lg font-semibold text-foreground">
-        Neup.Suite
+        {appName}
       </span>
     </div>
   );

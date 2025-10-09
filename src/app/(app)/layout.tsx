@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import NProgress from 'nprogress';
+import { BrandingProvider } from "@/context/branding-provider";
 
 function AppSidebar() {
   return (
@@ -81,6 +82,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <FirebaseClientProvider>
+    <BrandingProvider>
     <div className="flex min-h-screen w-full flex-col bg-background">
        <Collapsible asChild open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <div className="relative w-full">
@@ -137,6 +139,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </Collapsible>
     </div>
+    </BrandingProvider>
     </FirebaseClientProvider>
   );
 }
