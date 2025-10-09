@@ -1,8 +1,9 @@
 
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight, Palette, Bell, ShieldAlert, UserCircle } from "lucide-react";
 import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
 
 const settingsItems = [
     { name: "Account", href: "/settings/account", icon: UserCircle, description: "Manage your personal information and preferences." },
@@ -11,11 +12,11 @@ const settingsItems = [
     { name: "Error Log", href: "/settings/errors", icon: ShieldAlert, description: "View a log of application errors for debugging." },
 ];
 
-function SettingsItemCard({ item }: { item: typeof settingsItems[0] }) {
+function SettingsListItem({ item, isLast }: { item: typeof settingsItems[0], isLast: boolean }) {
     return (
-        <Link href={item.href}>
-            <Card className="group hover:border-primary transition-all">
-                <CardContent className="p-4 flex items-center justify-between">
+        <>
+            <Link href={item.href} className="group block">
+                <div className="flex items-center justify-between p-4 hover:bg-muted/50 rounded-md">
                     <div className="flex items-center gap-4">
                         <item.icon className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
                         <div>
@@ -24,24 +25,21 @@ function SettingsItemCard({ item }: { item: typeof settingsItems[0] }) {
                         </div>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </CardContent>
-            </Card>
-        </Link>
+                </div>
+            </Link>
+            {!isLast && <Separator />}
+        </>
     )
 }
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-6">
-       <CardHeader className="p-0">
-            <CardTitle className="font-headline text-2xl">Settings</CardTitle>
-            <CardDescription>Manage your account, branding, and notification preferences.</CardDescription>
-        </CardHeader>
-        <div className="grid grid-cols-1 gap-4">
-            {settingsItems.map((item) => (
-                <SettingsItemCard key={item.href} item={item} />
+    <Card>
+        <CardContent className="p-0">
+            {settingsItems.map((item, index) => (
+                <SettingsListItem key={item.href} item={item} isLast={index === settingsItems.length - 1} />
             ))}
-        </div>
-    </div>
+        </CardContent>
+    </Card>
   );
 }
