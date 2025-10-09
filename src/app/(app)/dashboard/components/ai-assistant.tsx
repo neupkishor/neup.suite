@@ -1,3 +1,4 @@
+
 "use client";
 
 import { suggestActions } from "@/ai/flows/ai-suggested-actions";
@@ -7,7 +8,7 @@ import { useDoc } from "@/firebase";
 import { saveAiSuggestion } from "@/firebase/firestore/ai-suggestions";
 import { useFirestore } from "@/firebase/provider";
 import { doc, serverTimestamp } from "firebase/firestore";
-import { AlertTriangle, ArrowRight, Lightbulb, RefreshCw } from "lucide-react";
+import { AlertCircle, AlertTriangle, ArrowRight, Lightbulb, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
 type AssistantState = {
@@ -20,6 +21,7 @@ const SUGGESTION_DOC_ID = "latest";
 export function AIAssistant({ projectData }: { projectData: string }) {
   const [isPending, startTransition] = useTransition();
   const [state, setState] = useState<AssistantState | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const firestore = useFirestore();
 
   const suggestionRef = useMemo(() => {
@@ -31,11 +33,18 @@ export function AIAssistant({ projectData }: { projectData: string }) {
 
   const getSuggestions = () => {
     startTransition(async () => {
-      const result = await suggestActions({ projectData });
-      if (firestore) {
-        saveAiSuggestion(firestore, SUGGESTION_DOC_ID, result);
+      setError(null);
+      try {
+        const result = await suggestActions({ projectData });
+        if (firestore) {
+          saveAiSuggestion(firestore, SUGGESTION_DOC_ID, result);
+        }
+        setState(result);
+      } catch (e: any) {
+        console.error(e);
+        setError("Could not get AI suggestions. Please check your API key and try again.");
+        setState(null);
       }
-      setState(result);
     });
   };
 
@@ -49,6 +58,22 @@ export function AIAssistant({ projectData }: { projectData: string }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, savedSuggestion, projectData]);
+
+  if (error) {
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center gap-2 text-destructive">
+                <AlertCircle />
+                <h3 className="font-semibold">Something went wrong</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <Button variant="outline" size="sm" onClick={getSuggestions} disabled={isPending}>
+                {isPending ? <RefreshCw className="animate-spin" /> : <RefreshCw />}
+                Retry
+            </Button>
+        </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
