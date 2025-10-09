@@ -62,6 +62,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Close mobile menu on route change
+    NProgress.done();
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
@@ -86,7 +87,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6">
                     <div className="flex items-center gap-4 md:gap-8">
                          <div className="md:hidden">
-                            <MobileNav isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(prev => !prev)} />
+                            <UserNav />
                          </div>
                         <NavLink href="/home">
                             <div className="hidden md:block">
@@ -110,7 +111,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                                 className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
                             />
                         </form>
-                        <UserNav />
+                        <div className="hidden md:block">
+                            <UserNav />
+                        </div>
+                        <div className="md:hidden">
+                            <MobileNav isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(prev => !prev)} />
+                        </div>
                     </div>
                 </div>
             </header>
