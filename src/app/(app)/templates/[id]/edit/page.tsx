@@ -24,12 +24,10 @@ export default function EditTemplatePage({ params }: { params: Promise<{ id: str
 
     if (loading) {
         return (
-             <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-1/2" />
-                    <Skeleton className="h-4 w-3/4" />
-                </CardHeader>
-                <CardContent className="space-y-8 max-w-2xl mt-6">
+             <div className="space-y-6">
+                <Skeleton className="h-8 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
+                <div className="space-y-8 max-w-2xl mt-6">
                     <Skeleton className="h-10" />
                     <Skeleton className="h-20" />
                     <Skeleton className="h-48" />
@@ -37,8 +35,8 @@ export default function EditTemplatePage({ params }: { params: Promise<{ id: str
                         <Skeleton className="h-10 w-32" />
                         <Skeleton className="h-10 w-24" />
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         )
     }
 
@@ -53,18 +51,14 @@ export default function EditTemplatePage({ params }: { params: Promise<{ id: str
     }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Create New Version of: {template?.name}</CardTitle>
-        <CardDescription>
+    <div className="space-y-6">
+       <div>
+        <h1 className="font-headline text-2xl font-semibold">Create New Version of: {template?.name}</h1>
+        <p className="text-muted-foreground text-sm">
           You are creating a new version of an existing template. The current version is {template?.version}. This will become version {(template?.version || 0) + 1}.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {template && <TemplateForm template={template} clientId={template.clientId} />}
-      </CardContent>
-    </Card>
+        </p>
+      </div>
+      <TemplateForm template={template} clientId={template.clientId} />
+    </div>
   );
 }
-
-    

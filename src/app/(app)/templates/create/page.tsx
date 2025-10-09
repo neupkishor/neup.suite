@@ -31,18 +31,14 @@ export default function CreateTemplatePage() {
     }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Create New Template</CardTitle>
-        <CardDescription>
+    <div className="space-y-6">
+      <div>
+        <h1 className="font-headline text-2xl font-semibold">Create New Template</h1>
+        <p className="text-muted-foreground text-sm">
           Design a reusable template for projects, task lists, or documents.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <TemplateForm clientId={clientId} />
-      </CardContent>
-    </Card>
+        </p>
+      </div>
+      <TemplateForm clientId={clientId} />
+    </div>
   );
 }
-
-    
