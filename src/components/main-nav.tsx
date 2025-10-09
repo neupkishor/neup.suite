@@ -25,13 +25,15 @@ import {
   MessageCircle,
   Megaphone,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
-const mainLinks = [
+const allMainLinks = [
   { href: "/home", icon: LayoutDashboard, label: "Home" },
   { href: "/tasks", icon: CheckSquare, label: "Tasks" },
-  { href: "/documents", icon: FileText, label: "Documents" },
+  { href: "/documents", icon: FileText, label: "Documents", clientRequired: true },
   { href: "/billing", icon: Receipt, label: "Billing" },
-  { href: "/support", icon: LifeBuoy, label: "Support" },
+  { href: "/support", icon: LifeBuoy, label: "Support", clientRequired: true },
 ];
 
 const manageLinks = [
@@ -85,6 +87,19 @@ const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.Elemen
 
 
 export function MainNav() {
+  const [clientId, setClientId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setClientId(Cookies.get('client') || null);
+    // A simple way to re-check when cookies might change, e.g., via other tabs
+    // is to listen to storage events or periodically check. For this app's
+    // navigation, we will rely on re-renders from page navigation.
+  }, [usePathname()]);
+
+  const mainLinks = clientId
+    ? allMainLinks
+    : allMainLinks.filter(link => !link.clientRequired);
+
   return (
     <nav className="flex flex-col gap-4">
       <div>
