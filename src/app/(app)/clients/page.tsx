@@ -72,7 +72,7 @@ export default function ClientsPage() {
             <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Please select a client to begin managing their work.</p>
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {!loading && (
             <AddItemCard
                 title="New Client"
@@ -85,7 +85,7 @@ export default function ClientsPage() {
             <ClientCard key={client.id} client={client} isSelected={selectedClientId === client.id} onSelect={handleSelectClient} />
         ))}
         {!loading && clients?.length === 0 && (
-            <Card className="md:col-span-2 lg:col-span-3">
+            <Card>
                 <CardContent className="p-6 text-center text-muted-foreground">
                     No clients found. Add one to get started.
                 </CardContent>
