@@ -2,32 +2,29 @@
 'use client';
 import { useState, useEffect } from 'react';
 import {
-  collection,
   onSnapshot,
-  query,
-  where,
-  getDocs,
   Query,
   DocumentData,
-  QueryConstraint,
-  CollectionReference,
-  Firestore,
 } from 'firebase/firestore';
-import { useFirestore } from '@/firebase/provider';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 export function useCollection<T>(
-  ref: CollectionReference<T, DocumentData> | null
+  ref: Query<T, DocumentData> | null
 ) {
   const [data, setData] = useState<T[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!ref) {
+    if (ref === null) {
+      setLoading(false);
+      setData(null);
       return;
     }
+    
+    setLoading(true);
+
     const unsubscribe = onSnapshot(
       ref,
       (snapshot) => {
