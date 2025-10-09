@@ -7,7 +7,7 @@ import { ReactNode } from "react";
 export default function LandingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm shadow-sm">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm shadow-lg">
         <div className="container mx-auto flex h-16 max-w-[1440px] items-center justify-between">
           <Logo />
           <div className="flex items-center gap-2">
