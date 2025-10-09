@@ -195,6 +195,8 @@
         "type": "object",
         "properties": {
             "invoiceId": { "type": "string", "description": "The unique identifier for the invoice (e.g., INV-2024-001)." },
+            "title": { "type": "string", "description": "The title of the invoice." },
+            "description": { "type": "string", "description": "A description of the invoice." },
             "amount": { "type": "number", "description": "The total amount due." },
             "currency": { "type": "string", "description": "The currency of the amount.", "enum": ["USD", "EUR", "GBP", "JPY", "NRS"] },
             "dueDate": { "type": "string", "format": "date", "description": "The date the invoice is due." },
@@ -204,7 +206,7 @@
             "updatedOn": { "type": "string", "format": "date-time" },
             "clientId": { "type": "string" }
         },
-        "required": ["invoiceId", "amount", "currency", "dueDate", "status", "clientName", "createdOn", "clientId"]
+        "required": ["invoiceId", "title", "amount", "currency", "dueDate", "status", "clientName", "createdOn", "clientId"]
     },
     "Contact": {
       "title": "Contact",
@@ -422,3 +424,5 @@
     }
   }
 }
+
+    

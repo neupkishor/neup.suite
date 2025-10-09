@@ -15,6 +15,7 @@ const currencySymbols = {
 type Invoice = {
     id: string;
     invoiceId: string;
+    title: string;
     dueDate: string;
     status: 'Paid' | 'Due' | 'Overdue';
     amount: number;
@@ -38,8 +39,8 @@ export function InvoiceCard({ invoice }: { invoice: Invoice }) {
             <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 items-center">
                     <div>
-                        <p className="text-sm text-muted-foreground font-medium">Invoice ID</p>
-                        <p className="font-semibold">{invoice.invoiceId}</p>
+                        <p className="text-sm text-muted-foreground font-medium">Title</p>
+                        <p className="font-semibold">{invoice.title}</p>
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground font-medium">Client</p>
@@ -61,3 +62,5 @@ export function InvoiceCard({ invoice }: { invoice: Invoice }) {
         </Card>
     )
 }
+
+    

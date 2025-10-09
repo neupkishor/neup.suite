@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 type Invoice = {
     id: string;
     invoiceId: string;
+    title: string;
     dueDate: string;
     status: 'Paid' | 'Due' | 'Overdue';
     amount: number;
@@ -103,3 +104,5 @@ export default function BillingPage() {
     </div>
   );
 }
+
+    

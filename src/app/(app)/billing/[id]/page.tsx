@@ -22,6 +22,8 @@ const currencySymbols = {
 type Invoice = {
     id: string;
     invoiceId: string;
+    title: string;
+    description?: string;
     dueDate: string;
     status: 'Paid' | 'Due' | 'Overdue';
     amount: number;
@@ -64,6 +66,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                 </div>
             </CardHeader>
             <CardContent>
+                <Skeleton className="h-12 w-full mt-4" />
                 <div className="grid grid-cols-3 gap-6 mt-4">
                     <div className="space-y-1">
                         <Skeleton className="h-4 w-16" />
@@ -100,8 +103,8 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
             <CardHeader>
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div>
-                        <CardTitle className="font-headline text-3xl">Invoice {invoice.invoiceId}</CardTitle>
-                        <CardDescription>Client: {invoice.clientName}</CardDescription>
+                        <CardTitle className="font-headline text-3xl">{invoice.title}</CardTitle>
+                        <CardDescription>Invoice {invoice.invoiceId} for {invoice.clientName}</CardDescription>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                         <Button asChild>
@@ -111,6 +114,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                 </div>
             </CardHeader>
             <CardContent>
+                 {invoice.description && <p className="text-muted-foreground mb-6">{invoice.description}</p>}
                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div>
                         <p className="text-sm text-muted-foreground font-medium">Status</p>
@@ -130,3 +134,5 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
     </div>
   );
 }
+
+    

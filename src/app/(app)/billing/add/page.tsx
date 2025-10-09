@@ -43,6 +43,7 @@ import { useDoc } from '@/firebase';
 import { doc, DocumentReference } from 'firebase/firestore';
 import type { Client } from '@/schemas/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 
 const generateInvoiceId = (clientName: string = '') => {
     const brandName = 'NEUP';
@@ -74,6 +75,8 @@ export default function AddInvoicePage() {
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
         invoiceId: generateInvoiceId(),
+        title: '',
+        description: '',
         status: 'Due',
         clientName: '',
         amount: 0,
@@ -114,6 +117,8 @@ export default function AddInvoicePage() {
     } catch (error) {
       setIsSubmitting(false);
       setSubmitError('An unexpected error occurred. Please try again.');
+    } finally {
+        setIsSubmitting(false);
     }
   }
 
@@ -160,6 +165,32 @@ export default function AddInvoicePage() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
+             <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g. Q3 Website Redesign" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+             <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormControl>
+                        <Textarea placeholder="e.g. Invoice for the third quarter website redesign project, including design and development phases." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                 control={form.control}
@@ -318,3 +349,5 @@ export default function AddInvoicePage() {
     </Card>
   );
 }
+
+    

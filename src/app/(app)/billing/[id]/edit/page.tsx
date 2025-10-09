@@ -40,10 +40,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useDoc } from '@/firebase';
 import { doc, DocumentReference } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 
 type Invoice = {
     id: string;
     invoiceId: string;
+    title: string;
+    description?: string;
     amount: number;
     currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'NRS';
     dueDate: string;
@@ -102,6 +105,8 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
             <Skeleton className="h-4 w-3/4" />
         </CardHeader>
         <CardContent className="space-y-8 max-w-2xl">
+            <Skeleton className="h-10" />
+            <Skeleton className="h-20" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Skeleton className="h-10" />
                 <Skeleton className="h-10" />
@@ -145,6 +150,32 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g. Q3 Website Redesign" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+             <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormControl>
+                        <Textarea placeholder="e.g. Invoice for the third quarter website redesign project, including design and development phases." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                 control={form.control}
@@ -303,3 +334,5 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     </Card>
   );
 }
+
+    
