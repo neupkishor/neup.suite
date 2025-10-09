@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 const features = [
     { icon: FolderKanban, title: "Project Management", description: "Organize, track, and manage projects from start to finish with powerful Kanban boards and lists." },
