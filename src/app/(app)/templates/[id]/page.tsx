@@ -60,6 +60,18 @@ export default function TemplateDetailPage({ params }: { params: Promise<{ id: s
   
   const createdDate = template.createdOn ? format(new Date(template.createdOn.seconds * 1000), 'PPP') : 'N/A';
 
+  const renderBody = () => {
+      if (template.type === 'TaskList') {
+          try {
+              const tasks = JSON.parse(template.body);
+              return JSON.stringify(tasks, null, 2);
+          } catch(e) {
+              return "Invalid JSON in template body.";
+          }
+      }
+      return template.body;
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -85,9 +97,9 @@ export default function TemplateDetailPage({ params }: { params: Promise<{ id: s
             <p className="text-muted-foreground">{template.description || 'No description provided.'}</p>
         </div>
         <div>
-            <h3 className="font-semibold">Template Data</h3>
-            <pre className="mt-2 text-sm bg-muted p-4 rounded-md overflow-auto font-code">
-                {JSON.stringify(template.data, null, 2)}
+            <h3 className="font-semibold">Template Body</h3>
+            <pre className="mt-2 text-sm bg-muted p-4 rounded-md overflow-auto font-mono">
+                {renderBody()}
             </pre>
         </div>
       </CardContent>

@@ -12,6 +12,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Loader2,
   PlusCircle,
+  Download,
 } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -59,6 +60,7 @@ import { TaskCard } from './components/task-card';
 import Cookies from 'js-cookie';
 import { addTask } from './actions/add-task';
 import type { Client } from '@/schemas/client';
+import Link from 'next/link';
 
 type Project = {
   id: string;
@@ -328,6 +330,9 @@ export default function TasksPage() {
               {clientId ? 'View, create, and manage all tasks for the selected client.' : 'View all tasks across all clients.'}
             </CardDescription>
           </div>
+          <Button variant="outline" asChild>
+            <Link href="/tasks/import"><Download /> Import from Template</Link>
+          </Button>
         </div>
       </CardHeader>
        <Card>

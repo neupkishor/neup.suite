@@ -1,7 +1,8 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,9 +45,35 @@ const prepareDataForForm = (template?: Template, clientId?: string): TemplateFor
     return {
         ...defaultValues,
         ...template,
+        version: (template.version || 0) + 1,
         description: template.description || '',
     };
 };
+
+const taskListPlaceholder = `[
+  {
+    "title": "Onboarding Call",
+    "description": "Initial call with the client to discuss project goals."
+  },
+  {
+    "title": "Send Welcome Packet",
+    "assignees": ["Jane Doe"]
+  }
+]`;
+
+const reportPlaceHolder = `<h1>Monthly Report for {{{{client.name}}}}</h1>
+
+<h2>Tasks Completed</h2>
+<ul>
+{{#each tasks}}
+  <li>{{this.title}}</li>
+{{/each}}
+</ul>
+
+<h2>Notes</h2>
+<p>{{{{manual.notes}}}}</p>
+`;
+
 
 export function TemplateForm({ template, clientId }: { template?: Template; clientId: string }) {
   const firestore = useFirestore();
@@ -58,6 +85,11 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
     defaultValues: prepareDataForForm(template, clientId),
   });
 
+  const templateType = useWatch({
+      control: form.control,
+      name: 'type',
+  });
+
   useEffect(() => {
     form.reset(prepareDataForForm(template, clientId));
   }, [template, clientId, form]);
@@ -67,6 +99,17 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
     setIsSubmitting(true);
     
     try {
+        // For TaskList, validate that body is valid JSON
+        if (values.type === 'TaskList') {
+            try {
+                JSON.parse(values.body);
+            } catch (e) {
+                form.setError('body', { type: 'manual', message: 'Task List body must be valid JSON.' });
+                setIsSubmitting(false);
+                return;
+            }
+        }
+
         const dataToSubmit = {
             ...values,
             version: (template?.version || 0) + 1,
@@ -82,6 +125,30 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
       setIsSubmitting(false);
     }
   }
+
+  const getBodyLabel = () => {
+    switch(templateType) {
+        case 'Report': return 'Report Body (HTML)';
+        case 'TaskList': return 'Task List (JSON)';
+        default: return 'Template Body';
+    }
+  }
+
+  const getBodyDescription = () => {
+    switch(templateType) {
+        case 'Report': return 'Write your report content using HTML. Use Handlebars-style placeholders like {{{{client.name}}}} for auto-data or {{{{manual.yourFieldName}}}} for manual entry fields.';
+        case 'TaskList': return 'Define tasks as a JSON array. Each object should represent a task with properties like "title", "description", "assignees", etc.';
+        default: return 'Define the template content.';
+    }
+  }
+
+    const getBodyPlaceholder = () => {
+        switch(templateType) {
+            case 'Report': return reportPlaceHolder;
+            case 'TaskList': return taskListPlaceholder;
+            default: return '';
+        }
+    }
 
   return (
     <Form {...form}>
@@ -132,8 +199,8 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
                         </FormControl>
                         <SelectContent>
                             <SelectItem value="Report">Report</SelectItem>
-                            <SelectItem value="Project">Project</SelectItem>
                             <SelectItem value="TaskList">Task List</SelectItem>
+                            <SelectItem value="Project">Project</SelectItem>
                             <SelectItem value="Document">Document</SelectItem>
                         </SelectContent>
                         </Select>
@@ -146,10 +213,9 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
         
         <Card>
             <CardHeader>
-                <CardTitle>Template Body</CardTitle>
+                <CardTitle>{getBodyLabel()}</CardTitle>
                 <CardDescription>
-                    Write your report content using HTML. You can use Handlebars-style placeholders like 
-                    `{{{{client.name}}}}` for automatic data or `{{{{manual.yourFieldName}}}}` for fields that will be filled in manually when the report is generated.
+                    {getBodyDescription()}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -159,7 +225,7 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
                     render={({ field }) => (
                         <FormItem>
                         <FormControl>
-                            <Textarea {...field} rows={20} placeholder="<h1>Monthly Report for {{{{client.name}}}}</h1>" className="font-mono"/>
+                            <Textarea {...field} rows={20} placeholder={getBodyPlaceholder()} className="font-mono"/>
                         </FormControl>
                         <FormMessage />
                         </FormItem>
