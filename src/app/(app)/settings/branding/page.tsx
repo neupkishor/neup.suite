@@ -9,33 +9,39 @@ import { Upload } from "lucide-react";
 export default function BrandingSettingsPage() {
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>White-Labeling</CardTitle>
-                <CardDescription>Customize the portal with your own branding (Premium feature).</CardDescription>
+        <div className="space-y-6">
+            <CardHeader className="p-0">
+                <CardTitle className="font-headline text-2xl">Branding</CardTitle>
+                <CardDescription>Customize the portal with your own branding.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="space-y-2">
-                    <Label>Company Logo</Label>
-                    <div className="flex items-center gap-4">
-                        <div className="h-16 w-16 rounded-md border flex items-center justify-center bg-muted">
-                            <span className="text-xs text-muted-foreground">Logo</span>
+            <Card>
+                <CardHeader>
+                    <CardTitle>White-Labeling</CardTitle>
+                    <CardDescription>Customize the portal with your own branding (Premium feature).</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <Label>Company Logo</Label>
+                        <div className="flex items-center gap-4">
+                            <div className="h-16 w-16 rounded-md border flex items-center justify-center bg-muted">
+                                <span className="text-xs text-muted-foreground">Logo</span>
+                            </div>
+                            <Button variant="outline">
+                                <Upload className="mr-2 h-4 w-4" />
+                                Upload Logo
+                            </Button>
                         </div>
-                        <Button variant="outline">
-                            <Upload className="mr-2 h-4 w-4" />
-                            Upload Logo
-                        </Button>
                     </div>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="primaryColor">Primary Color</Label>
-                    <div className="flex items-center gap-2">
-                        <Input id="primaryColor" defaultValue="#3399FF" className="w-24" />
-                        <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: '#3399FF' }}></div>
+                    <div className="space-y-2">
+                        <Label htmlFor="primaryColor">Primary Color</Label>
+                        <div className="flex items-center gap-2">
+                            <Input id="primaryColor" defaultValue="#3399FF" className="w-24" />
+                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: '#3399FF' }}></div>
+                        </div>
                     </div>
-                </div>
-                <Button>Save Branding</Button>
-            </CardContent>
-        </Card>
+                    <Button>Save Branding</Button>
+                </CardContent>
+            </Card>
+        </div>
     )
 }

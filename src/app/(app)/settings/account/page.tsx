@@ -37,6 +37,10 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="space-y-6">
+      <CardHeader className="p-0">
+        <CardTitle className="font-headline text-2xl">Account Settings</CardTitle>
+        <CardDescription>Manage your personal information and preferences.</CardDescription>
+      </CardHeader>
       <Card>
           <CardHeader>
               <CardTitle>Personal Information</CardTitle>
