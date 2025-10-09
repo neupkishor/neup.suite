@@ -33,8 +33,8 @@ const faqs = [
 export default function LandingPage() {
   return (
     <div className="flex flex-col">
-        <section className="bg-background">
-            <div className="container py-20 text-center sm:py-32">
+        <section className="bg-background w-full">
+            <div className="container mx-auto max-w-[1440px] py-20 text-center sm:py-32">
                 <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-headline">
                     The All-in-One <span className="text-primary">Client Collaboration</span> Platform
                 </h1>
@@ -52,8 +52,8 @@ export default function LandingPage() {
             </div>
         </section>
 
-        <section id="features" className="py-16 sm:py-24 bg-muted/50">
-            <div className="container">
+        <section id="features" className="py-16 sm:py-24 bg-muted/50 w-full">
+            <div className="container mx-auto max-w-[1440px]">
                 <div className="text-center">
                     <h2 className="text-3xl font-bold tracking-tight font-headline">Everything You Need to Succeed</h2>
                     <p className="mt-4 text-lg text-muted-foreground">One platform to run your entire client-based business.</p>
@@ -76,8 +76,8 @@ export default function LandingPage() {
             </div>
         </section>
 
-        <section id="testimonials" className="py-16 sm:py-24 bg-background">
-             <div className="container">
+        <section id="testimonials" className="py-16 sm:py-24 bg-background w-full">
+             <div className="container mx-auto max-w-[1440px]">
                 <div className="text-center">
                     <h2 className="text-3xl font-bold tracking-tight font-headline">Loved by Agencies and Freelancers</h2>
                     <p className="mt-4 text-lg text-muted-foreground">Don't just take our word for it. Here's what our customers say.</p>
@@ -123,8 +123,8 @@ export default function LandingPage() {
             </div>
         </section>
 
-        <section id="pricing" className="py-16 sm:py-24 bg-muted/50">
-            <div className="container">
+        <section id="pricing" className="py-16 sm:py-24 bg-muted/50 w-full">
+            <div className="container mx-auto max-w-[1440px]">
                  <div className="text-center">
                     <h2 className="text-3xl font-bold tracking-tight font-headline">Simple, Transparent Pricing</h2>
                     <p className="mt-4 text-lg text-muted-foreground">Choose the plan that's right for your business.</p>
@@ -181,8 +181,8 @@ export default function LandingPage() {
             </div>
         </section>
 
-        <section id="faq" className="py-16 sm:py-24 bg-background">
-            <div className="container max-w-4xl">
+        <section id="faq" className="py-16 sm:py-24 bg-background w-full">
+            <div className="container mx-auto max-w-4xl">
                  <div className="text-center">
                     <h2 className="text-3xl font-bold tracking-tight font-headline">Frequently Asked Questions</h2>
                 </div>
@@ -197,8 +197,8 @@ export default function LandingPage() {
             </div>
         </section>
 
-        <section className="bg-primary text-primary-foreground">
-            <div className="container py-16 text-center">
+        <section className="bg-primary text-primary-foreground w-full">
+            <div className="container mx-auto max-w-[1440px] py-16 text-center">
                 <h2 className="text-3xl font-bold tracking-tight font-headline">Ready to transform your client workflow?</h2>
                 <p className="mt-4 text-lg opacity-90">Start your free trial today. No credit card required.</p>
                 <div className="mt-8">
