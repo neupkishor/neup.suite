@@ -1,3 +1,4 @@
+
 'use client';
 import type { ReactNode } from "react";
 import { MainNav } from "@/components/main-nav";
@@ -86,9 +87,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <header className="sticky top-0 z-20 w-full border-b bg-background/80 backdrop-blur-sm">
                 <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6">
                     <div className="flex items-center gap-4 md:gap-8">
-                         <div className="md:hidden">
-                            <UserNav />
-                         </div>
+                        <MobileNav isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(prev => !prev)} />
                         <NavLink href="/home">
                             <div className="hidden md:block">
                                 <Logo />
@@ -111,17 +110,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                                 className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
                             />
                         </form>
-                        <div className="hidden md:block">
-                            <UserNav />
-                        </div>
-                        <div className="md:hidden">
-                            <MobileNav isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(prev => !prev)} />
-                        </div>
+                        <UserNav />
                     </div>
                 </div>
             </header>
 
-            <CollapsibleContent className="md:hidden absolute top-16 z-10 w-full bg-card border-b overflow-y-auto transition-all data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+            <CollapsibleContent className="md:hidden absolute top-16 z-10 w-full bg-card border-b overflow-y-auto data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
                 <div className="p-4 h-[calc(100vh-4rem)]">
                     <MainNav />
                 </div>
