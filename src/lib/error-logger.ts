@@ -1,8 +1,21 @@
 
 'use client';
 import Emitter from 'tiny-emitter';
-import { addDoc, collection } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { addDoc, collection, Firestore } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
+
+let db: Firestore | null = null;
+const getDb = () => {
+  if (!db) {
+    try {
+      db = initializeFirebase().firestore;
+    } catch (e) {
+      console.error("Failed to initialize Firestore for error logging", e);
+    }
+  }
+  return db;
+};
+
 
 export interface AppError {
   id: string;
@@ -28,11 +41,21 @@ class ErrorLogger {
     this.errors.unshift(newError); // Add to the beginning of the array
     this.emitter.emit('update', this.getErrors());
 
-    try {
-      const errorsCollection = collection(db, 'errors');
-      await addDoc(errorsCollection, newError);
-    } catch (firestoreError) {
-      console.error('Failed to log error to Firestore:', firestoreError);
+    const firestoreDb = getDb();
+    if (firestoreDb) {
+        try {
+          const errorsCollection = collection(firestoreDb, 'errors');
+          await addDoc(errorsCollection, {
+              message: newError.message,
+              stack: newError.stack,
+              timestamp: newError.timestamp,
+              context: newError.context,
+              userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
+              url: typeof window !== 'undefined' ? window.location.href : '',
+          });
+        } catch (firestoreError) {
+          console.error('Failed to log error to Firestore:', firestoreError);
+        }
     }
   }
 
