@@ -10,33 +10,34 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 export function useCollection<T>(
-  ref: Query<T, DocumentData> | null
+  query: Query<T, DocumentData> | null
 ) {
   const [data, setData] = useState<T[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (ref === null) {
-      setLoading(false);
+    if (query === null) {
       setData(null);
+      setLoading(false);
       return;
     }
     
     setLoading(true);
 
     const unsubscribe = onSnapshot(
-      ref,
+      query,
       (snapshot) => {
         const data: T[] = snapshot.docs.map(
           (doc) => ({ id: doc.id, ...doc.data() } as T)
         );
         setData(data);
         setLoading(false);
+        setError(null);
       },
       async (err) => {
         const permissionError = new FirestorePermissionError({
-          path: ref.path,
+          path: (query as any)._query.path.segments.join('/'),
           operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -46,7 +47,7 @@ export function useCollection<T>(
     );
 
     return () => unsubscribe();
-  }, [ref]);
+  }, [query]);
 
   return { data, loading, error };
 }

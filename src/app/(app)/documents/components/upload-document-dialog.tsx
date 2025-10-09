@@ -139,6 +139,7 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
             <Label htmlFor="document-name">Document Name</Label>
             <Input
               id="document-name"
+              name="document-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -149,6 +150,7 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
+              name="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add a brief description or any relevant notes..."
