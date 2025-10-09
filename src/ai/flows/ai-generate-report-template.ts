@@ -57,7 +57,7 @@ const prompt = ai.definePrompt({
 
   ❗ Important: You must NEVER generate placeholders with empty or undefined names.
   - Every Handlebars tag must be of the form {{client.field}}, {{manual.field}}, or {{#each tasks}}...{{/each}} with valid field names.
-  - Do not generate invalid placeholders like "{{undefined}}", "{{manual.}}", or "{{}}".
+  - Do not generate invalid placeholders like those with missing or undefined values inside the curly braces.
 
   **User's Prompt:**
   {{prompt}}
