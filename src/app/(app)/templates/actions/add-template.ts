@@ -11,10 +11,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { z } from 'zod';
 import { templateSchema } from '@/schemas/template';
 
-type NewTemplate = Omit<z.infer<typeof templateSchema>, 'data'> & {
-  data: any; // Allow object for action
-  createdBy: string;
-}
+type NewTemplate = z.infer<typeof templateSchema> & { createdBy: string };
 
 export async function addTemplate(
   db: Firestore,
@@ -35,5 +32,3 @@ export async function addTemplate(
     throw serverError;
   });
 }
-
-    

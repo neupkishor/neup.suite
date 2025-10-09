@@ -16,12 +16,15 @@
         },
         "type": {
           "type": "string",
-          "enum": ["Project", "TaskList", "Document"],
+          "enum": ["Project", "TaskList", "Document", "Report"],
           "description": "The type of entity this template creates."
         },
         "data": {
-          "type": "object",
-          "description": "The JSON object representing the template data."
+          "type": "array",
+          "description": "An array of content blocks that define the template structure.",
+           "items": {
+            "type": "object"
+          }
         },
         "version": {
           "type": "number",
@@ -510,5 +513,3 @@
     }
   }
 }
-
-    
