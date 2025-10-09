@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
 import { Logo } from "@/components/logo";
-import { Menu, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { FirebaseClientProvider } from "@/firebase";
@@ -33,7 +33,7 @@ function AppSidebar() {
 function MobileNav({ isOpen, onToggle }: { isOpen: boolean, onToggle: () => void }) {
     return (
         <CollapsibleTrigger asChild>
-            <Button variant="outline" size="icon" className="md:hidden" onClick={onToggle}>
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={onToggle}>
                 {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 <span className="sr-only">Toggle Menu</span>
             </Button>
@@ -65,33 +65,45 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
+
   return (
     <FirebaseClientProvider>
     <div className="flex min-h-screen w-full flex-col bg-background">
        <Collapsible asChild open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <div className="relative w-full">
-            <header className="sticky top-0 z-20 w-full border-b bg-background/80 backdrop-blur-sm shadow-md">
-                <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6">
-                    <div className="flex items-center gap-8">
+            <header className="sticky top-0 z-20 w-full border-b bg-background/80 backdrop-blur-sm">
+                <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6">
+                    <div className="flex items-center gap-4 md:gap-8">
+                         <div className="md:hidden">
+                            <MobileNav isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(prev => !prev)} />
+                         </div>
                         <NavLink href="/home">
                             <div className="hidden md:block">
                                 <Logo />
                             </div>
                         </NavLink>
-                         <div className="md:hidden">
-                            <MobileNav isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(prev => !prev)} />
-                         </div>
                     </div>
-                     <NavLink href="/home">
-                        <div className="absolute left-1/2 -translate-x-1/2 md:hidden">
+
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden">
+                        <NavLink href="/home">
                             <Logo />
-                        </div>
-                     </NavLink>
+                        </NavLink>
+                    </div>
+                    
                     <div className="flex items-center gap-4">
                         <form className="relative ml-auto hidden sm:flex-initial">
-                            <Button variant="ghost" size="icon" className="absolute left-1.5 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground">
-                                <Menu className="h-4 w-4" />
-                            </Button>
+                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="search"
                                 placeholder="Search..."
@@ -103,8 +115,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </div>
             </header>
 
-            <CollapsibleContent className="md:hidden absolute top-16 z-10 w-full bg-card border-b overflow-hidden transition-all data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-                <div className="p-4">
+            <CollapsibleContent className="md:hidden absolute top-16 z-10 w-full bg-card border-b overflow-y-auto transition-all data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+                <div className="p-4 h-[calc(100vh-4rem)]">
                     <MainNav />
                 </div>
             </CollapsibleContent>
