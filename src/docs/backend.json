@@ -1,6 +1,31 @@
 
 {
   "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "Represents a client company or organization.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the client."
+        },
+        "contactEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "The primary email for the client."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Inactive", "Onboarding"]
+        },
+        "createdOn": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["name", "status", "createdOn"]
+    },
     "UserProfile": {
       "title": "User Profile",
       "description": "Represents a user's profile information.",
@@ -49,10 +74,6 @@
       "description": "Represents a project.",
       "type": "object",
       "properties": {
-        "identifier": {
-          "type": "string",
-          "description": "A unique, URL-friendly identifier for the project."
-        },
         "name": {
           "type": "string",
           "description": "The name of the project."
@@ -74,9 +95,12 @@
           "type": "string",
           "format": "date",
           "description": "The project deadline."
+        },
+        "clientId": {
+          "type": "string"
         }
       },
-      "required": ["name", "identifier", "createdBy", "createdOn", "status", "deadline"]
+      "required": ["name", "createdBy", "createdOn", "status", "deadline", "clientId"]
     },
     "Task": {
       "title": "Task",
@@ -104,7 +128,8 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "text": { "type": "string" }
+                    "text": { "type": "string" },
+                    "completed": { "type": "boolean" }
                 }
             },
             "description": "A list of subtasks."
@@ -128,9 +153,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "clientId": {
+            "type": "string"
         }
       },
-      "required": ["title", "status", "createdBy", "createdOn"]
+      "required": ["title", "status", "createdBy", "createdOn", "clientId"]
     },
     "KnowledgeArticle": {
       "title": "Knowledge Article",
@@ -142,9 +170,10 @@
         "status": { "type": "string", "enum": ["Draft", "Published", "Archived"] },
         "createdBy": { "type": "string" },
         "createdOn": { "type": "string", "format": "date-time" },
-        "updatedOn": { "type": "string", "format": "date-time" }
+        "updatedOn": { "type": "string", "format": "date-time" },
+        "clientId": { "type": "string" }
       },
-      "required": ["title", "content", "status", "createdBy", "createdOn"]
+      "required": ["title", "content", "status", "createdBy", "createdOn", "clientId"]
     },
     "Experiment": {
       "title": "Experiment",
@@ -155,9 +184,10 @@
         "hypothesis": { "type": "string" },
         "status": { "type": "string", "enum": ["Planning", "Running", "Completed", "Cancelled"] },
         "createdBy": { "type": "string" },
-        "createdOn": { "type": "string", "format": "date-time" }
+        "createdOn": { "type": "string", "format": "date-time" },
+        "clientId": { "type": "string" }
       },
-      "required": ["name", "hypothesis", "status", "createdBy", "createdOn"]
+      "required": ["name", "hypothesis", "status", "createdBy", "createdOn", "clientId"]
     },
     "Invoice": {
         "title": "Invoice",
@@ -165,28 +195,105 @@
         "type": "object",
         "properties": {
             "invoiceId": { "type": "string", "description": "The unique identifier for the invoice (e.g., INV-2024-001)." },
+            "title": { "type": "string", "description": "The title of the invoice." },
+            "description": { "type": "string", "description": "A description of the invoice." },
             "amount": { "type": "number", "description": "The total amount due." },
+            "currency": { "type": "string", "description": "The currency of the amount.", "enum": ["USD", "EUR", "GBP", "JPY", "NRS"] },
             "dueDate": { "type": "string", "format": "date", "description": "The date the invoice is due." },
             "status": { "type": "string", "enum": ["Paid", "Due", "Overdue"], "description": "The current status of the invoice." },
             "clientName": { "type": "string", "description": "The name of the client being invoiced." },
             "createdOn": { "type": "string", "format": "date-time" },
-            "updatedOn": { "type": "string", "format": "date-time" }
+            "updatedOn": { "type": "string", "format": "date-time" },
+            "clientId": { "type": "string" }
         },
-        "required": ["invoiceId", "amount", "dueDate", "status", "clientName", "createdOn"]
+        "required": ["invoiceId", "title", "amount", "currency", "dueDate", "status", "clientName", "createdOn", "clientId"]
     },
     "Contact": {
-        "title": "Contact",
-        "description": "Represents a contact person.",
-        "type": "object",
-        "properties": {
-            "name": { "type": "string" },
-            "email": { "type": "string", "format": "email" },
-            "role": { "type": "string" },
-            "avatarId": { "type": "string" },
-            "createdOn": { "type": "string", "format": "date-time" },
-            "updatedOn": { "type": "string", "format": "date-time" }
+      "title": "Contact",
+      "description": "Represents a detailed contact profile.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "object",
+          "properties": {
+            "firstName": { "type": "string" },
+            "middleName": { "type": "string" },
+            "lastName": { "type": "string" }
+          }
         },
-        "required": ["name", "email", "role"]
+        "role": { "type": "string" },
+        "organization": { "type": "string" },
+        "emails": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "email": { "type": "string", "format": "email" }
+            }
+          }
+        },
+        "phoneNumbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "phone": { "type": "string" }
+            }
+          }
+        },
+        "addresses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "street": { "type": "string" },
+              "city": { "type": "string" },
+              "state": { "type": "string" },
+              "zip": { "type": "string" },
+              "country": { "type": "string" }
+            }
+          }
+        },
+        "socialProfiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "messaging": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "address": { "type": "string" }
+            }
+          }
+        },
+        "importantDates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "date": { "type": "string", "format": "date" }
+            }
+          }
+        },
+        "notes": { "type": "string" },
+        "avatarUrl": { "type": "string", "format": "uri" },
+        "createdOn": { "type": "string", "format": "date-time" },
+        "updatedOn": { "type": "string", "format": "date-time" },
+        "clientId": { "type": "string" }
+      },
+      "required": ["name", "clientId"]
     },
     "Goal": {
         "title": "Goal",
@@ -196,9 +303,10 @@
             "title": { "type": "string" },
             "description": { "type": "string" },
             "targetDate": { "type": "string", "format": "date" },
-            "status": { "type": "string", "enum": ["Not Started", "In Progress", "Completed", "At Risk"] }
+            "status": { "type": "string", "enum": ["Not Started", "In Progress", "Completed", "At Risk"] },
+            "clientId": { "type": "string" }
         },
-        "required": ["title", "targetDate", "status"]
+        "required": ["title", "targetDate", "status", "clientId"]
     },
     "Report": {
         "title": "Report",
@@ -207,9 +315,10 @@
         "properties": {
             "title": { "type": "string" },
             "summary": { "type": "string" },
-            "generatedOn": { "type": "string", "format": "date-time" }
+            "generatedOn": { "type": "string", "format": "date-time" },
+            "clientId": { "type": "string" }
         },
-        "required": ["title", "generatedOn"]
+        "required": ["title", "generatedOn", "clientId"]
     },
     "Feedback": {
         "title": "Feedback",
@@ -219,9 +328,10 @@
             "title": { "type": "string" },
             "comment": { "type": "string" },
             "submittedBy": { "type": "string" },
-            "submittedOn": { "type": "string", "format": "date-time" }
+            "submittedOn": { "type": "string", "format": "date-time" },
+            "clientId": { "type": "string" }
         },
-        "required": ["title", "comment", "submittedBy", "submittedOn"]
+        "required": ["title", "comment", "submittedBy", "submittedOn", "clientId"]
     },
     "Discussion": {
         "title": "Discussion",
@@ -230,12 +340,65 @@
         "properties": {
             "title": { "type": "string" },
             "createdBy": { "type": "string" },
+            "createdOn": { "type": "string", "format": "date-time" },
+            "clientId": { "type": "string" }
+        },
+        "required": ["title", "createdBy", "createdOn", "clientId"]
+    },
+    "Document": {
+      "title": "Document",
+      "description": "Represents a file in the document repository.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "version": { "type": "string" },
+        "status": { "type": "string", "enum": ["Signed", "Approved", "In Review", "Archived"] },
+        "fileType": { "type": "string", "description": "The MIME type of the file." },
+        "size": { "type": "number", "description": "The size of the file in bytes." },
+        "uploadedBy": { "type": "string", "description": "The ID of the user who uploaded the file." },
+        "notes": { "type": "string", "description": "Notes or comments about the file." },
+        "createdOn": { "type": "string", "format": "date-time" },
+        "updatedOn": { "type": "string", "format": "date-time" },
+        "clientId": { "type": "string" }
+      },
+      "required": ["name", "url", "status", "createdOn", "clientId"]
+    },
+    "Activity": {
+        "title": "Activity",
+        "description": "Represents a log of work or an update.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "results": { "type": "string" },
+            "links": {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+            },
+            "files": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string" },
+                        "url": { "type": "string", "format": "uri" }
+                    }
+                }
+            },
+            "projectId": { "type": "string" },
+            "clientId": { "type": "string" },
+            "createdBy": { "type": "string" },
             "createdOn": { "type": "string", "format": "date-time" }
         },
-        "required": ["title", "createdBy", "createdOn"]
+        "required": ["title", "clientId", "createdBy", "createdOn"]
     }
   },
   "firestore": {
+    "/clients/{clientId}": {
+      "schema": { "$ref": "#/backend/entities/Client" },
+      "description": "Stores client information."
+    },
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/UserProfile" },
       "description": "Stores public information about a user."
@@ -283,6 +446,16 @@
     "/discussions/{discussionId}": {
         "schema": { "$ref": "#/backend/entities/Discussion" },
         "description": "Stores discussion threads."
+    },
+    "/documents/{documentId}": {
+        "schema": { "$ref": "#/backend/entities/Document" },
+        "description": "Stores documents and files."
+    },
+    "/activities/{activityId}": {
+        "schema": { "$ref": "#/backend/entities/Activity" },
+        "description": "Stores activity logs."
     }
   }
 }
+
+    

@@ -25,6 +25,7 @@ import {
   MessageCircle,
   Megaphone,
   Bell,
+  Activity,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
@@ -40,6 +41,7 @@ const allMainLinks = [
 
 const manageLinks = [
   { href: "/projects", icon: FolderKanban, label: "Projects" },
+  { href: "/activities", icon: Activity, label: "Activities" },
   { href: "/contacts", icon: Contact, label: "Contacts" },
   { href: "/team", icon: Users, label: "Team" },
   { href: "/goals", icon: Target, label: "Goals" },
@@ -147,3 +149,5 @@ export function MainNav() {
     </nav>
   );
 }
+
+    
