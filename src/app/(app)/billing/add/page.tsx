@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,12 +33,16 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { invoiceSchema } from '@/schemas/invoice';
 import { addInvoice } from '@/actions/billing/add-invoice';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Cookies from 'js-cookie';
+import { useDoc } from '@/firebase';
+import { doc, DocumentReference } from 'firebase/firestore';
+import type { Client } from '@/schemas/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const generateInvoiceId = (clientName: string = '') => {
     const brandName = 'NEUP';
@@ -58,6 +63,13 @@ export default function AddInvoicePage() {
     setClientId(Cookies.get('client') || null);
   }, []);
 
+  const clientRef = useMemo(() => {
+    if (!firestore || !clientId) return null;
+    return doc(firestore, 'clients', clientId) as DocumentReference<Client>;
+  }, [firestore, clientId]);
+
+  const { data: client, loading: clientLoading } = useDoc<Client>(clientRef);
+
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
@@ -71,13 +83,21 @@ export default function AddInvoicePage() {
   });
 
    useEffect(() => {
-    form.setValue('clientId', clientId || '');
-  }, [clientId, form]);
+    if (clientId) {
+      form.setValue('clientId', clientId);
+    }
+    if (client) {
+      form.setValue('clientName', client.name);
+      form.setValue('invoiceId', generateInvoiceId(client.name));
+    }
+  }, [client, clientId, form]);
 
   const clientName = form.watch('clientName');
 
   useEffect(() => {
-    form.setValue('invoiceId', generateInvoiceId(clientName));
+    if (clientName) {
+      form.setValue('invoiceId', generateInvoiceId(clientName));
+    }
   }, [clientName, form]);
 
   async function onSubmit(values: z.infer<typeof invoiceSchema>) {
@@ -95,6 +115,22 @@ export default function AddInvoicePage() {
       setIsSubmitting(false);
       setSubmitError('An unexpected error occurred. Please try again.');
     }
+  }
+
+  if (clientLoading) {
+    return (
+      <Card>
+        <CardHeader>
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+        </CardHeader>
+        <CardContent className="space-y-8 max-w-2xl mt-4">
+            <Skeleton className="h-10" />
+            <Skeleton className="h-10" />
+            <Skeleton className="h-10" />
+        </CardContent>
+    </Card>
+    )
   }
 
   if (!clientId) {
@@ -118,7 +154,7 @@ export default function AddInvoicePage() {
           Create New Invoice
         </CardTitle>
         <CardDescription>
-          Fill out the details below to create a new invoice.
+          Fill out the details below to create a new invoice for {client?.name}.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -132,7 +168,7 @@ export default function AddInvoicePage() {
                     <FormItem>
                     <FormLabel>Client Name</FormLabel>
                     <FormControl>
-                        <Input placeholder="e.g. Acme Inc." {...field} />
+                        <Input placeholder="e.g. Acme Inc." {...field} disabled />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
