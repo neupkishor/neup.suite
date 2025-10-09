@@ -63,6 +63,7 @@ import { CalendarIcon } from 'lucide-react';
 import { TaskCard } from './components/task-card';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
+import { addTask } from './actions/add-task';
 
 type Project = {
   id: string;
@@ -110,26 +111,18 @@ function NewTaskItem({
   async function onSubmit(values: z.infer<typeof taskSchema>) {
     if (!firestore) return;
     setIsSubmitting(true);
-
-    const taskCollection = collection(firestore, 'tasks');
+    
     try {
-      await addDoc(taskCollection, {
+      await addTask(firestore, {
         ...values,
         deadline: values.deadline
           ? format(values.deadline, 'yyyy-MM-dd')
           : null,
-        createdBy: 'user_placeholder',
-        createdOn: serverTimestamp(),
-      });
+      }, 'user_placeholder'); // Placeholder for user ID
       setIsCreating(false);
       form.reset();
     } catch (error) {
-      const permissionError = new FirestorePermissionError({
-        path: taskCollection.path,
-        operation: 'create',
-        requestResourceData: values,
-      });
-      errorEmitter.emit('permission-error', permissionError);
+      console.error('Failed to add task', error);
     } finally {
         setIsSubmitting(false);
     }
