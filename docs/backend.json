@@ -316,7 +316,16 @@
             "title": { "type": "string" },
             "summary": { "type": "string" },
             "generatedOn": { "type": "string", "format": "date-time" },
-            "clientId": { "type": "string" }
+            "clientId": { "type": "string" },
+            "type": { "type": "string", "enum": ["client", "project", "manual"]},
+            "dateRange": {
+                "type": "object",
+                "properties": {
+                    "from": { "type": "string", "format": "date-time" },
+                    "to": { "type": "string", "format": "date-time" }
+                }
+            },
+            "projectId": { "type": "string" }
         },
         "required": ["title", "generatedOn", "clientId"]
     },
@@ -363,6 +372,35 @@
         "clientId": { "type": "string" }
       },
       "required": ["name", "url", "status", "createdOn", "clientId"]
+    },
+    "Activity": {
+        "title": "Activity",
+        "description": "Represents a log of work or an update.",
+        "type": "object",
+        "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "results": { "type": "string" },
+            "links": {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+            },
+            "files": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string" },
+                        "url": { "type": "string", "format": "uri" }
+                    }
+                }
+            },
+            "projectId": { "type": "string" },
+            "clientId": { "type": "string" },
+            "createdBy": { "type": "string" },
+            "createdOn": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "clientId", "createdBy", "createdOn"]
     }
   },
   "firestore": {
@@ -421,8 +459,10 @@
     "/documents/{documentId}": {
         "schema": { "$ref": "#/backend/entities/Document" },
         "description": "Stores documents and files."
+    },
+    "/activities/{activityId}": {
+        "schema": { "$ref": "#/backend/entities/Activity" },
+        "description": "Stores activity logs."
     }
   }
 }
-
-    
