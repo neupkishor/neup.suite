@@ -47,8 +47,7 @@ const prepareDataForForm = (template?: Template, clientId?: string): TemplateFor
         ...template,
         description: template.description || '',
     };
-}
-
+};
 
 export function TemplateForm({ template, clientId }: { template?: Template, clientId: string }) {
   const firestore = useFirestore();
@@ -62,7 +61,7 @@ export function TemplateForm({ template, clientId }: { template?: Template, clie
 
   useEffect(() => {
     form.reset(prepareDataForForm(template, clientId));
-  }, [template, clientId, form])
+  }, [template, clientId, form]);
 
   async function onSubmit(values: TemplateFormValues) {
     if (!firestore) return;
@@ -151,7 +150,7 @@ export function TemplateForm({ template, clientId }: { template?: Template, clie
                 <CardTitle>Template Body</CardTitle>
                 <CardDescription>
                     Write your report content using HTML. You can use Handlebars-style placeholders like 
-                    `{{client.name}}` for automatic data or `{{manual.yourFieldName}}` for fields that will be filled in manually when the report is generated.
+                    `{{{{client.name}}}}` for automatic data or `{{{{manual.yourFieldName}}}}` for fields that will be filled in manually when the report is generated.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -161,7 +160,7 @@ export function TemplateForm({ template, clientId }: { template?: Template, clie
                     render={({ field }) => (
                         <FormItem>
                         <FormControl>
-                            <Textarea {...field} rows={20} placeholder="<h1>Monthly Report for {{client.name}}</h1>" className="font-mono"/>
+                            <Textarea {...field} rows={20} placeholder="<h1>Monthly Report for {{{{client.name}}}}</h1>" className="font-mono"/>
                         </FormControl>
                         <FormMessage />
                         </FormItem>
