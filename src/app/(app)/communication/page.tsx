@@ -6,6 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { placeholderImages } from "@/lib/placeholder-images";
 import { Paperclip, Search, Send } from "lucide-react";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Communication",
+};
 
 export default function CommunicationPage() {
     const contacts = [
@@ -61,4 +66,3 @@ export default function CommunicationPage() {
     </Card>
   );
 }
-

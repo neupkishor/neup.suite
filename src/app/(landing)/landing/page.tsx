@@ -11,6 +11,12 @@ import {
 } from "@/components/ui/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Client Collaboration Platform",
+};
+
 
 const features = [
     { icon: FolderKanban, title: "Project Management", description: "Organize, track, and manage projects from start to finish with powerful Kanban boards and lists." },

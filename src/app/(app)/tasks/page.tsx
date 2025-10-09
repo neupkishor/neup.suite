@@ -64,7 +64,6 @@ import { TaskCard } from './components/task-card';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 
-
 type Project = {
   id: string;
   name: string;
@@ -122,7 +121,6 @@ function NewTaskItem({
         createdBy: 'user_placeholder',
         createdOn: serverTimestamp(),
       });
-      setIsSubmitting(false);
       setIsCreating(false);
       form.reset();
     } catch (error) {
@@ -132,7 +130,8 @@ function NewTaskItem({
         requestResourceData: values,
       });
       errorEmitter.emit('permission-error', permissionError);
-      setIsSubmitting(false);
+    } finally {
+        setIsSubmitting(false);
     }
   }
 

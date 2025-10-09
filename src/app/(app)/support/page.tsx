@@ -1,5 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Chatbot } from "./components/chatbot";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Support",
+};
 
 export default function SupportPage() {
   const knowledgeBase = `

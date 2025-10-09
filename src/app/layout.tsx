@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -5,7 +6,10 @@ import { NavigationEvents } from '@/components/progress-bar';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
-  title: 'Neup.Suite',
+  title: {
+    template: '%s | Neup.Suite',
+    default: 'Neup.Suite',
+  },
   description: 'The All-in-One Client Collaboration Platform',
 };
 

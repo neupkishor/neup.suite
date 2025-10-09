@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -10,6 +11,11 @@ import { ProjectProgress } from "./components/project-progress";
 import { UpcomingMilestones } from "./components/upcoming-milestones";
 import { KeyContacts } from "./components/key-contacts";
 import { PaymentStatus } from "./components/payment-status";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+};
 
 export default function DashboardPage() {
   const projectData = `
