@@ -45,6 +45,17 @@ export default function ClientsPage() {
     }, [firestore]);
 
     const { data: clients, loading } = useCollection<Client>(clientsCollection);
+    
+    const sortedClients = useMemo(() => {
+        if (!clients) return [];
+        if (!selectedClientId) return clients;
+
+        return [...clients].sort((a, b) => {
+            if (a.id === selectedClientId) return -1;
+            if (b.id === selectedClientId) return 1;
+            return 0;
+        });
+    }, [clients, selectedClientId]);
 
     const handleSelectClient = (id: string) => {
         setSelectedClientId(id);
@@ -62,11 +73,6 @@ export default function ClientsPage() {
             </div>
         </div>
       </CardHeader>
-      {selectedClientId && (
-        <div className="p-4 bg-primary/10 rounded-lg">
-            <p className="text-sm font-medium text-primary-foreground">You are currently managing client: <span className="font-bold">{clients?.find(c => c.id === selectedClientId)?.name}</span></p>
-        </div>
-      )}
       {!selectedClientId && !loading && (
           <div className="p-4 bg-yellow-100 dark:bg-yellow-900/50 border border-yellow-300 dark:border-yellow-700 rounded-lg">
             <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Please select a client to begin managing their work.</p>
@@ -81,7 +87,7 @@ export default function ClientsPage() {
             />
         )}
         {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
-        {clients?.map((client) => (
+        {sortedClients?.map((client) => (
             <ClientCard key={client.id} client={client} isSelected={selectedClientId === client.id} onSelect={handleSelectClient} />
         ))}
         {!loading && clients?.length === 0 && (
