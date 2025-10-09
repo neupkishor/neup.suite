@@ -23,6 +23,14 @@
           "type": "object",
           "description": "The JSON object representing the template data."
         },
+        "version": {
+          "type": "number",
+          "description": "The version of the template."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "The ID of the client this template belongs to."
+        },
         "createdBy": {
           "type": "string"
         },
@@ -31,7 +39,7 @@
           "format": "date-time"
         }
       },
-      "required": ["name", "type", "data", "createdBy", "createdOn"]
+      "required": ["name", "type", "data", "version", "createdBy", "createdOn", "clientId"]
     },
     "Client": {
       "title": "Client",
@@ -502,3 +510,5 @@
     }
   }
 }
+
+    
