@@ -136,31 +136,45 @@ function NewTaskItem({
   };
 
   return (
-    <Card className="mb-4 border-2 border-primary">
-      <CardContent className="p-4">
+    <div className="mb-4 p-4 border rounded-lg border-primary">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Task Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Design the new logo" {...field} />
+                    <Input className="border-0 text-base font-medium" placeholder="e.g. Design the new logo" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                <FormItem>
+                    <FormControl>
+                    <Textarea
+                        placeholder="Add a more detailed description..."
+                        className="border-0"
+                        {...field}
+                    />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="assignees"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Assign To</FormLabel>
                     <MultiSelect
                       selected={field.value}
                       options={teamMembers}
@@ -176,15 +190,14 @@ function NewTaskItem({
                 control={form.control}
                 name="deadline"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Deadline (Optional)</FormLabel>
+                  <FormItem>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant={'outline'}
                             className={cn(
-                              'pl-3 text-left font-normal',
+                              'w-full pl-3 text-left font-normal',
                               !field.value && 'text-muted-foreground'
                             )}
                           >
@@ -211,134 +224,8 @@ function NewTaskItem({
                 )}
               />
             </div>
-
-            {!showDetails && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowDetails(true)}
-              >
-                <MessageSquarePlus className="mr-2 h-4 w-4" />
-                Add Details (Description, Subtasks...)
-              </Button>
-            )}
-
-            {showDetails && (
-              <div className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Add a more detailed description..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="project"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project (Optional)</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a project" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {projects?.map((project) => (
-                              <SelectItem key={project.id} value={project.id}>
-                                {project.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="To Do">To Do</SelectItem>
-                            <SelectItem value="In Progress">
-                              In Progress
-                            </SelectItem>
-                            <SelectItem value="Done">Done</SelectItem>
-                            <SelectItem value="Cancelled">
-                              Cancelled
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div>
-                  <FormLabel>Subtasks</FormLabel>
-                  <div className="mt-2 space-y-2">
-                    {fields.map((field, index) => (
-                      <div key={field.id} className="flex items-center gap-2">
-                        <Input value={field.text} readOnly className="bg-muted" />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => remove(index)}
-                        >
-                          <Trash className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-                    <div className="flex items-center gap-2">
-                      <Input
-                        placeholder="Add a new subtask..."
-                        value={newSubtask}
-                        onChange={(e) => setNewSubtask(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddSubtask();
-                          }
-                        }}
-                      />
-                      <Button type="button" onClick={handleAddSubtask}>
-                        Add
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2">
+            
+            <div className="flex justify-end gap-2 border-t pt-4 mt-4">
               <Button
                 type="button"
                 variant="ghost"
@@ -355,8 +242,7 @@ function NewTaskItem({
             </div>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
 
@@ -474,3 +360,5 @@ export default function TasksPage() {
     </div>
   );
 }
+
+    

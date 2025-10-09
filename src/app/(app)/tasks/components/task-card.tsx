@@ -153,12 +153,12 @@ export function TaskCard({
 
 
   return (
-    <div className="rounded-lg border transition-colors bg-card data-[state=open]:bg-muted/50 p-4 space-y-3">
-      <div className="flex items-start gap-4">
+    <div className="p-4 space-y-3">
+      <div className="flex items-start gap-3">
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0 h-6 w-6 mt-1"
+          className="shrink-0 h-6 w-6 mt-0.5"
           onClick={(e) => {
             e.stopPropagation();
             const newStatus = task.status === 'Done' ? 'To Do' : 'Done';
@@ -184,55 +184,38 @@ export function TaskCard({
                     if (e.key === 'Enter') handleTitleUpdate();
                     if (e.key === 'Escape') setIsEditingTitle(false);
                 }}
-                className={cn('font-medium', task.status === 'Done' && 'line-through text-muted-foreground')}
+                className={cn('h-auto p-0 border-0 text-base', task.status === 'Done' && 'line-through text-muted-foreground')}
             />
           ) : (
              <p
                 onClick={() => setIsEditingTitle(true)}
                 className={cn(
-                    'font-medium cursor-pointer',
+                    'font-medium cursor-pointer text-base',
                     task.status === 'Done' && 'line-through text-muted-foreground'
                 )}
                 >
                 {task.title}
             </p>
           )}
-          {project && (
-            <p className="text-sm text-muted-foreground">{project.name}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex -space-x-2">
-            {task.assignees?.map((assigneeName) => {
-              const member = teamMembers.find((m) => m.value === assigneeName);
-              if (!member) return null;
-              const avatar = placeholderImages.find(
-                (p) => p.id === member.avatarId
-              );
-              return (
-                <Avatar
-                  key={assigneeName}
-                  className="h-6 w-6 border-2 border-background"
-                >
-                  {avatar && (
-                    <AvatarImage src={avatar.imageUrl} alt={assigneeName} />
-                  )}
-                  <AvatarFallback>
-                    {assigneeName
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')}
-                  </AvatarFallback>
-                </Avatar>
-              );
-            })}
-          </div>
-          {task.deadline && (
-            <div className="flex items-center gap-1.5">
-              <CalendarIconLucide className="h-4 w-4" />
-              <span>{format(new Date(task.deadline), 'MMM d')}</span>
+           {isEditingDescription ? (
+             <Textarea
+                ref={descriptionInputRef}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={handleDescriptionUpdate}
+                onKeyDown={(e) => { if (e.key === 'Escape') setIsEditingDescription(false) }}
+                placeholder="Add description..."
+                className="text-sm mt-1 p-0 border-0 h-auto"
+            />
+         ) : task.description ? (
+            <div onClick={() => setIsEditingDescription(true)} className="flex items-start gap-2 mt-1 cursor-pointer group">
+                <AlignLeft className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <p className="text-muted-foreground text-sm group-hover:text-foreground">
+                {task.description}
+                </p>
             </div>
-          )}
+         ) : null}
+
         </div>
         <Button
           variant="ghost"
@@ -243,34 +226,10 @@ export function TaskCard({
             handleDelete();
           }}
         >
-          <Trash2 className="text-destructive" />
+          <Trash2 className="text-destructive h-4 w-4" />
         </Button>
       </div>
-      <div className="pl-11 space-y-3">
-         {isEditingDescription ? (
-             <Textarea
-                ref={descriptionInputRef}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                onBlur={handleDescriptionUpdate}
-                onKeyDown={(e) => { if (e.key === 'Escape') setIsEditingDescription(false) }}
-                placeholder="Add description..."
-                className="text-sm"
-            />
-         ) : task.description ? (
-            <div onClick={() => setIsEditingDescription(true)} className="flex items-start gap-3 cursor-pointer group">
-                <AlignLeft className="h-5 w-5 text-muted-foreground mt-1" />
-                <p className="text-muted-foreground text-sm group-hover:text-foreground">
-                {task.description}
-                </p>
-            </div>
-         ) : (
-            <Button variant="ghost" className="text-muted-foreground" size="sm" onClick={() => setIsEditingDescription(true)}>
-                <AlignLeft className="h-4 w-4 mr-2"/>
-                Add description
-            </Button>
-         )}
-
+      <div className="pl-9 space-y-3">
          {task.subtasks && task.subtasks.length > 0 && (
             <div className="space-y-2 pt-2">
             {task.subtasks.map((subtask, index) => (
@@ -285,33 +244,47 @@ export function TaskCard({
             </div>
         )}
 
-        <div className="flex items-center gap-2 pt-2">
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleDateChange(new Date())}
-            >
-                Today
-            </Button>
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleDateChange(addDays(new Date(), 1))}
-            >
-                Tomorrow
-            </Button>
+        <div className="flex items-center gap-2 pt-1 flex-wrap">
+            {project && (
+                <div className="text-xs font-medium bg-muted text-muted-foreground px-2 py-1 rounded-md">{project.name}</div>
+            )}
+             <div className="flex -space-x-2">
+                {task.assignees?.map((assigneeName) => {
+                const member = teamMembers.find((m) => m.value === assigneeName);
+                if (!member) return null;
+                const avatar = placeholderImages.find(
+                    (p) => p.id === member.avatarId
+                );
+                return (
+                    <Avatar
+                    key={assigneeName}
+                    className="h-6 w-6 border-2 border-card"
+                    >
+                    {avatar && (
+                        <AvatarImage src={avatar.imageUrl} alt={assigneeName} />
+                    )}
+                    <AvatarFallback>
+                        {assigneeName
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
+                    </AvatarFallback>
+                    </Avatar>
+                );
+                })}
+          </div>
             <Popover>
                 <PopoverTrigger asChild>
                 <Button
                     variant="outline"
                     size="sm"
-                    className="w-auto justify-start text-left font-normal"
+                    className={cn("h-auto px-2 py-1 text-xs", task.deadline && "text-primary")}
                 >
-                    <CalendarIconLucide className="mr-2 h-4 w-4" />
+                    <CalendarIconLucide className="mr-1.5 h-3 w-3" />
                     <span>
                     {task.deadline
-                        ? format(new Date(task.deadline), 'PPP')
-                        : 'Pick a date'}
+                        ? format(new Date(task.deadline), 'MMM d')
+                        : 'No date'}
                     </span>
                 </Button>
                 </PopoverTrigger>
@@ -326,8 +299,16 @@ export function TaskCard({
                 />
                 </PopoverContent>
             </Popover>
+             {!isEditingDescription && !task.description && (
+                <Button variant="ghost" className="text-muted-foreground h-auto px-2 py-1 text-xs" size="sm" onClick={() => setIsEditingDescription(true)}>
+                    <AlignLeft className="h-3 w-3 mr-1.5"/>
+                    Add description
+                </Button>
+            )}
         </div>
       </div>
     </div>
   );
 }
+
+    
