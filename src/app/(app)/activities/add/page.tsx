@@ -2,7 +2,7 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActivityForm } from '../components/activity-form';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
