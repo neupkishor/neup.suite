@@ -64,6 +64,7 @@ import { TaskCard } from './components/task-card';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { addTask } from './actions/add-task';
+import type { Client } from '@/schemas/client';
 
 type Project = {
   id: string;
@@ -274,45 +275,41 @@ export default function TasksPage() {
     }, []);
 
   const tasksCollection = useMemo(() => {
-    if (!firestore || !clientId) return null;
-    return query(
-        collection(firestore, 'tasks') as CollectionReference<Task>,
-        where('clientId', '==', clientId)
-    );
+    if (!firestore) return null;
+    let q = collection(firestore, 'tasks') as CollectionReference<Task>;
+    if (clientId) {
+      q = query(q, where('clientId', '==', clientId));
+    }
+    return q;
   }, [firestore, clientId]);
+
   const { data: tasks, loading: tasksLoading } = useCollection<Task & {id: string}>(
     tasksCollection
   );
+  
+  const clientsCollection = useMemo(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'clients') as CollectionReference<Client>;
+  }, [firestore]);
+  
+  const { data: clients, loading: clientsLoading } = useCollection<Client>(clientsCollection);
 
   const projectsCollection = useMemo(() => {
-    if (!firestore || !clientId) return null;
-    return query(
-        collection(firestore, 'projects') as CollectionReference<Project>,
-        where('clientId', '==', clientId)
-    );
+    if (!firestore) return null;
+    let q = collection(firestore, 'projects') as CollectionReference<Project>;
+    if (clientId) {
+      q = query(q, where('clientId', '==', clientId));
+    }
+    return q;
   }, [firestore, clientId]);
   const { data: projects, loading: projectsLoading } =
     useCollection<Project>(projectsCollection);
 
-  const loading = tasksLoading || projectsLoading;
+  const loading = tasksLoading || projectsLoading || clientsLoading;
 
-  if (!clientId && !loading) {
-    return (
-        <div className="space-y-6">
-            <CardHeader className="p-0">
-                <CardTitle className="font-headline text-2xl">Task Management</CardTitle>
-                <CardDescription>You must select a client to view their tasks.</CardDescription>
-            </CardHeader>
-            <Card>
-                <CardContent className="p-6 text-center">
-                    <Button asChild>
-                        <Link href="/clients">Select a Client</Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        </div>
-    )
-  }
+  const getClientName = (cId: string) => {
+    return clients?.find(c => c.id === cId)?.name;
+  };
 
   return (
     <div className="space-y-6">
@@ -323,7 +320,7 @@ export default function TasksPage() {
               Task Management
             </CardTitle>
             <CardDescription>
-              View, create, and manage all project tasks.
+              {clientId ? 'View, create, and manage all tasks for the selected client.' : 'View all tasks across all clients.'}
             </CardDescription>
           </div>
         </div>
@@ -331,13 +328,16 @@ export default function TasksPage() {
        <Card>
         <CardContent className="p-0">
           <div className="divide-y">
-            {!isCreating && <button
-              onClick={() => setIsCreating(true)}
-              className="flex w-full items-center gap-2 p-4 text-muted-foreground transition-colors hover:bg-muted/50"
-            >
-              <PlusCircle className="h-5 w-5" />
-              <span className="font-medium">New Task</span>
-            </button>}
+            {!isCreating && (
+              <button
+                onClick={() => clientId && setIsCreating(true)}
+                disabled={!clientId}
+                className="flex w-full items-center gap-2 p-4 text-muted-foreground transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                <PlusCircle className="h-5 w-5" />
+                <span className="font-medium">{clientId ? 'New Task' : 'Select a client to create a task'}</span>
+              </button>
+            )}
             {isCreating && clientId && (
                 <NewTaskItem setIsCreating={setIsCreating} projects={projects} clientId={clientId} />
             )}
@@ -347,11 +347,16 @@ export default function TasksPage() {
               ))}
             {!loading &&
               tasks?.map((task) => (
-                <TaskCard key={task.id} task={task} projects={projects} />
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  projects={projects}
+                  clientName={!clientId ? getClientName(task.clientId) : undefined}
+                />
               ))}
             {!loading && tasks?.length === 0 && !isCreating && (
               <div className="p-6 text-center text-muted-foreground">
-                No tasks found. Create one to get started.
+                No tasks found.
               </div>
             )}
           </div>
@@ -360,5 +365,3 @@ export default function TasksPage() {
     </div>
   );
 }
-
-    

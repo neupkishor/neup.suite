@@ -10,6 +10,7 @@ import {
   Calendar as CalendarIconLucide,
   Trash2,
   AlignLeft,
+  Briefcase,
 } from 'lucide-react';
 import {
   Popover,
@@ -51,9 +52,11 @@ const teamMembers = [
 export function TaskCard({
   task,
   projects,
+  clientName,
 }: {
   task: Task & { id: string };
   projects: Project[] | null;
+  clientName?: string;
 }) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -248,6 +251,9 @@ export function TaskCard({
             {project && (
                 <div className="text-xs font-medium bg-muted text-muted-foreground px-2 py-1 rounded-md">{project.name}</div>
             )}
+            {clientName && (
+                <div className="text-xs font-medium bg-muted text-muted-foreground px-2 py-1 rounded-md flex items-center gap-1.5"><Briefcase className="h-3 w-3" />{clientName}</div>
+            )}
              <div className="flex -space-x-2">
                 {task.assignees?.map((assigneeName) => {
                 const member = teamMembers.find((m) => m.value === assigneeName);
@@ -310,5 +316,3 @@ export function TaskCard({
     </div>
   );
 }
-
-    
