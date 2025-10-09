@@ -90,28 +90,41 @@ export default function ActivitiesPage() {
             const documentSnapshots = await getDocs(q);
             const fetchedActivities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ActivityType & { createdOn: { seconds: number } }));
             
-            setActivities(fetchedActivities);
+            if (fetchedActivities.length > 0) {
+              setActivities(fetchedActivities);
+            }
 
             const newFirstDoc = documentSnapshots.docs[0];
             const newLastDoc = documentSnapshots.docs[documentSnapshots.docs.length - 1];
             setFirstDoc(newFirstDoc || null);
             setLastDoc(newLastDoc || null);
             
-            if (direction === 'initial' || direction === 'prev') {
-                const prevQuery = query(activitiesCollection, where('clientId', '==', clientId), orderBy('createdOn', 'desc'), endBefore(newFirstDoc), limitToLast(1));
+            // Check for previous page
+            const firstVisible = documentSnapshots.docs[0];
+            if (firstVisible) {
+                const prevQuery = query(activitiesCollection, where('clientId', '==', clientId), orderBy('createdOn', 'desc'), endBefore(firstVisible), limitToLast(1));
                 const prevSnap = await getDocs(prevQuery);
                 setIsFirstPage(prevSnap.empty);
             } else {
-                 setIsFirstPage(false);
+                // If there are no docs, it could be we're at an edge.
+                // Re-evaluating isFirstPage when going back.
+                if (direction !== 'prev') {
+                  setIsFirstPage(true);
+                }
             }
             
-            if (direction === 'initial' || direction === 'next') {
-                const nextQuery = query(activitiesCollection, where('clientId', '==', clientId), orderBy('createdOn', 'desc'), startAfter(newLastDoc), limit(1));
-                const nextSnap = await getDocs(nextQuery);
-                setIsLastPage(nextSnap.empty);
+            // Check for next page
+            const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+            if (lastVisible) {
+              const nextQuery = query(activitiesCollection, where('clientId', '==', clientId), orderBy('createdOn', 'desc'), startAfter(lastVisible), limit(1));
+              const nextSnap = await getDocs(nextQuery);
+              setIsLastPage(nextSnap.empty);
             } else {
-                setIsLastPage(false);
+               if (direction !== 'next') {
+                 setIsLastPage(true);
+               }
             }
+
 
         } catch (error) {
             console.error("Error fetching activities:", error);
@@ -122,7 +135,7 @@ export default function ActivitiesPage() {
 
     useEffect(() => {
         if(clientId) {
-            fetchActivities();
+            fetchActivities('initial');
         } else {
             setActivities([]);
             setLoading(false);
