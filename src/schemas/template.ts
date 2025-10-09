@@ -3,12 +3,21 @@ import { z } from 'zod';
 
 const reportBlockBaseSchema = z.object({
   id: z.string(),
-  type: z.enum(['title', 'subtitle', 'paragraph', 'chart']),
 });
 
-const textBlockSchema = reportBlockBaseSchema.extend({
-  type: z.literal('title').or(z.literal('subtitle')).or(z.literal('paragraph')),
+const titleBlockSchema = reportBlockBaseSchema.extend({
+  type: z.literal('title'),
   text: z.string().optional(),
+});
+
+const subtitleBlockSchema = reportBlockBaseSchema.extend({
+    type: z.literal('subtitle'),
+    text: z.string().optional(),
+});
+
+const paragraphBlockSchema = reportBlockBaseSchema.extend({
+    type: z.literal('paragraph'),
+    text: z.string().optional(),
 });
 
 const chartBlockSchema = reportBlockBaseSchema.extend({
@@ -19,7 +28,9 @@ const chartBlockSchema = reportBlockBaseSchema.extend({
 });
 
 const reportBlockSchema = z.discriminatedUnion('type', [
-    textBlockSchema,
+    titleBlockSchema,
+    subtitleBlockSchema,
+    paragraphBlockSchema,
     chartBlockSchema,
 ]);
 
