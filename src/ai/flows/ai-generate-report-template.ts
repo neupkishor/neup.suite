@@ -56,7 +56,7 @@ const prompt = ai.definePrompt({
       - Example: For a user to add a custom summary, you would include a placeholder like \`{{manual.report_summary}}\`. For an introductory paragraph, use \`{{manual.introduction_text}}\`.
 
   **User's Prompt:**
-  {{{prompt}}}
+  {{prompt}}
 
   **Output Instructions:**
   - The final output must be a single block of valid, complete HTML.
