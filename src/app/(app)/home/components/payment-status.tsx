@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DollarSign, Receipt } from "lucide-react";
@@ -53,7 +54,7 @@ export function PaymentStatus({ invoices }: { invoices: Invoice[] | null }) {
             <div className="flex items-center justify-between rounded-lg border bg-card-foreground/5 p-4">
                 <div>
                     <p className="text-sm text-muted-foreground">Next payment</p>
-                    <p className="text-2xl font-bold font-headline">{currencySymbol}{nextDueInvoice.amount.toFixed(2)}</p>
+                    <p className="text-2xl font-bold font-headline">{currencySymbol}{nextDueInvoice.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <DollarSign className="h-6 w-6" />
