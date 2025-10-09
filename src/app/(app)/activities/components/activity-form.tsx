@@ -21,7 +21,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { activitySchema, type Activity } from '@/schemas/activity';
-import { addDoc, updateDoc, collection, serverTimestamp, doc } from 'firebase/firestore';
+import { addActivity } from '@/actions/activities/add-activity';
+import { updateActivity } from '@/actions/activities/update-activity';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { uploadFile } from '@/lib/upload-service';
@@ -108,12 +109,10 @@ export function ActivityForm({ activity, clientId, projects }: { activity?: Acti
 
     try {
       if (activity?.id) {
-        const activityDoc = doc(firestore, 'activities', activity.id);
-        await updateDoc(activityDoc, { ...values, updatedOn: serverTimestamp() });
+        await updateActivity(firestore, activity.id, values);
         router.push(`/activities/${activity.id}`);
       } else {
-        const activityCollection = collection(firestore, 'activities');
-        await addDoc(activityCollection, { ...values, createdBy: 'Jane Doe', createdOn: serverTimestamp() });
+        await addActivity(firestore, {...values, createdBy: 'Jane Doe'});
         router.push('/activities');
       }
       router.refresh();
@@ -247,5 +246,3 @@ export function ActivityForm({ activity, clientId, projects }: { activity?: Acti
     </Form>
   );
 }
-
-    

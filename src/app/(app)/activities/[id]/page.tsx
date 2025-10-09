@@ -6,12 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import Link from "next/link";
 import { useDoc } from '@/firebase';
 import { useFirestore } from '@/firebase/provider';
-import { doc, DocumentReference, deleteDoc } from 'firebase/firestore';
+import { doc, DocumentReference } from 'firebase/firestore';
 import type { Activity } from "@/schemas/activity";
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { Loader2, Edit, Trash2, Calendar, User, Link as LinkIcon, FileText, ChevronRight, Activity as ActivityIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { deleteActivity } from '@/actions/activities/delete-activity';
 
 export default function ActivityDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -27,11 +28,11 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
     const { data: activity, loading } = useDoc<Activity & {createdOn: {seconds: number}}>(activityRef);
 
     const handleDelete = async () => {
-      if (!activityRef) return;
+      if (!firestore || !id) return;
       if (confirm('Are you sure you want to delete this activity?')) {
         setIsDeleting(true);
         try {
-          await deleteDoc(activityRef);
+          await deleteActivity(firestore, id);
           router.push('/activities');
         } catch (error) {
           console.error('Failed to delete activity', error);
@@ -153,5 +154,3 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
     </div>
   );
 }
-
-    
