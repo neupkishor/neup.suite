@@ -126,7 +126,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground font-medium">Amount</p>
-                        <p className="text-xl font-bold">{currencySymbol}{invoice.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm text-muted-foreground">{invoice.currency}</span></p>
+                        <p className="text-xl font-bold">{currencySymbol} {invoice.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-sm text-muted-foreground">{invoice.currency}</span></p>
                     </div>
                  </div>
             </CardContent>

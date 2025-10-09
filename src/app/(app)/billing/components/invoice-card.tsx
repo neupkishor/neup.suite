@@ -52,7 +52,7 @@ export function InvoiceCard({ invoice }: { invoice: Invoice }) {
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground font-medium">Amount</p>
-                        <p className="font-semibold">{currencySymbol}{invoice.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        <p className="font-semibold">{currencySymbol} {invoice.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
