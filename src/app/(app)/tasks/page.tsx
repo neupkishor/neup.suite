@@ -12,8 +12,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Loader2,
   PlusCircle,
-  MessageSquarePlus,
-  Trash,
 } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -34,7 +32,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -53,8 +50,6 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { Skeleton } from '@/components/ui/skeleton';
 import { taskSchema, type Task } from '@/schemas/task';
 import { Textarea } from '@/components/ui/textarea';
@@ -62,7 +57,6 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { CalendarIcon } from 'lucide-react';
 import { TaskCard } from './components/task-card';
 import Cookies from 'js-cookie';
-import Link from 'next/link';
 import { addTask } from './actions/add-task';
 import type { Client } from '@/schemas/client';
 
@@ -81,15 +75,16 @@ const teamMembers = [
 function NewTaskItem({
   setIsCreating,
   projects,
+  clients,
   clientId
 }: {
   setIsCreating: (isCreating: boolean) => void;
   projects: Project[] | null;
-  clientId: string;
+  clients: Client[] | null;
+  clientId?: string | null;
 }) {
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
 
   const form = useForm<z.infer<typeof taskSchema>>({
     resolver: zodResolver(taskSchema),
@@ -99,15 +94,9 @@ function NewTaskItem({
       status: 'To Do',
       assignees: ['Jane Doe'],
       subtasks: [],
-      clientId: clientId,
+      clientId: clientId || '',
     },
   });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'subtasks',
-  });
-  const [newSubtask, setNewSubtask] = useState('');
 
   async function onSubmit(values: z.infer<typeof taskSchema>) {
     if (!firestore) return;
@@ -129,17 +118,33 @@ function NewTaskItem({
     }
   }
 
-  const handleAddSubtask = () => {
-    if (newSubtask.trim()) {
-      append({ text: newSubtask.trim(), completed: false });
-      setNewSubtask('');
-    }
-  };
-
   return (
     <div className="mb-4 p-4 border rounded-lg border-primary">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {!clientId && (
+                <FormField
+                    control={form.control}
+                    name="clientId"
+                    render={({ field }) => (
+                        <FormItem>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a client..." />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {clients?.map((client) => (
+                                <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            )}
             <FormField
               control={form.control}
               name="title"
@@ -330,16 +335,15 @@ export default function TasksPage() {
           <div className="divide-y">
             {!isCreating && (
               <button
-                onClick={() => clientId && setIsCreating(true)}
-                disabled={!clientId}
-                className="flex w-full items-center gap-2 p-4 text-muted-foreground transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+                onClick={() => setIsCreating(true)}
+                className="flex w-full items-center gap-2 p-4 text-muted-foreground transition-colors hover:bg-muted/50"
               >
                 <PlusCircle className="h-5 w-5" />
-                <span className="font-medium">{clientId ? 'New Task' : 'Select a client to create a task'}</span>
+                <span className="font-medium">New Task</span>
               </button>
             )}
-            {isCreating && clientId && (
-                <NewTaskItem setIsCreating={setIsCreating} projects={projects} clientId={clientId} />
+            {isCreating && (
+                <NewTaskItem setIsCreating={setIsCreating} projects={projects} clients={clients} clientId={clientId} />
             )}
             {loading &&
               Array.from({ length: 3 }).map((_, i) => (
