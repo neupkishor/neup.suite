@@ -55,6 +55,10 @@ const prompt = ai.definePrompt({
       - **CRITICAL:** For any data that needs to be manually entered by the user when they generate the report, you MUST use the \`{{manual.your_field_name}}\` format. The system will automatically create a form field for each unique \`manual\` placeholder.
       - Example: For a user to add a custom summary, you would include a placeholder like \`{{manual.report_summary}}\`. For an introductory paragraph, use \`{{manual.introduction_text}}\`.
 
+  ❗ Important: You must NEVER generate placeholders with empty or undefined names.
+  - Every Handlebars tag must be of the form {{client.field}}, {{manual.field}}, or {{#each tasks}}...{{/each}} with valid field names.
+  - Do not generate {{undefined}}, {{manual.}}, {{}} or similar.
+
   **User's Prompt:**
   {{prompt}}
 
@@ -73,6 +77,14 @@ const aiGenerateReportTemplateFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    
+    let html = output!.html;
+
+    html = html
+      .replace(/\{\{\s*undefined\s*\}\}/g, '')
+      .replace(/\{\{\s*manual\.\s*\}\}/g, '')
+      .replace(/\{\{\s*\}\}/g, '');
+
+    return { html };
   }
 );
