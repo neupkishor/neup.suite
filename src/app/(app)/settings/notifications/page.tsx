@@ -1,15 +1,16 @@
 
 'use client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 
 export default function NotificationSettingsPage() {
     return (
-        <div className="space-y-6">
-            <div>
-                <h3 className="text-lg font-medium">Email Notifications</h3>
-                <p className="text-sm text-muted-foreground">Manage how you receive notifications.</p>
-            </div>
-            <div className="space-y-4">
+        <Card>
+            <CardHeader>
+                <CardTitle>Email Notifications</CardTitle>
+                <CardDescription>Manage how you receive notifications.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
                 <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
                         <h4 className="font-medium">New Messages</h4>
@@ -31,7 +32,7 @@ export default function NotificationSettingsPage() {
                     </div>
                     <Switch />
                 </div>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     )
 }
