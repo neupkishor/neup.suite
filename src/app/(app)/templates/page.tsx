@@ -22,19 +22,12 @@ export default function TemplatesPage() {
             </div>
         </div>
       </CardHeader>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <AddItemCard
             title="Create New Template"
             href="/templates/create"
             icon={FileStack}
         />
-        {/* Placeholder for template cards */}
-        <Card>
-            <CardContent className="p-4">
-                <h3 className="font-semibold">Project Kickoff Template</h3>
-                <p className="text-sm text-muted-foreground">A standard set of tasks for new projects.</p>
-            </CardContent>
-        </Card>
       </div>
     </div>
   );
