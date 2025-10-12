@@ -21,12 +21,14 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { uploadFile } from '@/lib/upload-service';
 import { Textarea } from '@/components/ui/textarea';
 import Cookies from 'js-cookie';
+import { Progress } from '@/components/ui/progress';
 
 export function UploadDocumentDialog({ children }: { children: React.ReactNode }) {
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -55,6 +57,7 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
     setNotes('');
     setIsUploading(false);
     setError(null);
+    setUploadProgress(0);
   }
 
   const handleUpload = async () => {
@@ -65,10 +68,14 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
 
     setIsUploading(true);
     setError(null);
+    setUploadProgress(0);
 
     try {
       const contentId = `doc-${Date.now()}`;
-      const fileUrl = await uploadFile(file, contentId, name);
+      const fileUrl = await uploadFile(file, contentId, name, (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadProgress(percentCompleted);
+      });
 
       const documentsCollection = collection(firestore, 'documents');
       await addDoc(documentsCollection, {
@@ -156,6 +163,13 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
               placeholder="Add a brief description or any relevant notes..."
             />
           </div>
+          {isUploading && (
+            <div className="space-y-2">
+              <Label>Upload Progress</Label>
+              <Progress value={uploadProgress} />
+              <p className="text-sm text-muted-foreground text-center">{uploadProgress}%</p>
+            </div>
+          )}
           {error && <p className="text-sm font-medium text-destructive">{error}</p>}
         </div>
         <DialogFooter>
@@ -164,7 +178,7 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
           </DialogClose>
           <Button onClick={handleUpload} disabled={isUploading || !file}>
             {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Upload
+            {isUploading ? 'Uploading...' : 'Upload'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -9,7 +9,12 @@ interface UploadResponse {
   message?: string;
 }
 
-export const uploadFile = async (file: File, contentid: string, name?: string): Promise<string> => {
+export const uploadFile = async (
+  file: File, 
+  contentid: string, 
+  name?: string,
+  onUploadProgress?: (progressEvent: any) => void
+): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('platform', 'neup-suite');
@@ -24,6 +29,7 @@ export const uploadFile = async (file: File, contentid: string, name?: string): 
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      onUploadProgress,
     });
 
     if (response.data.success && response.data.url) {
