@@ -1,259 +1,35 @@
-
 'use client';
 import {
-  addDoc,
   collection,
   CollectionReference,
-  serverTimestamp,
   query,
   where,
 } from 'firebase/firestore';
-import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Loader2,
-  PlusCircle,
   Download,
+  PlusCircle,
+  CheckCircle2,
+  Clock,
+  ListTodo
 } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { z } from 'zod';
 
 import { useCollection } from '@/firebase';
 import { useFirestore } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { taskSchema, type Task } from '@/schemas/task';
-import { Textarea } from '@/components/ui/textarea';
-import { MultiSelect } from '@/components/ui/multi-select';
-import { CalendarIcon } from 'lucide-react';
+import { type Task } from '@/schemas/task';
 import { TaskCard } from './components/task-card';
 import Cookies from 'js-cookie';
-import { addTask } from './actions/add-task';
 import type { Client } from '@/schemas/client';
 import Link from 'next/link';
+import { CreateTaskLux } from './components/create-task-lux';
+import { Card, CardContent } from '@/components/ui/card';
 
 type Project = {
   id: string;
   name: string;
 };
-
-const teamMembers = [
-  { value: 'Jane Doe', label: 'Jane Doe', avatarId: 'user-avatar' },
-  { value: 'Alex Ray', label: 'Alex Ray', avatarId: 'contact-1' },
-  { value: 'Jordan Smith', label: 'Jordan Smith', avatarId: 'contact-2' },
-  { value: 'Casey Williams', label: 'Casey Williams', avatarId: 'contact-4' },
-];
-
-function NewTaskItem({
-  setIsCreating,
-  projects,
-  clients,
-  clientId
-}: {
-  setIsCreating: (isCreating: boolean) => void;
-  projects: Project[] | null;
-  clients: Client[] | null;
-  clientId?: string | null;
-}) {
-  const firestore = useFirestore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<z.infer<typeof taskSchema>>({
-    resolver: zodResolver(taskSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      status: 'To Do',
-      assignees: ['Jane Doe'],
-      subtasks: [],
-      clientId: clientId || '',
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof taskSchema>) {
-    if (!firestore) return;
-    setIsSubmitting(true);
-    
-    try {
-      await addTask(firestore, {
-        ...values,
-        deadline: values.deadline
-          ? format(values.deadline, 'yyyy-MM-dd')
-          : null,
-      }, 'user_placeholder'); // Placeholder for user ID
-      setIsCreating(false);
-      form.reset();
-    } catch (error) {
-      console.error('Failed to add task', error);
-    } finally {
-        setIsSubmitting(false);
-    }
-  }
-
-  return (
-    <div className="mb-4 p-4 border rounded-lg border-primary">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {!clientId && (
-                <FormField
-                    control={form.control}
-                    name="clientId"
-                    render={({ field }) => (
-                        <FormItem>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a client..." />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            {clients?.map((client) => (
-                                <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
-                            ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-            )}
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input className="border-0 text-base font-medium" placeholder="e.g. Design the new logo" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                <FormItem>
-                    <FormControl>
-                    <Textarea
-                        placeholder="Add a more detailed description..."
-                        className="border-0"
-                        {...field}
-                    />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="assignees"
-                render={({ field }) => (
-                  <FormItem>
-                    <MultiSelect
-                      selected={field.value}
-                      options={teamMembers}
-                      onChange={field.onChange}
-                      placeholder="Select team members..."
-                      className="w-full"
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="deadline"
-                render={({ field }) => (
-                  <FormItem>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'PPP')
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsCreating(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Save Task
-              </Button>
-            </div>
-          </form>
-        </Form>
-    </div>
-  );
-}
-
 
 function TaskCardSkeleton() {
   return (
@@ -273,7 +49,6 @@ function TaskCardSkeleton() {
 }
 
 export default function TasksPage() {
-  const [isCreating, setIsCreating] = useState(false);
   const firestore = useFirestore();
   const [clientId, setClientId] = useState<string | null>(null);
 
@@ -318,59 +93,88 @@ export default function TasksPage() {
     return clients?.find(c => c.id === cId)?.name;
   };
 
+  const stats = useMemo(() => {
+      if (!tasks) return { total: 0, pending: 0, done: 0 };
+      return {
+          total: tasks.length,
+          pending: tasks.filter(t => t.status !== 'Done' && t.status !== 'Cancelled').length,
+          done: tasks.filter(t => t.status === 'Done').length
+      };
+  }, [tasks]);
+
   return (
-    <div className="space-y-6">
-      <CardHeader className="p-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="font-headline text-2xl">
-              Task Management
-            </CardTitle>
-            <CardDescription>
-              {clientId ? 'View, create, and manage all tasks for the selected client.' : 'View all tasks across all clients.'}
-            </CardDescription>
-          </div>
-          <Button variant="outline" asChild>
-            <Link href="/tasks/import"><Download /> Import from Template</Link>
-          </Button>
+    <div className="max-w-4xl mx-auto space-y-6 py-4">
+      <div className="flex items-center justify-between px-2">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+          <p className="text-muted-foreground mt-1">
+             {clientId ? 'Manage tasks for the selected client.' : 'Stay on top of your work.'}
+          </p>
         </div>
-      </CardHeader>
-       <Card>
-        <CardContent className="p-0">
-          <div className="divide-y">
-            {!isCreating && (
-              <button
-                onClick={() => setIsCreating(true)}
-                className="flex w-full items-center gap-2 p-4 text-muted-foreground transition-colors hover:bg-muted/50"
-              >
-                <PlusCircle className="h-5 w-5" />
-                <span className="font-medium">New Task</span>
-              </button>
-            )}
-            {isCreating && (
-                <NewTaskItem setIsCreating={setIsCreating} projects={projects} clients={clients} clientId={clientId} />
-            )}
-            {loading &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <TaskCardSkeleton key={i} />
-              ))}
-            {!loading &&
-              tasks?.map((task) => (
-                <TaskCard 
-                  key={task.id} 
-                  task={task} 
-                  projects={projects}
-                  clientName={!clientId ? getClientName(task.clientId) : undefined}
-                />
-              ))}
-            {!loading && tasks?.length === 0 && !isCreating && (
-              <div className="p-6 text-center text-muted-foreground">
-                No tasks found.
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+         <Button variant="ghost" size="sm" asChild>
+            <Link href="/tasks/import" className="text-muted-foreground hover:text-foreground"><Download className="mr-2 h-4 w-4" /> Import</Link>
+          </Button>
+      </div>
+
+      <div className="space-y-4">
+        {/* Card 1: Create Task */}
+        <CreateTaskLux 
+            projects={projects} 
+            clients={clients} 
+            clientId={clientId}
+        />
+
+        {/* Card 2: Status & List */}
+        <div className="bg-background rounded-xl border shadow-sm overflow-hidden">
+             {/* Status Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/20">
+                <div className="flex items-center gap-6 text-sm">
+                    <div className="flex items-center gap-2 font-medium">
+                        <ListTodo className="h-4 w-4 text-muted-foreground" />
+                        <span>{stats.total} Tasks</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>{stats.pending} Pending</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>{stats.done} Done</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Task List */}
+            <div className="divide-y">
+                {loading &&
+                Array.from({ length: 3 }).map((_, i) => (
+                    <TaskCardSkeleton key={i} />
+                ))}
+                
+                {!loading &&
+                tasks?.map((task) => (
+                    <TaskCard 
+                    key={task.id} 
+                    task={task} 
+                    projects={projects}
+                    clientName={!clientId ? getClientName(task.clientId) : undefined}
+                    />
+                ))}
+                
+                {!loading && tasks?.length === 0 && (
+                <div className="p-12 text-center text-muted-foreground">
+                    <div className="flex justify-center mb-4">
+                        <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center">
+                            <PlusCircle className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                    </div>
+                    <h3 className="text-lg font-medium text-foreground">No tasks yet</h3>
+                    <p className="mt-1">Add a task above to get started.</p>
+                </div>
+                )}
+            </div>
+        </div>
+      </div>
     </div>
   );
 }

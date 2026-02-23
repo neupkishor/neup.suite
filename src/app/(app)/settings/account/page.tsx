@@ -78,10 +78,10 @@ export default function AccountSettingsPage() {
       
       <Card>
         <CardHeader>
-            <CardTitle>App Integrations</CardTitle>
-            <CardDescription>Connect your favorite tools with Neup.Suite.</CardDescription>
-        </CardHeader>
-        <CardContent>
+              <CardTitle>Integrations</CardTitle>
+              <CardDescription>Connect your favorite tools with Neup.Suite.</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="text-sm text-muted-foreground">
                 <p>Integration options will be available here.</p>
             </div>
