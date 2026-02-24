@@ -15,12 +15,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { useFirestore } from "@/firebase/provider";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { clientSchema } from "@/schemas/client";
+import { createClient } from "@/actions/clients/create-client";
 import {
   Select,
   SelectContent,
@@ -28,37 +27,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useToast } from "@/hooks/use-toast";
 
 export default function CreateClientPage() {
-    const firestore = useFirestore();
     const router = useRouter();
+    const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof clientSchema>>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
       name: "",
-      contactEmail: "",
       status: 'Onboarding',
     },
   });
 
   async function onSubmit(values: z.infer<typeof clientSchema>) {
-    if (!firestore) return;
     setIsSubmitting(true);
-    setSubmitError(null);
 
     try {
-        const clientsCollection = collection(firestore, 'clients');
-        await addDoc(clientsCollection, {
-            ...values,
-            createdOn: serverTimestamp(),
-        });
-        router.push('/clients');
+        // TEMPORARY: Bypassing auth check until integrated
+        const tempUserId = "temp-user-id";
+        const result = await createClient(values, tempUserId);
+        
+        if (result.success) {
+            toast({
+                title: "Client created",
+                description: "The new client has been successfully added.",
+            });
+            router.push('/clients');
+        } else {
+            toast({
+                title: "Error",
+                description: result.error || "Failed to create client",
+                variant: "destructive",
+            });
+        }
     } catch (error) {
+        toast({
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
+            variant: "destructive",
+        });
+    } finally {
         setIsSubmitting(false);
-        setSubmitError("An unexpected error occurred. Please try again.");
     }
   }
 
@@ -84,51 +96,38 @@ export default function CreateClientPage() {
                         </FormItem>
                     )}
                     />
+                    
                     <FormField
                     control={form.control}
-                    name="contactEmail"
+                    name="status"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Contact Email</FormLabel>
-                        <FormControl>
-                            <Input placeholder="contact@acme.com" {...field} />
-                        </FormControl>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a status" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="Active">Active</SelectItem>
+                            <SelectItem value="Inactive">Inactive</SelectItem>
+                            <SelectItem value="Onboarding">Onboarding</SelectItem>
+                            </SelectContent>
+                        </Select>
                         <FormMessage />
                         </FormItem>
                     )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Status</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Select a status" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="Onboarding">Onboarding</SelectItem>
-                                <SelectItem value="Active">Active</SelectItem>
-                                <SelectItem value="Inactive">Inactive</SelectItem>
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <div className="flex gap-2">
+                    <div className="flex justify-end gap-4">
+                        <Button variant="outline" asChild>
+                            <Link href="/clients">Cancel</Link>
+                        </Button>
                         <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Create Client
                         </Button>
-                        <Button variant="outline" asChild>
-                            <Link href="/clients">Cancel</Link>
-                        </Button>
                     </div>
-                     {submitError && <p className="text-sm font-medium text-destructive">{submitError}</p>}
                 </form>
             </Form>
         </CardContent>

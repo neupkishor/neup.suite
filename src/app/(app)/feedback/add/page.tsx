@@ -1,7 +1,7 @@
 
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FeedbackForm } from '../components/feedback-form';
+import { FeedbackForm } from '@/app/(app)/feedback/components/feedback-form';
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";

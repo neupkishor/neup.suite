@@ -12,4 +12,4 @@ export const invoiceSchema = z.object({
   clientId: z.string().min(1, 'Client ID is required'),
 });
 
-    
+export type Invoice = z.infer<typeof invoiceSchema> & { id: string };

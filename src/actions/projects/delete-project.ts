@@ -1,24 +1,19 @@
-'use client';
-import {
-  doc,
-  deleteDoc,
-  Firestore,
-} from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+'use server';
 
-export async function deleteProject(
-  db: Firestore,
-  projectId: string
-) {
-  const projectDoc = doc(db, 'projects', projectId);
-  
-  return deleteDoc(projectDoc).catch((serverError) => {
-    const permissionError = new FirestorePermissionError({
-      path: projectDoc.path,
-      operation: 'delete',
+import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
+
+export async function deleteProject(projectId: string) {
+  try {
+    await prisma.project.delete({
+      where: {
+        id: projectId,
+      },
     });
-    errorEmitter.emit('permission-error', permissionError);
-    throw serverError;
-  });
+
+    revalidatePath('/projects');
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    throw new Error('Failed to delete project');
+  }
 }

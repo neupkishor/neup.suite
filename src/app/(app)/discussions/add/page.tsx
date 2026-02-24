@@ -1,18 +1,13 @@
 
-'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DiscussionForm } from '../components/discussion-form';
-import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import { DiscussionForm } from '@/app/(app)/discussions/components/discussion-form';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { cookies } from "next/headers";
 
-export default function AddDiscussionPage() {
-    const [clientId, setClientId] = useState<string|null>(null);
-
-    useEffect(() => {
-        setClientId(Cookies.get('client') || null);
-    }, []);
+export default async function AddDiscussionPage() {
+    const cookieStore = await cookies();
+    const clientId = cookieStore.get('client')?.value;
 
     if (!clientId) {
         return (

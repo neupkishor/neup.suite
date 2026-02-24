@@ -16,18 +16,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
-import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { updateReport } from '../actions/update-report';
+import { addReport, updateReport } from '@/actions/reports';
 import { reportSchema } from '@/schemas/report';
-import { generateAndSaveReport } from '../actions/generate-report';
 
 type Report = z.infer<typeof reportSchema> & { id?: string };
 
 export function ReportForm({ report, clientId }: { report?: Report, clientId: string }) {
-  const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -54,14 +51,13 @@ export function ReportForm({ report, clientId }: { report?: Report, clientId: st
 
 
   async function onSubmit(values: z.infer<typeof reportSchema>) {
-    if (!firestore) return;
     setIsSubmitting(true);
 
     try {
       if (report?.id) {
-        await updateReport(firestore, report.id, values);
+        await updateReport(report.id, values);
       } else {
-        await generateAndSaveReport(firestore, values);
+        await addReport(values);
       }
       router.push('/reports');
       router.refresh();

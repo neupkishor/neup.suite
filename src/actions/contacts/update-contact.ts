@@ -1,34 +1,38 @@
+'use server';
 
-'use client';
-import {
-  doc,
-  updateDoc,
-  serverTimestamp,
-  Firestore,
-} from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { prisma } from '@/lib/prisma';
 import type { Contact } from '@/schemas/contact';
+import { revalidatePath } from 'next/cache';
 
-export async function updateContact(
-  db: Firestore,
-  contactId: string,
-  contactData: Contact
-) {
-  const contactDoc = doc(db, 'contacts', contactId);
-  
-  return updateDoc(contactDoc, {
-    ...contactData,
-    updatedOn: serverTimestamp(),
-  }).catch((serverError) => {
-    const permissionError = new FirestorePermissionError({
-      path: contactDoc.path,
-      operation: 'update',
-      requestResourceData: contactData,
+export async function updateContact(contactId: string, contactData: Contact) {
+  try {
+    const updatedContact = await prisma.contact.update({
+      where: {
+        id: contactId,
+      },
+      data: {
+        firstName: contactData.name.firstName,
+        lastName: contactData.name.lastName,
+        middleName: contactData.name.middleName,
+        role: contactData.role,
+        organization: contactData.organization,
+        notes: contactData.notes,
+        avatarUrl: contactData.avatarUrl,
+        clientId: contactData.clientId,
+        // Store complex objects as JSON
+        emails: contactData.emails ? JSON.parse(JSON.stringify(contactData.emails)) : undefined,
+        phoneNumbers: contactData.phoneNumbers ? JSON.parse(JSON.stringify(contactData.phoneNumbers)) : undefined,
+        addresses: contactData.addresses ? JSON.parse(JSON.stringify(contactData.addresses)) : undefined,
+        socialProfiles: contactData.socialProfiles ? JSON.parse(JSON.stringify(contactData.socialProfiles)) : undefined,
+        messaging: contactData.messaging ? JSON.parse(JSON.stringify(contactData.messaging)) : undefined,
+        importantDates: contactData.importantDates ? JSON.parse(JSON.stringify(contactData.importantDates)) : undefined,
+      },
     });
-    errorEmitter.emit('permission-error', permissionError);
-    throw serverError;
-  });
-}
-
     
+    revalidatePath('/contacts');
+    return updatedContact;
+  } catch (error) {
+    console.error('Error updating contact:', error);
+    throw new Error('Failed to update contact');
+  }
+}

@@ -20,25 +20,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, AlertCircle } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { addGoal } from '../actions/add-goal';
-import { updateGoal } from '../actions/update-goal';
+import { addGoal, updateGoal } from '@/actions/goals';
 import { goalSchema } from '@/schemas/goal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type Goal = z.infer<typeof goalSchema> & { id?: string };
 
 export function GoalForm({ goal, clientId }: { goal?: Goal, clientId: string }) {
-  const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<z.infer<typeof goalSchema>>({
     resolver: zodResolver(goalSchema),
@@ -65,8 +64,8 @@ export function GoalForm({ goal, clientId }: { goal?: Goal, clientId: string }) 
 
 
   async function onSubmit(values: z.infer<typeof goalSchema>) {
-    if (!firestore) return;
     setIsSubmitting(true);
+    setError(null);
 
     const goalData = {
         ...values,
@@ -75,14 +74,19 @@ export function GoalForm({ goal, clientId }: { goal?: Goal, clientId: string }) 
 
     try {
       if (goal?.id) {
-        await updateGoal(firestore, goal.id, goalData);
+        await updateGoal(goal.id, goalData);
       } else {
-        await addGoal(firestore, goalData);
+        await addGoal(goalData);
       }
       router.push('/goals');
       router.refresh();
     } catch (error) {
       console.error(error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
       setIsSubmitting(false);
     }
   }
@@ -90,6 +94,13 @@ export function GoalForm({ goal, clientId }: { goal?: Goal, clientId: string }) 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
+        {error && (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        )}
         <FormField
           control={form.control}
           name="title"

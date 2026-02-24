@@ -1,51 +1,36 @@
 
-'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCollection } from "@/firebase";
-import { useFirestore } from "@/firebase/provider";
-import { collection, CollectionReference, query, where } from "firebase/firestore";
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { MessageCircle } from "lucide-react";
 import { AddItemCard } from "@/components/add-item-card";
-import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
-
-type Discussion = {
-    id: string;
-    title: string;
-    createdBy: string;
-};
+import { MessageCircle } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { cookies } from "next/headers";
+import { Discussion } from "@/generated/prisma";
 
 function DiscussionCard({ discussion }: { discussion: Discussion }) {
     return (
         <Card>
             <CardContent className="p-4">
                 <Link href={`/discussions/${discussion.id}`} className="font-semibold text-lg hover:underline">{discussion.title}</Link>
-                <p className="text-sm text-muted-foreground">Started by: {discussion.createdBy}</p>
+                <p className="text-sm text-muted-foreground">Created on: {discussion.createdAt.toLocaleDateString()}</p>
             </CardContent>
         </Card>
     )
 }
 
-export default function DiscussionsPage() {
-    const firestore = useFirestore();
-    const [clientId, setClientId] = useState<string|null>(null);
+export default async function DiscussionsPage() {
+    const cookieStore = await cookies();
+    const clientId = cookieStore.get('client')?.value;
 
-    useEffect(() => {
-        setClientId(Cookies.get('client') || null);
-    }, []);
-
-    const discussionsCollection = useMemo(() => {
-        if (!firestore || !clientId) return null;
-        return query(
-            collection(firestore, 'discussions') as CollectionReference<Discussion>,
-            where('clientId', '==', clientId)
-        );
-    }, [firestore, clientId]);
-
-    const { data: discussions, loading } = useCollection<Discussion>(discussionsCollection);
+    const discussions = clientId ? await prisma.discussion.findMany({
+        where: {
+            clientId: clientId
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    }) : [];
 
   return (
     <div className="space-y-6">
@@ -68,16 +53,13 @@ export default function DiscussionsPage() {
             </Card>
         ) : (
       <div className="grid grid-cols-1 gap-4">
-        {!loading && (
-            <AddItemCard
-                title="New Discussion"
-                href="/discussions/add"
-                icon={MessageCircle}
-            />
-        )}
-        {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
-        {discussions?.map(item => <DiscussionCard key={item.id} discussion={item} />)}
-          {!loading && discussions?.length === 0 && (
+        <AddItemCard
+            title="New Discussion"
+            href="/discussions/add"
+            icon={MessageCircle}
+        />
+        {discussions.map((item: Discussion) => <DiscussionCard key={item.id} discussion={item} />)}
+          {discussions.length === 0 && (
             <Card>
                 <CardContent className="p-6 text-center text-muted-foreground">
                     No discussions found for this client.

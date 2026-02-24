@@ -74,7 +74,7 @@ export default function EditContactPage({ params }: { params: Promise<{ id: stri
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ContactForm contact={contact} />
+        <ContactForm contact={contact || undefined} clientId={contact?.clientId || ''} />
       </CardContent>
     </Card>
   );

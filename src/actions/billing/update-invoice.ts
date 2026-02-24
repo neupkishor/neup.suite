@@ -1,36 +1,37 @@
-'use client';
-import {
-  doc,
-  updateDoc,
-  serverTimestamp,
-  Firestore,
-} from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { z } from 'zod';
+'use server';
+
+import { prisma } from '@/lib/prisma';
 import { invoiceSchema } from '@/schemas/invoice';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 type UpdatedInvoice = Omit<z.infer<typeof invoiceSchema>, 'dueDate'> & {
-    dueDate: string;
+  dueDate: string;
 };
 
-export async function updateInvoice(
-  db: Firestore,
-  invoiceId: string,
-  invoiceData: UpdatedInvoice
-) {
-  const invoiceDoc = doc(db, 'invoices', invoiceId);
-  
-  return updateDoc(invoiceDoc, {
-    ...invoiceData,
-    updatedOn: serverTimestamp(),
-  }).catch((serverError) => {
-    const permissionError = new FirestorePermissionError({
-      path: invoiceDoc.path,
-      operation: 'update',
-      requestResourceData: invoiceData,
+export async function updateInvoice(invoiceId: string, invoiceData: UpdatedInvoice) {
+  try {
+    const updatedInvoice = await prisma.invoice.update({
+      where: {
+        id: invoiceId,
+      },
+      data: {
+        invoiceId: invoiceData.invoiceId,
+        title: invoiceData.title,
+        description: invoiceData.description,
+        clientName: invoiceData.clientName,
+        amount: invoiceData.amount,
+        currency: invoiceData.currency,
+        dueDate: new Date(invoiceData.dueDate),
+        status: invoiceData.status,
+        clientId: invoiceData.clientId,
+      },
     });
-    errorEmitter.emit('permission-error', permissionError);
-    throw serverError;
-  });
+
+    revalidatePath('/billing');
+    return updatedInvoice;
+  } catch (error) {
+    console.error('Error updating invoice:', error);
+    throw new Error('Failed to update invoice');
+  }
 }

@@ -15,18 +15,15 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
-import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { addDiscussion } from '../actions/add-discussion';
-import { updateDiscussion } from '../actions/update-discussion';
+import { addDiscussion, updateDiscussion } from '@/actions/discussions';
 import { discussionSchema } from '@/schemas/discussion';
 
 type Discussion = z.infer<typeof discussionSchema> & { id?: string };
 
-export function DiscussionForm({ discussion, clientId }: { discussion?: Discussion, clientId: string }) {
-  const firestore = useFirestore();
+export function DiscussionForm({ discussion, clientId }: { discussion?: Discussion, clientId?: string | null }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -34,7 +31,7 @@ export function DiscussionForm({ discussion, clientId }: { discussion?: Discussi
     resolver: zodResolver(discussionSchema),
     defaultValues: discussion || {
       title: '',
-      clientId: clientId,
+      clientId: clientId || undefined,
     },
   });
 
@@ -44,21 +41,20 @@ export function DiscussionForm({ discussion, clientId }: { discussion?: Discussi
     } else {
         form.reset({
             title: '',
-            clientId: clientId,
+            clientId: clientId || undefined,
         });
     }
   }, [discussion, clientId, form])
 
 
   async function onSubmit(values: z.infer<typeof discussionSchema>) {
-    if (!firestore) return;
     setIsSubmitting(true);
 
     try {
       if (discussion?.id) {
-        await updateDiscussion(firestore, discussion.id, values);
+        await updateDiscussion(discussion.id, values);
       } else {
-        await addDiscussion(firestore, {...values, createdBy: 'Jane Doe'});
+        await addDiscussion(values);
       }
       router.push('/discussions');
       router.refresh();

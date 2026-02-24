@@ -1,25 +1,13 @@
 
-'use client';
-import { useCollection } from "@/firebase";
-import { useFirestore } from "@/firebase/provider";
-import { collection, CollectionReference, query, where, DocumentData } from "firebase/firestore";
-import { useMemo, useState, useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ProjectCard } from "./components/project-card";
 import { AddItemCard } from "@/components/add-item-card";
 import { FolderKanban } from "lucide-react";
-import Cookies from "js-cookie";
-import type { Client } from "@/schemas/client";
-
-type Project = {
-    id: string;
-    name: string;
-    status: string;
-    deadline: string;
-    clientId: string;
-};
+import { Skeleton } from "@/components/ui/skeleton";
+import { Project, Client } from "@/generated/prisma";
 
 function ProjectCardSkeleton() {
     return (
@@ -38,34 +26,29 @@ function ProjectCardSkeleton() {
     )
 }
 
-export default function ProjectsPage() {
-    const firestore = useFirestore();
-    const [clientId, setClientId] = useState<string | null>(null);
+export default async function ProjectsPage() {
+    const cookieStore = await cookies();
+    const clientId = cookieStore.get('client')?.value;
 
-    useEffect(() => {
-        setClientId(Cookies.get('client') || null);
-    }, [])
+    const projects = await prisma.project.findMany({
+        where: clientId ? { working_with: clientId } : {},
+        orderBy: {
+            created_on: 'asc',
+        },
+    });
 
-    const projectsCollection = useMemo(() => {
-        if (!firestore) return null;
-        let q = collection(firestore, 'projects') as CollectionReference<Project>;
-        if (clientId) {
-            return query(q, where('clientId', '==', clientId));
-        }
-        return query(q);
-    }, [firestore, clientId]);
-    const { data: projects, loading: projectsLoading } = useCollection<Project>(projectsCollection);
+    // If no specific client selected, fetch all clients to map names
+    let clientsMap: Record<string, string> = {};
+    if (!clientId) {
+        const clients = await prisma.client.findMany();
+        clients.forEach((c: Client) => {
+            clientsMap[c.id] = c.name;
+        });
+    }
 
-    const clientsCollection = useMemo(() => {
-        if (!firestore) return null;
-        return collection(firestore, 'clients') as CollectionReference<Client>;
-    }, [firestore]);
-    const { data: clients, loading: clientsLoading } = useCollection<Client>(clientsCollection);
-
-    const loading = projectsLoading || clientsLoading;
-
-    const getClientName = (cId: string) => {
-        return clients?.find(c => c.id === cId)?.name || 'Unknown Client';
+    const getClientName = (cId: string | null) => {
+        if (!cId) return 'Unknown Client';
+        return clientsMap[cId] || 'Unknown Client';
     }
 
   return (
@@ -82,30 +65,30 @@ export default function ProjectsPage() {
         </CardHeader>
 
         <div className="grid grid-cols-1 gap-4">
-            {!loading && (
-                <AddItemCard 
-                    title="New Project" 
-                    href="/projects/create" 
-                    icon={FolderKanban}
-                />
-            )}
-            {loading && (
-                <>
-                    <ProjectCardSkeleton />
-                    <ProjectCardSkeleton />
-                </>
-            )}
-            {!loading && projects && projects.map(project => (
+            <AddItemCard 
+                title="New Project" 
+                href="/projects/create" 
+                icon={FolderKanban}
+            />
+            
+            {projects.map((project: Project) => (
                 <Link href={`/projects/${project.id}`} key={project.id}>
-                    <ProjectCard project={project} clientName={!clientId ? getClientName(project.clientId) : undefined} />
+                    <ProjectCard 
+                        project={{
+                            id: project.id,
+                            name: project.name,
+                            status: project.status,
+                            deadline: project.deadline ? project.deadline.toLocaleDateString() : 'No Deadline',
+                        }} 
+                        clientName={!clientId ? getClientName(project.clientId) : undefined} 
+                    />
                 </Link>
             ))}
-            {!loading && projects?.length === 0 && (
-                <Card>
-                    <CardContent className="p-4 text-center text-muted-foreground">
-                        No projects found.
-                    </CardContent>
-                </Card>
+            
+            {projects.length === 0 && (
+                <div className="text-center text-muted-foreground py-12">
+                    No projects found. Create one to get started!
+                </div>
             )}
         </div>
     </div>

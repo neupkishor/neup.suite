@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Client {
+  id         String   @id @default(uuid())
+  name       String
+  created_by String
+  created_on DateTime @default(now())
+  owner_id   String
+  status     String?
+}
+
+model Project {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  deadline      DateTime?
+  status        String
+  working_with  String?
+  project_owner String?
+  created_on    DateTime  @default(now())
+  clientId      String?
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  assigned_to String[]
+  deadline    DateTime?
+  created_on  DateTime  @default(now())
+  references  String[]
+  status      String    @default("pending")
+  clientId    String?
+}
+
+model Discussion {
+  id               String    @id @default(uuid())
+  title            String
+  status           String?
+  discussion_owner String?
+  last_response    DateTime?
+  references       String[]
+  clientId         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Document {
+  id             String   @id @default(uuid())
+  title          String
+  description    String?
+  document_owner String?
+  references     String[]
+  file_url       String
+  clientId       String?
+  created_at     DateTime @default(now())
+  file_type      String?
+  notes          String?
+  size           Int?
+  status         String   @default("Draft")
+  updated_at     DateTime @updatedAt
+  uploaded_by    String?
+  version        String?
+}
+
+model Thread {
+  id          String   @id @default(uuid())
+  title       String?
+  description String
+  parent_type String
+  parent_id   String
+  references  String[]
+  replied_to  String?
+  more_info   String[]
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model Subtask {
+  id        String  @id @default(uuid())
+  text      String
+  completed Boolean @default(false)
+  taskId    String
+}
+
+model Contact {
+  id             String   @id @default(uuid())
+  firstName      String?
+  lastName       String?
+  middleName     String?
+  role           String?
+  organization   String?
+  notes          String?
+  avatarUrl      String?
+  clientId       String
+  emails         Json?
+  phoneNumbers   Json?
+  addresses      Json?
+  socialProfiles Json?
+  messaging      Json?
+  importantDates Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Invoice {
+  id          String        @id @default(uuid())
+  invoiceId   String
+  title       String
+  description String?
+  clientName  String
+  amount      Float
+  currency    Currency
+  dueDate     DateTime
+  status      InvoiceStatus @default(Due)
+  clientId    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  results     String?
+  links       String[]
+  files       Json?
+  projectId   String?
+  clientId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  title     String
+  comment   String
+  clientId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Goal {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  targetDate  DateTime
+  status      GoalStatus @default(NotStarted)
+  clientId    String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Report {
+  id          String    @id @default(uuid())
+  title       String
+  content     String
+  clientId    String
+  templateId  String?
+  manualData  Json?
+  generatedOn DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Template {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  type        TemplateType
+  body        String
+  version     Int          @default(1)
+  clientId    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Notification {
+  id           String   @id @default(uuid())
+  type         String
+  message      String
+  userId       String
+  resourceId   String
+  resourceType String
+  read         Boolean  @default(false)
+  created_at   DateTime @default(now())
+}
+
+enum InvoiceStatus {
+  Paid
+  Due
+  Overdue
+}
+
+enum Currency {
+  USD
+  EUR
+  GBP
+  JPY
+  NRS
+}
+
+enum GoalStatus {
+  NotStarted @map("Not Started")
+  InProgress @map("In Progress")
+  Completed
+  AtRisk     @map("At Risk")
+}
+
+enum TemplateType {
+  Project
+  TaskList
+  Document
+  Report
+}

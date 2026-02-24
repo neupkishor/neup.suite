@@ -1,2 +1,2 @@
 import Emitter from 'tiny-emitter';
-export const errorEmitter = new Emitter();
+export const errorEmitter = new (Emitter as any)();

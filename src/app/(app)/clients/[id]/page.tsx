@@ -1,68 +1,44 @@
-'use client';
-import { use } from 'react';
+
+import { getClient } from "@/actions/clients/get-clients";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import Cookies from 'js-cookie';
+import { notFound } from "next/navigation";
+import { ClientActions } from "./client-actions";
 
-export default function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
-    const clientId = Cookies.get('client');
-    
-    // As a placeholder for user authentication check
-    const isUserLoggedIn = true; 
+export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const { client, error } = await getClient(id);
 
-    if (!clientId && !isUserLoggedIn) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Not Found</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p>The page you are looking for does not exist.</p>
-                    <Button asChild className="mt-4">
-                        <Link href="/landing">Go to Landing Page</Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        )
+    if (error || !client) {
+        return notFound();
     }
 
-    if (!clientId) {
-         return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>No Client Selected</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p>Please select a client from the clients page.</p>
-                    <Button asChild className="mt-4">
-                        <Link href="/clients">Select a Client</Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        )
-    }
-  
-    // In a real app, you would fetch client data here based on the id
-    // and show a 404 if not found.
-    if (id !== clientId) {
-      // For this example, we'll just check if the URL id matches the cookie
-      // In a real app, you would fetch data and check existence
-    }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Client Details: {id}</CardTitle>
-        <CardDescription>
-          This is where details and projects for the selected client would be displayed.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p>You are managing client with ID: {id}</p>
-      </CardContent>
-    </Card>
-  );
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle className="font-headline text-2xl">{client.name}</CardTitle>
+                        <CardDescription>
+                            Status: {client.status || 'N/A'}
+                        </CardDescription>
+                    </div>
+                    <ClientActions clientId={client.id} />
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="grid gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <h3 className="font-semibold text-sm text-muted-foreground">Created On</h3>
+                            <p>{new Date(client.created_on).toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-sm text-muted-foreground">Client ID</h3>
+                            <p className="font-mono text-sm">{client.id}</p>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
 }

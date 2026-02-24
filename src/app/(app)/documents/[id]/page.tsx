@@ -1,19 +1,12 @@
-
-'use client';
-import { use, useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { useDoc } from '@/firebase';
-import { useFirestore } from '@/firebase/provider';
-import { doc, DocumentReference, deleteDoc } from 'firebase/firestore';
-import { useMemo } from 'react';
-import type { Document } from '@/schemas/document';
-import { Skeleton } from '@/components/ui/skeleton';
+import { prisma } from '@/lib/prisma';
+import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
-import { File, Calendar, User, FileText, Hash, HardDrive, Loader2, ExternalLink } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { DeleteDocumentButton } from '@/app/(app)/documents/[id]/delete-button';
+import { File, Calendar, User, FileText, Hash, HardDrive, ExternalLink } from 'lucide-react';
 
 const getStatusVariant = (status: string) => {
     switch (status) {
@@ -21,14 +14,15 @@ const getStatusVariant = (status: string) => {
         case 'Approved':
             return 'default';
         case 'In Review':
+        case 'InReview':
             return 'secondary';
         default:
             return 'outline';
     }
 };
 
-const formatBytes = (bytes: number, decimals = 2) => {
-    if (bytes === 0) return '0 Bytes';
+const formatBytes = (bytes: number | null, decimals = 2) => {
+    if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -36,48 +30,13 @@ const formatBytes = (bytes: number, decimals = 2) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-
-export default function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
-    const firestore = useFirestore();
-    const router = useRouter();
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    const documentRef = useMemo(() => {
-        if (!firestore || !id) return null;
-        return doc(firestore, 'documents', id) as DocumentReference<Document>;
-    }, [firestore, id]);
-
-    const { data: document, loading } = useDoc<Document & {createdOn: {seconds: number}, updatedOn: {seconds: number}}>(documentRef);
-
-    const handleDelete = async () => {
-      if (!documentRef) return;
-      if (confirm('Are you sure you want to delete this document?')) {
-        setIsDeleting(true);
-        try {
-          await deleteDoc(documentRef);
-          router.push('/documents');
-        } catch (error) {
-          console.error('Failed to delete document', error);
-          setIsDeleting(false);
-        }
-      }
-    };
+export default async function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     
-    if (loading) {
-        return (
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-3/4" />
-                    <Skeleton className="h-4 w-1/2 mt-2" />
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-6 w-24 mt-4" />
-                    <Skeleton className="h-40 w-full mt-4" />
-                </CardContent>
-            </Card>
-        )
-    }
+    const document = await prisma.document.findUnique({
+        where: { id },
+        // include: { client: true } // Relation removed
+    });
 
     if (!document) {
         return (
@@ -95,90 +54,81 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
         )
     }
 
-    const createdDate = document.createdOn
-    ? format(new Date(document.createdOn.seconds * 1000), 'PPP')
-    : 'N/A';
-     const updatedDate = document.updatedOn
-    ? format(new Date(document.updatedOn.seconds * 1000), 'PPP')
-    : 'N/A';
+    const createdDate = document.created_at
+        ? format(document.created_at, 'PPP')
+        : 'N/A';
 
-  return (
-    <div className="space-y-6">
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline text-2xl">{document.name}</CardTitle>
-                <CardDescription>
-                    Version {document.version || '1.0'}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                {document.notes && <blockquote className="mt-4 border-l-2 pl-6 italic">{document.notes}</blockquote>}
-                {!document.notes && <p className="text-sm text-muted-foreground">No notes for this document.</p>}
-            </CardContent>
-             <CardFooter className="flex justify-end gap-2">
-                <Button variant="outline" asChild>
-                  <Link href={document.url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink /> Preview File
-                  </Link>
-                </Button>
-                <Button asChild>
-                    <Link href={`/documents/${id}/edit`}>Edit</Link>
-                </Button>
-                <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                    {isDeleting && <Loader2 className="animate-spin" />}
-                    Delete
-                </Button>
-            </CardFooter>
-        </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle>Document Details</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-                <div className="flex items-start gap-3">
-                    <File className="h-5 w-5 text-muted-foreground mt-0.5"/>
-                    <div>
-                        <p className="text-muted-foreground">Status</p>
-                        <Badge variant={getStatusVariant(document.status)}>{document.status}</Badge>
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-start">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">{document.title}</h1>
+                    <div className="flex items-center mt-2 space-x-2 text-muted-foreground">
+                        <Badge variant={getStatusVariant(document.status) as any}>
+                            {document.status === 'InReview' ? 'In Review' : document.status}
+                        </Badge>
+                        <span>•</span>
+                        <span>Version {document.version || '1.0'}</span>
                     </div>
                 </div>
-                <div className="flex items-start gap-3">
-                    <User className="h-5 w-5 text-muted-foreground mt-0.5"/>
-                    <div>
-                        <p className="text-muted-foreground">Uploaded By</p>
-                        <p>{document.uploadedBy || 'N/A'}</p>
-                    </div>
+                <div className="flex gap-2">
+                    <Button asChild variant="outline">
+                        <a href={document.file_url} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Open
+                        </a>
+                    </Button>
+                    <DeleteDocumentButton documentId={document.id} />
                 </div>
-                <div className="flex items-start gap-3">
-                    <Calendar className="h-5 w-5 text-muted-foreground mt-0.5"/>
-                    <div>
-                        <p className="text-muted-foreground">Uploaded On</p>
-                        <p>{createdDate}</p>
-                    </div>
-                </div>
-                 <div className="flex items-start gap-3">
-                    <FileText className="h-5 w-5 text-muted-foreground mt-0.5"/>
-                    <div>
-                        <p className="text-muted-foreground">File Type</p>
-                        <p>{document.fileType || 'N/A'}</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-3">
-                    <HardDrive className="h-5 w-5 text-muted-foreground mt-0.5"/>
-                    <div>
-                        <p className="text-muted-foreground">File Size</p>
-                        <p>{document.size ? formatBytes(document.size) : 'N/A'}</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-3">
-                    <Hash className="h-5 w-5 text-muted-foreground mt-0.5"/>
-                    <div>
-                        <p className="text-muted-foreground">Version</p>
-                        <p>{document.version || '1.0'}</p>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    </div>
-  );
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>File Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center">
+                            <File className="mr-2 h-4 w-4 opacity-70" />
+                            <span className="font-medium mr-2">Type:</span>
+                            <span>{document.file_type || 'Unknown'}</span>
+                        </div>
+                        <div className="flex items-center">
+                            <HardDrive className="mr-2 h-4 w-4 opacity-70" />
+                            <span className="font-medium mr-2">Size:</span>
+                            <span>{formatBytes(document.size)}</span>
+                        </div>
+                        <div className="flex items-center">
+                            <Calendar className="mr-2 h-4 w-4 opacity-70" />
+                            <span className="font-medium mr-2">Uploaded:</span>
+                            <span>{createdDate}</span>
+                        </div>
+                         <div className="flex items-center">
+                            <User className="mr-2 h-4 w-4 opacity-70" />
+                            <span className="font-medium mr-2">Uploaded By:</span>
+                            <span>{document.uploaded_by || 'Unknown'}</span>
+                        </div>
+                         <div className="flex items-center">
+                            <Hash className="mr-2 h-4 w-4 opacity-70" />
+                            <span className="font-medium mr-2">ID:</span>
+                            <span className="text-sm font-mono">{document.id}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {document.notes ? (
+                            <p className="whitespace-pre-wrap">{document.notes}</p>
+                        ) : (
+                            <p className="text-muted-foreground italic">No notes added.</p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
 }

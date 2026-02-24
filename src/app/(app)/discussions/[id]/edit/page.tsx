@@ -1,41 +1,37 @@
 
-'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DiscussionForm } from '../components/discussion-form';
-import { useDoc } from "@/firebase";
-import { useFirestore } from "@/firebase/provider";
-import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo, use } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DiscussionForm } from '@/app/(app)/discussions/components/discussion-form';
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
-type Discussion = {
-    id: string;
-    title: string;
-};
+export default async function EditDiscussionPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
 
+    const discussion = await prisma.discussion.findUnique({
+        where: { id },
+    });
 
-export default function EditDiscussionPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
-    const firestore = useFirestore();
-    const discussionRef = useMemo(() => {
-        if (!firestore || !id) return null;
-        return doc(firestore, 'discussions', id) as DocumentReference<Discussion>;
-    }, [firestore, id]);
+    if (!discussion) {
+        return notFound();
+    }
 
-    const { data: discussion, loading } = useDoc<Discussion>(discussionRef);
+    const discussionData = {
+        id: discussion.id,
+        title: discussion.title,
+        clientId: discussion.clientId || undefined,
+    };
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Edit Discussion</CardTitle>
-        <CardDescription>
-          Update the title of this discussion.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {loading && <Skeleton className="h-40" />}
-        {discussion && <DiscussionForm discussion={discussion} />}
-      </CardContent>
-    </Card>
-  );
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">Edit Discussion</CardTitle>
+                <CardDescription>
+                    Update the title of this discussion.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <DiscussionForm discussion={discussionData} clientId={discussion.clientId} />
+            </CardContent>
+        </Card>
+    );
 }

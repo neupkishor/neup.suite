@@ -1,35 +1,14 @@
-'use client';
-import {
-  collection,
-  CollectionReference,
-  query,
-  where,
-} from 'firebase/firestore';
-import {
-  Download,
-  PlusCircle,
-  CheckCircle2,
-  Clock,
-  ListTodo
-} from 'lucide-react';
-import { useMemo, useState, useEffect } from 'react';
+import 'server-only';
+import { cookies } from 'next/headers';
+import Link from 'next/link';
+import { Download, PlusCircle, ListTodo, Clock, CheckCircle2 } from 'lucide-react';
 
-import { useCollection } from '@/firebase';
-import { useFirestore } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { type Task } from '@/schemas/task';
-import { TaskCard } from './components/task-card';
-import Cookies from 'js-cookie';
-import type { Client } from '@/schemas/client';
-import Link from 'next/link';
-import { CreateTaskLux } from './components/create-task-lux';
-import { Card, CardContent } from '@/components/ui/card';
-
-type Project = {
-  id: string;
-  name: string;
-};
+import { prisma } from '@/lib/prisma';
+import { CreateTaskLux } from '@/app/(app)/tasks/components/create-task-lux';
+import { TaskCard } from '@/app/(app)/tasks/components/task-card';
+import { Task, Project, Client, Subtask } from '@/generated/prisma';
 
 function TaskCardSkeleton() {
   return (
@@ -48,59 +27,58 @@ function TaskCardSkeleton() {
   );
 }
 
-export default function TasksPage() {
-  const firestore = useFirestore();
-  const [clientId, setClientId] = useState<string | null>(null);
+export default async function TasksPage() {
+  const cookieStore = await cookies();
+  const clientId = cookieStore.get('client')?.value;
 
-   useEffect(() => {
-        setClientId(Cookies.get('client') || null);
-    }, []);
+  // Parallel data fetching
+  const [tasks, projects, clients] = await Promise.all([
+    prisma.task.findMany({
+      where: clientId ? {
+        clientId: clientId
+      } : undefined,
+      orderBy: {
+        created_on: 'desc',
+      },
+    }),
+    prisma.project.findMany({
+      orderBy: {
+        created_on: 'desc',
+      },
+    }),
+    prisma.client.findMany({
+      orderBy: {
+        name: 'asc',
+      },
+    }),
+  ]);
 
-  const tasksCollection = useMemo(() => {
-    if (!firestore) return null;
-    let q = collection(firestore, 'tasks') as CollectionReference<Task>;
-    if (clientId) {
-      q = query(q, where('clientId', '==', clientId));
+  // Fetch subtasks manually since relations are removed
+  const taskIds = tasks.map((t: Task) => t.id);
+  const subtasks = await prisma.subtask.findMany({
+    where: {
+      taskId: {
+        in: taskIds
+      }
     }
-    return q;
-  }, [firestore, clientId]);
+  });
 
-  const { data: tasks, loading: tasksLoading } = useCollection<Task & {id: string}>(
-    tasksCollection
-  );
-  
-  const clientsCollection = useMemo(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'clients') as CollectionReference<Client>;
-  }, [firestore]);
-  
-  const { data: clients, loading: clientsLoading } = useCollection<Client>(clientsCollection);
+  // Attach subtasks to tasks (in memory)
+  const tasksWithSubtasks = tasks.map((t: Task) => ({
+    ...t,
+    subtasks: subtasks.filter((s: Subtask) => s.taskId === t.id)
+  }));
 
-  const projectsCollection = useMemo(() => {
-    if (!firestore) return null;
-    let q = collection(firestore, 'projects') as CollectionReference<Project>;
-    if (clientId) {
-      q = query(q, where('clientId', '==', clientId));
-    }
-    return q;
-  }, [firestore, clientId]);
-  const { data: projects, loading: projectsLoading } =
-    useCollection<Project>(projectsCollection);
-
-  const loading = tasksLoading || projectsLoading || clientsLoading;
-
-  const getClientName = (cId: string) => {
-    return clients?.find(c => c.id === cId)?.name;
+  const stats = {
+    total: tasks.length,
+    // Note: Task status is now a String, need to match exact string values or update logic
+    pending: tasksWithSubtasks.filter((t: any) => t.status !== 'Done' && t.status !== 'Cancelled').length,
+    done: tasksWithSubtasks.filter((t: any) => t.status === 'Done').length,
   };
 
-  const stats = useMemo(() => {
-      if (!tasks) return { total: 0, pending: 0, done: 0 };
-      return {
-          total: tasks.length,
-          pending: tasks.filter(t => t.status !== 'Done' && t.status !== 'Cancelled').length,
-          done: tasks.filter(t => t.status === 'Done').length
-      };
-  }, [tasks]);
+  const getClientName = (cId: string) => {
+    return clients.find((c: Client) => c.id === cId)?.name;
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 py-4">
@@ -108,12 +86,14 @@ export default function TasksPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
           <p className="text-muted-foreground mt-1">
-             {clientId ? 'Manage tasks for the selected client.' : 'Stay on top of your work.'}
+            {clientId ? 'Manage tasks for the selected client.' : 'Stay on top of your work.'}
           </p>
         </div>
-         <Button variant="ghost" size="sm" asChild>
-            <Link href="/tasks/import" className="text-muted-foreground hover:text-foreground"><Download className="mr-2 h-4 w-4" /> Import</Link>
-          </Button>
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/tasks/import" className="text-muted-foreground hover:text-foreground">
+            <Download className="mr-2 h-4 w-4" /> Import
+          </Link>
+        </Button>
       </div>
 
       <div className="space-y-4">
@@ -146,31 +126,19 @@ export default function TasksPage() {
 
             {/* Task List */}
             <div className="divide-y">
-                {loading &&
-                Array.from({ length: 3 }).map((_, i) => (
-                    <TaskCardSkeleton key={i} />
-                ))}
-                
-                {!loading &&
-                tasks?.map((task) => (
-                    <TaskCard 
-                    key={task.id} 
-                    task={task} 
-                    projects={projects}
-                    clientName={!clientId ? getClientName(task.clientId) : undefined}
-                    />
-                ))}
-                
-                {!loading && tasks?.length === 0 && (
-                <div className="p-12 text-center text-muted-foreground">
-                    <div className="flex justify-center mb-4">
-                        <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center">
-                            <PlusCircle className="h-6 w-6 text-muted-foreground" />
-                        </div>
+                {tasksWithSubtasks.length === 0 ? (
+                    <div className="p-8 text-center text-muted-foreground">
+                        No tasks found. Create one to get started!
                     </div>
-                    <h3 className="text-lg font-medium text-foreground">No tasks yet</h3>
-                    <p className="mt-1">Add a task above to get started.</p>
-                </div>
+                ) : (
+                    tasksWithSubtasks.map((task: any) => (
+                        <TaskCard 
+                            key={task.id} 
+                            task={task} 
+                            clientName={getClientName(task.clientId)}
+                            projects={projects?.length ? projects : null}
+                        />
+                    ))
                 )}
             </div>
         </div>

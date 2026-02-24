@@ -2,8 +2,8 @@
 'use client';
 
 import React, { ReactNode, useMemo } from 'react';
-import { initializeFirebase } from './index';
-import { FirebaseProvider } from './provider';
+import { initializeFirebase } from '@/firebase';
+import { FirebaseProvider } from '@/firebase/provider';
 
 
 export function FirebaseClientProvider({ children }: { children: ReactNode }) {

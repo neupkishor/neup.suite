@@ -77,6 +77,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  input, textarea, select, button {
+    @apply focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 !important;
+  }
   #nprogress .bar {
     background: hsl(var(--primary)) !important;
     height: 4px !important;

@@ -1,24 +1,19 @@
-'use client';
-import {
-  doc,
-  deleteDoc,
-  Firestore,
-} from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+'use server';
 
-export async function deleteContact(
-  db: Firestore,
-  contactId: string
-) {
-  const contactDoc = doc(db, 'contacts', contactId);
-  
-  return deleteDoc(contactDoc).catch((serverError) => {
-    const permissionError = new FirestorePermissionError({
-      path: contactDoc.path,
-      operation: 'delete',
+import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
+
+export async function deleteContact(contactId: string) {
+  try {
+    await prisma.contact.delete({
+      where: {
+        id: contactId,
+      },
     });
-    errorEmitter.emit('permission-error', permissionError);
-    throw serverError;
-  });
+    
+    revalidatePath('/contacts');
+  } catch (error) {
+    console.error('Error deleting contact:', error);
+    throw new Error('Failed to delete contact');
+  }
 }

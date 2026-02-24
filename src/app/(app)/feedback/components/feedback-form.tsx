@@ -16,18 +16,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
-import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { addFeedback } from '../actions/add-feedback';
-import { updateFeedback } from '../actions/update-feedback';
+import { addFeedback } from '@/actions/feedback/add-feedback';
+import { updateFeedback } from '@/actions/feedback/update-feedback';
 import { feedbackSchema } from '@/schemas/feedback';
 
 type Feedback = z.infer<typeof feedbackSchema> & { id?: string };
 
 export function FeedbackForm({ feedback, clientId }: { feedback?: Feedback, clientId: string }) {
-  const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -53,14 +50,13 @@ export function FeedbackForm({ feedback, clientId }: { feedback?: Feedback, clie
   }, [feedback, clientId, form])
 
   async function onSubmit(values: z.infer<typeof feedbackSchema>) {
-    if (!firestore) return;
     setIsSubmitting(true);
 
     try {
       if (feedback?.id) {
-        await updateFeedback(firestore, feedback.id, values);
+        await updateFeedback(feedback.id, values);
       } else {
-        await addFeedback(firestore, {...values, submittedBy: 'Jane Doe'});
+        await addFeedback(values);
       }
       router.push('/feedback');
       router.refresh();
@@ -100,14 +96,12 @@ export function FeedbackForm({ feedback, clientId }: { feedback?: Feedback, clie
           )}
         />
         
-        <div className="flex gap-2">
-          <Button type="submit" disabled={isSubmitting}>
+        <div className="flex justify-end gap-4">
+            <Button variant="outline" type="button" onClick={() => router.back()}>Cancel</Button>
+            <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {feedback ? 'Update Feedback' : 'Submit Feedback'}
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/feedback">Cancel</Link>
-          </Button>
+            {feedback?.id ? 'Update Feedback' : 'Submit Feedback'}
+            </Button>
         </div>
       </form>
     </Form>

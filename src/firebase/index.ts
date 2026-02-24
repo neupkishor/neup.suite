@@ -2,13 +2,13 @@
 'use client';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
-import { firebaseConfig } from './config';
+import { firebaseConfig } from '@/firebase/config';
 
 // Re-export providers and hooks
-export { FirebaseProvider, useFirebaseApp, useFirestore } from './provider';
-export { FirebaseClientProvider } from './client-provider';
-export { useCollection } from './firestore/use-collection';
-export { useDoc } from './firestore/use-doc';
+export { FirebaseProvider, useFirebaseApp, useFirestore, useAuth } from '@/firebase/provider';
+export { FirebaseClientProvider } from '@/firebase/client-provider';
+export { useCollection } from '@/firebase/firestore/use-collection';
+export { useDoc } from '@/firebase/firestore/use-doc';
 
 let app: FirebaseApp;
 let db: Firestore;

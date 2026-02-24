@@ -1,21 +1,19 @@
 
-'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCollection } from "@/firebase";
-import { useFirestore } from "@/firebase/provider";
-import { collection, CollectionReference, query, where } from "firebase/firestore";
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Target } from "lucide-react";
 import { AddItemCard } from "@/components/add-item-card";
-import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
+import { prisma } from "@/lib/prisma";
+import { cookies } from "next/headers";
+import { Goal, GoalStatus } from "@/generated/prisma";
 
-type Goal = {
-    id: string;
-    title: string;
-    status: string;
+const STATUS_LABELS: Record<GoalStatus, string> = {
+    [GoalStatus.NotStarted]: 'Not Started',
+    [GoalStatus.InProgress]: 'In Progress',
+    [GoalStatus.Completed]: 'Completed',
+    [GoalStatus.AtRisk]: 'At Risk',
 };
 
 function GoalCard({ goal }: { goal: Goal }) {
@@ -23,29 +21,20 @@ function GoalCard({ goal }: { goal: Goal }) {
         <Card>
             <CardContent className="p-4">
                 <Link href={`/goals/${goal.id}`} className="font-semibold text-lg hover:underline">{goal.title}</Link>
-                <p className="text-sm text-muted-foreground">{goal.status}</p>
+                <p className="text-sm text-muted-foreground">{STATUS_LABELS[goal.status]}</p>
             </CardContent>
         </Card>
     )
 }
 
-export default function GoalsPage() {
-    const firestore = useFirestore();
-    const [clientId, setClientId] = useState<string|null>(null);
+export default async function GoalsPage() {
+    const cookieStore = await cookies();
+    const clientId = cookieStore.get('client')?.value;
 
-    useEffect(() => {
-        setClientId(Cookies.get('client') || null);
-    }, []);
-
-    const goalsCollection = useMemo(() => {
-        if (!firestore || !clientId) return null;
-        return query(
-            collection(firestore, 'goals') as CollectionReference<Goal>,
-            where('clientId', '==', clientId)
-        );
-    }, [firestore, clientId]);
-
-    const { data: goals, loading } = useCollection<Goal>(goalsCollection);
+    const goals = clientId ? await prisma.goal.findMany({
+        where: { clientId: clientId },
+        orderBy: { createdAt: 'desc' }
+    }) : [];
 
   return (
     <div className="space-y-6">
@@ -68,16 +57,13 @@ export default function GoalsPage() {
             </Card>
         ) : (
       <div className="grid grid-cols-1 gap-4">
-        {!loading && (
-            <AddItemCard
-                title="New Goal"
-                href="/goals/add"
-                icon={Target}
-            />
-        )}
-        {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
-        {goals?.map(goal => <GoalCard key={goal.id} goal={goal} />)}
-          {!loading && goals?.length === 0 && (
+        <AddItemCard
+            title="New Goal"
+            href="/goals/add"
+            icon={Target}
+        />
+        {goals.map((goal: Goal) => <GoalCard key={goal.id} goal={goal} />)}
+          {goals.length === 0 && (
             <Card>
                 <CardContent className="p-6 text-center text-muted-foreground">
                     No goals found for this client.

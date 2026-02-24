@@ -22,7 +22,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { CalendarIcon, Loader2, Trash2, PlusCircle, Upload } from 'lucide-react';
-import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -78,14 +77,13 @@ const prepareDataForForm = (contact?: Contact & { id?: string }, clientId?: stri
         messaging: contact.messaging || [],
         importantDates: contact.importantDates?.map(d => ({
             ...d,
-            date: new Date(d.date),
+            date: d.date ? new Date(d.date) : new Date(),
         })) || [],
     };
 }
 
 
 export function ContactForm({ contact, clientId }: { contact?: Contact & {id: string}, clientId: string }) {
-  const firestore = useFirestore();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -130,7 +128,6 @@ export function ContactForm({ contact, clientId }: { contact?: Contact & {id: st
   };
 
   async function onSubmit(values: ContactFormValues) {
-    if (!firestore) return;
     setIsSubmitting(true);
     setSubmitError(null);
     
@@ -138,15 +135,15 @@ export function ContactForm({ contact, clientId }: { contact?: Contact & {id: st
         ...values,
         importantDates: values.importantDates?.map(d => ({
             ...d,
-            date: format(d.date, 'yyyy-MM-dd'),
+            date: format(d.date || new Date(), 'yyyy-MM-dd'),
         }))
     }
 
     try {
       if (contact?.id) {
-        await updateContact(firestore, contact.id, dataToSubmit as any);
+        await updateContact(contact.id, dataToSubmit as any);
       } else {
-        await addContact(firestore, dataToSubmit as any);
+        await addContact(dataToSubmit as any);
       }
       router.push('/contacts');
     } catch (error) {

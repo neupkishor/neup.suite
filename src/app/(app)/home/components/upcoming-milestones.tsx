@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Goal } from "@/schemas/goal";
 import { format, differenceInDays } from 'date-fns';
 
-const getDueDateText = (targetDate: string) => {
+const getDueDateText = (targetDate: string | Date) => {
     const days = differenceInDays(new Date(targetDate), new Date());
     if (days < 0) return `Overdue by ${Math.abs(days)} days`;
     if (days === 0) return 'Due today';

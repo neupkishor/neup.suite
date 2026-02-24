@@ -1,61 +1,18 @@
-
-'use client';
-import { use, useState, useMemo } from 'react';
+import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { useDoc } from '@/firebase';
-import { useFirestore } from '@/firebase/provider';
-import { doc, DocumentReference } from 'firebase/firestore';
-import type { Activity } from "@/schemas/activity";
-import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2, Edit, Trash2, Calendar, User, Link as LinkIcon, FileText, Activity as ActivityIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { Loader2, Edit, Trash2, Calendar, User, Link as LinkIcon, FileText, ChevronRight, Activity as ActivityIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { deleteActivity } from '@/actions/activities/delete-activity';
+import { notFound } from "next/navigation";
+import { DeleteActivityButton } from "./delete-button";
 
-export default function ActivityDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
-    const firestore = useFirestore();
-    const router = useRouter();
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    const activityRef = useMemo(() => {
-        if (!firestore || !id) return null;
-        return doc(firestore, 'activities', id) as DocumentReference<Activity>;
-    }, [firestore, id]);
-
-    const { data: activity, loading } = useDoc<Activity & {createdOn: {seconds: number}}>(activityRef);
-
-    const handleDelete = async () => {
-      if (!firestore || !id) return;
-      if (confirm('Are you sure you want to delete this activity?')) {
-        setIsDeleting(true);
-        try {
-          await deleteActivity(firestore, id);
-          router.push('/activities');
-        } catch (error) {
-          console.error('Failed to delete activity', error);
-          setIsDeleting(false);
-        }
-      }
-    };
+export default async function ActivityDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     
-    if (loading) {
-        return (
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-3/4" />
-                    <Skeleton className="h-4 w-1/2 mt-2" />
-                </CardHeader>
-                <CardContent className="space-y-8 mt-4">
-                    <Skeleton className="h-24 w-full" />
-                    <Skeleton className="h-24 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                </CardContent>
-            </Card>
-        )
-    }
+    const activity = await prisma.activity.findUnique({
+        where: { id },
+    });
 
     if (!activity) {
         return (
@@ -73,9 +30,12 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
         )
     }
 
-    const createdDate = activity.createdOn
-        ? format(new Date(activity.createdOn.seconds * 1000), 'PPP')
+    const createdDate = activity.createdAt
+        ? format(activity.createdAt, 'PPP')
         : 'N/A';
+    
+    // Parse JSON fields
+    const files = (activity.files as any[]) || [];
 
   return (
     <div className="space-y-6">
@@ -86,71 +46,72 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
                         <CardTitle className="font-headline text-3xl">{activity.title}</CardTitle>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
                              <div className="flex items-center gap-1.5"><Calendar className="h-4 w-4" />Logged on {createdDate}</div>
-                             <div className="flex items-center gap-1.5"><User className="h-4 w-4" />By {activity.createdBy || 'Unknown'}</div>
                         </div>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                         <Button asChild>
-                            <Link href={`/activities/${id}/edit`}><Edit />Edit</Link>
+                            <Link href={`/activities/${id}/edit`}><Edit className="mr-2 h-4 w-4" />Edit</Link>
                         </Button>
-                        <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                            {isDeleting && <Loader2 className="animate-spin" />}
-                           <Trash2 /> Delete
-                        </Button>
+                        <DeleteActivityButton activityId={activity.id} />
                     </div>
                 </div>
             </CardHeader>
+            <CardContent className="space-y-6">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                         <h3 className="text-lg font-semibold flex items-center gap-2"><ActivityIcon className="h-5 w-5" /> Description</h3>
+                         <p className="whitespace-pre-wrap text-sm">{activity.description || 'No description provided.'}</p>
+                    </div>
+
+                    {activity.results && (
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><FileText className="h-5 w-5" /> Results / Outcome</h3>
+                            <p className="whitespace-pre-wrap text-sm">{activity.results}</p>
+                        </div>
+                    )}
+                </div>
+
+                {(activity.links.length > 0 || files.length > 0) && (
+                    <div className="pt-4 border-t">
+                        <h3 className="text-lg font-semibold mb-4">Attachments & Links</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {activity.links.length > 0 && (
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Links</h4>
+                                    <ul className="space-y-2">
+                                        {activity.links.map((link, idx) => (
+                                            <li key={idx}>
+                                                <a href={link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline truncate">
+                                                    <LinkIcon className="h-4 w-4" />
+                                                    {link}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                             {files.length > 0 && (
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Files</h4>
+                                    <ul className="space-y-2">
+                                        {files.map((file: any, idx: number) => (
+                                            <li key={idx}>
+                                                <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline truncate">
+                                                    <FileText className="h-4 w-4" />
+                                                    {file.name}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </CardContent>
         </Card>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-                <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><ActivityIcon />Activity Details</CardTitle></CardHeader>
-                    <CardContent>
-                        <h3 className="font-semibold">Description</h3>
-                        <p className="mt-1 text-muted-foreground whitespace-pre-wrap">{activity.description || 'No description provided.'}</p>
-                        <h3 className="font-semibold mt-6">Results</h3>
-                        <p className="mt-1 text-muted-foreground whitespace-pre-wrap">{activity.results || 'No results provided.'}</p>
-                    </CardContent>
-                </Card>
-            </div>
-            <div className="space-y-6">
-                <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><LinkIcon />Links</CardTitle></CardHeader>
-                    <CardContent>
-                        {activity.links && activity.links.length > 0 ? (
-                            <ul className="space-y-2">
-                                {activity.links.map((link, index) => (
-                                    <li key={index}>
-                                        <a href={link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between text-sm text-primary hover:underline p-2 -m-2 rounded-md hover:bg-muted/50">
-                                            <span className="truncate">{link}</span>
-                                            <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : <p className="text-sm text-muted-foreground">No links attached.</p>}
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader><CardTitle className="flex items-center gap-2"><FileText />Files</CardTitle></CardHeader>
-                    <CardContent>
-                        {activity.files && activity.files.length > 0 ? (
-                            <ul className="space-y-2">
-                                {activity.files.map((file, index) => (
-                                    <li key={index}>
-                                        <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between text-sm text-primary hover:underline p-2 -m-2 rounded-md hover:bg-muted/50">
-                                            <span className="truncate">{file.name}</span>
-                                            <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : <p className="text-sm text-muted-foreground">No files attached.</p>}
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
     </div>
   );
 }

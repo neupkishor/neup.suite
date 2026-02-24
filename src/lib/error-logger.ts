@@ -27,7 +27,7 @@ export interface AppError {
 
 class ErrorLogger {
   private errors: AppError[] = [];
-  private emitter = new Emitter();
+  private emitter = new (Emitter as any)();
 
   public async log(error: Error, context?: Record<string, any>) {
     console.error("Error Logged:", error);

@@ -8,11 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { AIAssistant } from './components/ai-assistant';
-import { ProjectProgress } from './components/project-progress';
-import { UpcomingMilestones } from './components/upcoming-milestones';
-import { KeyContacts } from './components/key-contacts';
-import { PaymentStatus } from './components/payment-status';
+import { AIAssistant } from '@/app/(app)/home/components/ai-assistant';
+import { ProjectProgress } from '@/app/(app)/home/components/project-progress';
+import { UpcomingMilestones } from '@/app/(app)/home/components/upcoming-milestones';
+import { KeyContacts } from '@/app/(app)/home/components/key-contacts';
+import { PaymentStatus } from '@/app/(app)/home/components/payment-status';
 import { useCollection } from '@/firebase';
 import { collection, CollectionReference, query, where } from 'firebase/firestore';
 import { useFirestore } from '@/firebase/provider';

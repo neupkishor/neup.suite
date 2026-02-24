@@ -20,7 +20,7 @@ import { useFirestore } from '@/firebase/provider';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { addTemplate } from '../actions/add-template';
+import { addTemplate } from '@/actions/templates/add-template';
 import { templateSchema, taskListItemSchema, type Template } from '@/schemas/template';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -143,7 +143,6 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
   };
 
   async function onSubmit(values: TemplateFormValues) {
-    if (!firestore) return;
     setIsSubmitting(true);
     
     let body = '';
@@ -163,7 +162,7 @@ export function TemplateForm({ template, clientId }: { template?: Template; clie
           body: body,
       };
 
-      await addTemplate(firestore, {...dataToSubmit, createdBy: 'Jane Doe'});
+      await addTemplate(dataToSubmit);
       router.push('/templates');
       router.refresh();
 

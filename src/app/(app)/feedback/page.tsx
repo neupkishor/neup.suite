@@ -1,51 +1,36 @@
 
-'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCollection } from "@/firebase";
-import { useFirestore } from "@/firebase/provider";
-import { collection, CollectionReference, query, where } from "firebase/firestore";
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Megaphone } from "lucide-react";
 import { AddItemCard } from "@/components/add-item-card";
-import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
-
-type Feedback = {
-    id: string;
-    title: string;
-    submittedBy: string;
-};
+import { prisma } from "@/lib/prisma";
+import { cookies } from "next/headers";
+import { Megaphone } from "lucide-react";
+import { Feedback } from "@/generated/prisma";
 
 function FeedbackCard({ feedback }: { feedback: Feedback }) {
     return (
         <Card>
             <CardContent className="p-4">
                 <Link href={`/feedback/${feedback.id}`} className="font-semibold text-lg hover:underline">{feedback.title}</Link>
-                <p className="text-sm text-muted-foreground">Submitted by: {feedback.submittedBy}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{feedback.comment}</p>
             </CardContent>
         </Card>
     )
 }
 
-export default function FeedbackPage() {
-    const firestore = useFirestore();
-    const [clientId, setClientId] = useState<string|null>(null);
+export default async function FeedbackPage() {
+    const cookieStore = await cookies();
+    const clientId = cookieStore.get('client')?.value;
 
-    useEffect(() => {
-        setClientId(Cookies.get('client') || null);
-    }, []);
-
-    const feedbackCollection = useMemo(() => {
-        if (!firestore || !clientId) return null;
-        return query(
-            collection(firestore, 'feedback') as CollectionReference<Feedback>,
-            where('clientId', '==', clientId)
-        );
-    }, [firestore, clientId]);
-
-    const { data: feedbackItems, loading } = useCollection<Feedback>(feedbackCollection);
+    const feedbackItems = clientId ? await prisma.feedback.findMany({
+        where: {
+            clientId: clientId
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    }) : [];
 
   return (
     <div className="space-y-6">
@@ -68,16 +53,13 @@ export default function FeedbackPage() {
             </Card>
         ) : (
       <div className="grid grid-cols-1 gap-4">
-        {!loading && (
-            <AddItemCard
-                title="New Feedback"
-                href="/feedback/add"
-                icon={Megaphone}
-            />
-        )}
-        {loading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
-        {feedbackItems?.map(item => <FeedbackCard key={item.id} feedback={item} />)}
-          {!loading && feedbackItems?.length === 0 && (
+        <AddItemCard
+            title="New Feedback"
+            href="/feedback/add"
+            icon={Megaphone}
+        />
+        {feedbackItems.map((item: Feedback) => <FeedbackCard key={item.id} feedback={item} />)}
+          {feedbackItems.length === 0 && (
             <Card>
                 <CardContent className="p-6 text-center text-muted-foreground">
                     No feedback found for this client.

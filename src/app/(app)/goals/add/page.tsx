@@ -1,20 +1,25 @@
-
-'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GoalForm } from '../components/goal-form';
-import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import { GoalForm } from '@/app/(app)/goals/components/goal-form';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
-export default function AddGoalPage() {
-    const [clientId, setClientId] = useState<string|null>(null);
+export default async function AddGoalPage() {
+    const cookieStore = await cookies();
+    const clientId = cookieStore.get('client')?.value;
 
-    useEffect(() => {
-        setClientId(Cookies.get('client') || null);
-    }, []);
+    let clientExists = false;
+    if (clientId) {
+        const client = await prisma.client.findUnique({
+            where: { id: clientId }
+        });
+        if (client) {
+            clientExists = true;
+        }
+    }
 
-    if (!clientId) {
+    if (!clientId || !clientExists) {
         return (
              <Card>
                 <CardHeader>

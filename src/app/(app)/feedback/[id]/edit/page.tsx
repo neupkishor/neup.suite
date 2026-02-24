@@ -1,42 +1,38 @@
 
-'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FeedbackForm } from '../components/feedback-form';
-import { useDoc } from "@/firebase";
-import { useFirestore } from "@/firebase/provider";
-import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo, use } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { FeedbackForm } from '@/app/(app)/feedback/components/feedback-form';
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
-type Feedback = {
-    id: string;
-    title: string;
-    comment: string;
-};
+export default async function EditFeedbackPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
 
+    const feedback = await prisma.feedback.findUnique({
+        where: { id },
+    });
 
-export default function EditFeedbackPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
-    const firestore = useFirestore();
-    const feedbackRef = useMemo(() => {
-        if (!firestore || !id) return null;
-        return doc(firestore, 'feedback', id) as DocumentReference<Feedback>;
-    }, [firestore, id]);
+    if (!feedback) {
+        return notFound();
+    }
 
-    const { data: feedback, loading } = useDoc<Feedback>(feedbackRef);
+    const feedbackData = {
+        id: feedback.id,
+        title: feedback.title,
+        comment: feedback.comment,
+        clientId: feedback.clientId,
+    };
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Edit Feedback</CardTitle>
-        <CardDescription>
-          Update your feedback or comment.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {loading && <Skeleton className="h-64" />}
-        {feedback && <FeedbackForm feedback={feedback} />}
-      </CardContent>
-    </Card>
-  );
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">Edit Feedback</CardTitle>
+                <CardDescription>
+                    Update your feedback or comment.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <FeedbackForm feedback={feedbackData} clientId={feedback.clientId} />
+            </CardContent>
+        </Card>
+    );
 }

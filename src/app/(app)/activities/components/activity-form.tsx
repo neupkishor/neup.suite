@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,31 +14,38 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, PlusCircle, Trash2, Upload, Link as LinkIcon, File as FileIcon } from 'lucide-react';
-import { useFirestore } from '@/firebase/provider';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, PlusCircle, Trash2, Upload, File as FileIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { activitySchema, type Activity } from '@/schemas/activity';
+import { activitySchema, type Activity, type ActivityFile } from '@/schemas/activity';
 import { addActivity } from '@/actions/activities/add-activity';
 import { updateActivity } from '@/actions/activities/update-activity';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { uploadFile } from '@/lib/upload-service';
 
-type ActivityFormValues = z.infer<typeof activitySchema>;
-type Project = { id: string; name: string };
+// Local schema for form handling to support useFieldArray for links
+const activityFormSchema = activitySchema.extend({
+  links: z.array(z.object({ value: z.string().url('Invalid URL').or(z.literal('')) })).optional(),
+});
 
-export function ActivityForm({ activity, clientId, projects }: { activity?: Activity, clientId: string, projects: Project[] }) {
-  const firestore = useFirestore();
+type ActivityFormValues = z.infer<typeof activityFormSchema>;
+
+export function ActivityForm({ activity, clientId, projects }: { activity?: Activity, clientId: string, projects: {id: string, name: string}[] }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ActivityFormValues>({
-    resolver: zodResolver(activitySchema),
-    defaultValues: activity || {
+    resolver: zodResolver(activityFormSchema),
+    defaultValues: {
       title: '',
       description: '',
       results: '',
@@ -61,14 +67,14 @@ export function ActivityForm({ activity, clientId, projects }: { activity?: Acti
   });
 
   useEffect(() => {
-    form.reset(activity || {
-      title: '',
-      description: '',
-      results: '',
-      links: [],
-      files: [],
-      projectId: undefined,
-      clientId: clientId,
+    form.reset({
+      title: activity?.title || '',
+      description: activity?.description || '',
+      results: activity?.results || '',
+      links: activity?.links?.map(l => ({ value: l })) || [],
+      files: activity?.files || [],
+      projectId: activity?.projectId || undefined,
+      clientId: activity?.clientId || clientId,
     });
   }, [activity, clientId, projects, form]);
 
@@ -103,16 +109,20 @@ export function ActivityForm({ activity, clientId, projects }: { activity?: Acti
 
 
   async function onSubmit(values: ActivityFormValues) {
-    if (!firestore) return;
     setIsSubmitting(true);
     setSubmitError(null);
 
+    const payload = {
+        ...values,
+        links: values.links?.map(l => l.value) || [],
+    };
+
     try {
       if (activity?.id) {
-        await updateActivity(firestore, activity.id, values);
+        await updateActivity(activity.id, payload);
         router.push(`/activities/${activity.id}`);
       } else {
-        await addActivity(firestore, {...values, createdBy: 'Jane Doe'});
+        await addActivity(payload);
         router.push('/activities');
       }
       router.refresh();
@@ -151,13 +161,14 @@ export function ActivityForm({ activity, clientId, projects }: { activity?: Acti
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                         <SelectTrigger>
-                            <SelectValue placeholder="Associate with a project" />
+                            <SelectValue placeholder="Select a project" />
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                        {projects.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                        ))}
+                            <SelectItem value="none">No Project</SelectItem>
+                            {projects.map(project => (
+                                <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                     <FormMessage />
@@ -169,9 +180,9 @@ export function ActivityForm({ activity, clientId, projects }: { activity?: Acti
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (What was done?)</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Describe the work that was performed in detail..." {...field} rows={5} />
+                    <Textarea placeholder="Provide more details about the activity..." {...field} rows={5} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -200,13 +211,13 @@ export function ActivityForm({ activity, clientId, projects }: { activity?: Acti
                     <FormLabel>Links</FormLabel>
                     {linkFields.map((field, index) => (
                         <div key={field.id} className="flex gap-2 items-center mt-2">
-                           <FormField control={form.control} name={`links.${index}`} render={({ field }) => (
+                           <FormField control={form.control} name={`links.${index}.value`} render={({ field }) => (
                                 <FormItem className="flex-1"><FormControl><Input placeholder="https://example.com" {...field} autoComplete="off" /></FormControl></FormItem>
                            )}/>
                             <Button type="button" variant="destructive" size="icon" onClick={() => removeLink(index)}><Trash2/></Button>
                         </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendLink('')}><PlusCircle className="mr-2"/> Add Link</Button>
+                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendLink({ value: '' })}><PlusCircle className="mr-2"/> Add Link</Button>
                 </div>
                  <div>
                     <FormLabel>Files</FormLabel>

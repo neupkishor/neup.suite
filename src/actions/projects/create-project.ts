@@ -1,46 +1,29 @@
+'use server';
 
-'use client';
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  Firestore,
-} from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
 import { projectSchema } from '@/schemas/project';
-
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 type NewProject = Omit<z.infer<typeof projectSchema>, 'deadline'> & {
-    deadline: string;
+  deadline: string;
 };
 
-export async function createProject(
-  db: Firestore,
-  projectData: NewProject,
-  userId: string
-) {
-  const projectsCollection = collection(db, 'projects');
-
-  const dataToSave = {
-    ...projectData,
-    createdBy: userId,
-    createdOn: serverTimestamp(),
-  };
-
-  if (dataToSave.clientId === 'no-client') {
-    delete dataToSave.clientId;
-  }
-  
-  return addDoc(projectsCollection, dataToSave).catch((serverError) => {
-    const permissionError = new FirestorePermissionError({
-      path: projectsCollection.path,
-      operation: 'create',
-      requestResourceData: projectData,
+export async function createProject(projectData: NewProject, userId: string) {
+  try {
+    const newProject = await prisma.project.create({
+      data: {
+        name: projectData.name,
+        deadline: new Date(projectData.deadline),
+        status: projectData.status,
+        clientId: projectData.clientId === 'no-client' ? null : projectData.clientId,
+      },
     });
-    errorEmitter.emit('permission-error', permissionError);
-    // Re-throw the error so the calling component knows there was a problem
-    throw serverError;
-  });
+
+    revalidatePath('/projects');
+    return newProject;
+  } catch (error) {
+    console.error('Error creating project:', error);
+    throw new Error('Failed to create project');
+  }
 }

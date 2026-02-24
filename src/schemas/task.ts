@@ -8,7 +8,7 @@ export const taskSchema = z.object({
   deadline: z.date().optional(),
   status: z.enum(['To Do', 'In Progress', 'Done', 'Cancelled']),
   subtasks: z.array(z.object({ text: z.string(), completed: z.boolean() })).optional(),
-  clientId: z.string().min(1, 'Client ID is required'),
+  clientId: z.string().optional(),
 });
 
-export type Task = z.infer<typeof taskSchema>;
+export type Task = z.infer<typeof taskSchema> & { id: string };

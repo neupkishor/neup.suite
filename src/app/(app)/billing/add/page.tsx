@@ -1,20 +1,5 @@
-
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
@@ -22,107 +7,37 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { useFirestore } from '@/firebase/provider';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState, useMemo } from 'react';
-import Link from 'next/link';
-import { invoiceSchema } from '@/schemas/invoice';
-import { addInvoice } from '@/actions/billing/add-invoice';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Cookies from 'js-cookie';
-import { useDoc } from '@/firebase';
-import { doc, DocumentReference } from 'firebase/firestore';
-import type { Client } from '@/schemas/client';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
-
-const generateInvoiceId = (clientName: string = '') => {
-    const brandName = 'NEUP';
-    const clientPart = clientName.trim().replace(/\s+/g, '-').toLowerCase();
-    const uniquePart = `${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
-    return `${brandName}-${clientPart || 'client'}-${uniquePart}`;
-}
-
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Cookies from 'js-cookie';
+import { InvoiceForm } from '@/app/(app)/billing/components/invoice-form';
+import { getClient } from '@/actions/clients/get-clients';
 
 export default function AddInvoicePage() {
-  const firestore = useFirestore();
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string|null>(null);
+  const [client, setClient] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setClientId(Cookies.get('client') || null);
+    const id = Cookies.get('client') || null;
+    setClientId(id);
+    
+    if (id) {
+        getClient(id).then(res => {
+            if (res.success) {
+                setClient(res.client);
+            }
+            setLoading(false);
+        });
+    } else {
+        setLoading(false);
+    }
   }, []);
 
-  const clientRef = useMemo(() => {
-    if (!firestore || !clientId) return null;
-    return doc(firestore, 'clients', clientId) as DocumentReference<Client>;
-  }, [firestore, clientId]);
-
-  const { data: client, loading: clientLoading } = useDoc<Client>(clientRef);
-
-  const form = useForm<z.infer<typeof invoiceSchema>>({
-    resolver: zodResolver(invoiceSchema),
-    defaultValues: {
-        invoiceId: generateInvoiceId(),
-        title: '',
-        description: undefined,
-        status: 'Due',
-        clientName: '',
-        amount: 0,
-        currency: 'USD',
-        clientId: clientId || '',
-    },
-  });
-
-   useEffect(() => {
-    if (clientId) {
-      form.setValue('clientId', clientId);
-    }
-    if (client) {
-      form.setValue('clientName', client.name);
-      form.setValue('invoiceId', generateInvoiceId(client.name));
-    }
-  }, [client, clientId, form]);
-
-  const clientName = form.watch('clientName');
-
-  useEffect(() => {
-    if (clientName) {
-      form.setValue('invoiceId', generateInvoiceId(clientName));
-    }
-  }, [clientName, form]);
-
-  async function onSubmit(values: z.infer<typeof invoiceSchema>) {
-    if (!firestore) return;
-    setIsSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      await addInvoice(firestore, {
-        ...values,
-        dueDate: format(values.dueDate, 'yyyy-MM-dd'),
-      });
-      router.push('/billing');
-    } catch (error) {
-      setIsSubmitting(false);
-      setSubmitError('An unexpected error occurred. Please try again.');
-    } finally {
-        setIsSubmitting(false);
-    }
-  }
-
-  if (clientLoading) {
+  if (loading) {
     return (
       <Card>
         <CardHeader>
@@ -134,7 +49,7 @@ export default function AddInvoicePage() {
             <Skeleton className="h-10" />
             <Skeleton className="h-10" />
         </CardContent>
-    </Card>
+      </Card>
     )
   }
 
@@ -152,202 +67,5 @@ export default function AddInvoicePage() {
     </Card>
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">
-          Create New Invoice
-        </CardTitle>
-        <CardDescription>
-          Fill out the details below to create a new invoice for {client?.name}.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
-             <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                        <Input placeholder="e.g. Q3 Website Redesign" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-             <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
-                    <FormControl>
-                        <Textarea placeholder="e.g. Invoice for the third quarter website redesign project, including design and development phases." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                control={form.control}
-                name="clientName"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Client Name</FormLabel>
-                    <FormControl>
-                        <Input placeholder="e.g. Acme Inc." {...field} disabled />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                 <FormField
-                control={form.control}
-                name="invoiceId"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Invoice ID</FormLabel>
-                    <FormControl>
-                        <Input disabled {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <FormField
-                    control={form.control}
-                    name="amount"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Amount</FormLabel>
-                        <FormControl>
-                            <Input type="number" placeholder="e.g. 1500" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="currency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Currency</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a currency" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="USD">USD</SelectItem>
-                          <SelectItem value="EUR">EUR</SelectItem>
-                          <SelectItem value="GBP">GBP</SelectItem>
-                          <SelectItem value="JPY">JPY</SelectItem>
-                          <SelectItem value="NRS">NRS</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                control={form.control}
-                name="dueDate"
-                render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                    <FormLabel>Due Date</FormLabel>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                        <FormControl>
-                            <Button
-                            variant={'outline'}
-                            className={cn(
-                                'pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                            )}
-                            >
-                            {field.value ? (
-                                format(field.value, 'PPP')
-                            ) : (
-                                <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                        </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                        />
-                        </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Due">Due</SelectItem>
-                          <SelectItem value="Paid">Paid</SelectItem>
-                          <SelectItem value="Overdue">Overdue</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-             </div>
-
-            <div className="flex gap-2">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Create Invoice
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/billing">Cancel</Link>
-              </Button>
-            </div>
-            {submitError && (
-              <p className="text-sm font-medium text-destructive">
-                {submitError}
-              </p>
-            )}
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
-  );
+  return <InvoiceForm clientId={clientId} clientName={client?.name} />;
 }
-
-    

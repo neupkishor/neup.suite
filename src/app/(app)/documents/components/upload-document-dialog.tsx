@@ -1,27 +1,26 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { addDocument } from '@/actions/documents/add-document';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, UploadCloud } from 'lucide-react';
-import { useFirestore } from '@/firebase/provider';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { uploadFile } from '@/lib/upload-service';
-import { Textarea } from '@/components/ui/textarea';
-import Cookies from 'js-cookie';
 import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { uploadFile } from '@/lib/upload-service';
+import Cookies from 'js-cookie';
+import { Loader2, UploadCloud } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 export function UploadDocumentDialog({ children }: { children: React.ReactNode }) {
   const [file, setFile] = useState<File | null>(null);
@@ -32,7 +31,6 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const firestore = useFirestore();
   const [clientId, setClientId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,7 +59,7 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
   }
 
   const handleUpload = async () => {
-    if (!file || !firestore || !clientId) {
+    if (!file || !clientId) {
       setError('Please select a file and ensure a client is selected.');
       return;
     }
@@ -77,8 +75,7 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
         setUploadProgress(percentCompleted);
       });
 
-      const documentsCollection = collection(firestore, 'documents');
-      await addDoc(documentsCollection, {
+      await addDocument({
         name: name || file.name,
         url: fileUrl,
         status: 'In Review',
@@ -88,8 +85,6 @@ export function UploadDocumentDialog({ children }: { children: React.ReactNode }
         notes: notes,
         uploadedBy: 'Jane Doe', // Placeholder
         clientId: clientId,
-        createdOn: serverTimestamp(),
-        updatedOn: serverTimestamp(),
       });
       
       setIsOpen(false);

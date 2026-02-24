@@ -1,35 +1,33 @@
+'use server';
 
-'use client';
-import {
-  doc,
-  updateDoc,
-  serverTimestamp,
-  Firestore,
-} from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
 import { activitySchema } from '@/schemas/activity';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 type UpdatedActivity = z.infer<typeof activitySchema>;
 
-export async function updateActivity(
-  db: Firestore,
-  activityId: string,
-  activityData: UpdatedActivity
-) {
-  const activityDoc = doc(db, 'activities', activityId);
-  
-  return updateDoc(activityDoc, {
-    ...activityData,
-    updatedOn: serverTimestamp(),
-  }).catch((serverError) => {
-    const permissionError = new FirestorePermissionError({
-      path: activityDoc.path,
-      operation: 'update',
-      requestResourceData: activityData,
+export async function updateActivity(activityId: string, activityData: UpdatedActivity) {
+  try {
+    const updatedActivity = await prisma.activity.update({
+      where: {
+        id: activityId,
+      },
+      data: {
+        title: activityData.title,
+        description: activityData.description,
+        results: activityData.results,
+        links: activityData.links || [],
+        files: activityData.files ? JSON.parse(JSON.stringify(activityData.files)) : undefined,
+        projectId: activityData.projectId,
+        clientId: activityData.clientId,
+      },
     });
-    errorEmitter.emit('permission-error', permissionError);
-    throw serverError;
-  });
+
+    revalidatePath('/activities');
+    return updatedActivity;
+  } catch (error) {
+    console.error('Error updating activity:', error);
+    throw new Error('Failed to update activity');
+  }
 }

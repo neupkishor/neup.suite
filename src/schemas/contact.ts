@@ -63,4 +63,4 @@ export const contactSchema = z.object({
   clientId: z.string().min(1, 'Client ID is required'),
 });
 
-export type Contact = z.infer<typeof contactSchema>;
+export type Contact = z.infer<typeof contactSchema> & { id: string };

@@ -11,3 +11,5 @@ export const projectSchema = z.object({
   status: z.enum(['Planning', 'In Progress', 'On Hold', 'Completed']),
   clientId: z.string().optional(),
 });
+
+export type Project = z.infer<typeof projectSchema> & { id: string };

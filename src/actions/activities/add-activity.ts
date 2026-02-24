@@ -1,35 +1,30 @@
+'use server';
 
-'use client';
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  Firestore,
-} from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
 import { activitySchema } from '@/schemas/activity';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
-type NewActivity = z.infer<typeof activitySchema> & { createdBy: string };
+type NewActivity = z.infer<typeof activitySchema>;
 
-export async function addActivity(
-  db: Firestore,
-  activityData: NewActivity
-) {
-  const activitiesCollection = collection(db, 'activities');
-  
-  return addDoc(activitiesCollection, {
-    ...activityData,
-    createdOn: serverTimestamp(),
-    updatedOn: serverTimestamp(),
-  }).catch((serverError) => {
-    const permissionError = new FirestorePermissionError({
-      path: activitiesCollection.path,
-      operation: 'create',
-      requestResourceData: activityData,
+export async function addActivity(activityData: NewActivity) {
+  try {
+    const newActivity = await prisma.activity.create({
+      data: {
+        title: activityData.title,
+        description: activityData.description,
+        results: activityData.results,
+        links: activityData.links || [],
+        files: activityData.files ? JSON.parse(JSON.stringify(activityData.files)) : undefined,
+        projectId: activityData.projectId,
+        clientId: activityData.clientId,
+      },
     });
-    errorEmitter.emit('permission-error', permissionError);
-    throw serverError;
-  });
+
+    revalidatePath('/activities');
+    return newActivity;
+  } catch (error) {
+    console.error('Error creating activity:', error);
+    throw new Error('Failed to create activity');
+  }
 }

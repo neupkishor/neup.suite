@@ -1,44 +1,45 @@
 
-'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GoalForm } from '../components/goal-form';
-import { useDoc } from "@/firebase";
-import { useFirestore } from "@/firebase/provider";
-import { doc, DocumentReference } from "firebase/firestore";
-import { useMemo, use } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { GoalForm } from '@/app/(app)/goals/components/goal-form';
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import { GoalStatus } from "@/generated/prisma";
 
-type Goal = {
-    id: string;
-    title: string;
-    description: string;
-    targetDate: string;
-    status: string;
+const STATUS_LABELS: Record<GoalStatus, string> = {
+    [GoalStatus.NotStarted]: 'Not Started',
+    [GoalStatus.InProgress]: 'In Progress',
+    [GoalStatus.Completed]: 'Completed',
+    [GoalStatus.AtRisk]: 'At Risk',
 };
 
+export default async function EditGoalPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
 
-export default function EditGoalPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
-    const firestore = useFirestore();
-    const goalRef = useMemo(() => {
-        if (!firestore || !id) return null;
-        return doc(firestore, 'goals', id) as DocumentReference<Goal>;
-    }, [firestore, id]);
+    const goal = await prisma.goal.findUnique({
+        where: { id },
+    });
 
-    const { data: goal, loading } = useDoc<Goal>(goalRef);
+    if (!goal) {
+        return notFound();
+    }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Edit Goal</CardTitle>
-        <CardDescription>
-          Update the details of this goal or milestone.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {loading && <Skeleton className="h-64" />}
-        {goal && <GoalForm goal={goal} />}
-      </CardContent>
-    </Card>
-  );
+    const goalData = {
+        ...goal,
+        status: STATUS_LABELS[goal.status as GoalStatus] as any,
+        description: goal.description || undefined,
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">Edit Goal</CardTitle>
+                <CardDescription>
+                    Update the details of this goal or milestone.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <GoalForm goal={goalData} clientId={goal.clientId} />
+            </CardContent>
+        </Card>
+    );
 }
