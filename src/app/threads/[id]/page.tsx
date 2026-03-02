@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { ThreadList } from '@/app/(app)/tasks/components/thread-list';
-import { ThreadInput } from '@/app/(app)/tasks/components/thread-input';
+import { ThreadList } from '@/app/tasks/components/thread-list';
+import { ThreadInput } from '@/app/tasks/components/thread-input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';

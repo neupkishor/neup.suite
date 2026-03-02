@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { ReportGenerator } from "@/app/(app)/reports/generate/report-generator";
+import { ReportGenerator } from "@/app/reports/generate/report-generator";
 import { TemplateType } from "@/generated/prisma";
 
 async function getTemplates(clientId: string) {

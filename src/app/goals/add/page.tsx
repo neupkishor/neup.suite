@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GoalForm } from '@/app/(app)/goals/components/goal-form';
+import { GoalForm } from '@/app/goals/components/goal-form';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cookies } from "next/headers";

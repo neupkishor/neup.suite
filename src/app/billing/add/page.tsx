@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
-import { InvoiceForm } from '@/app/(app)/billing/components/invoice-form';
+import { InvoiceForm } from '@/app/billing/components/invoice-form';
 import { getClient } from '@/actions/clients/get-clients';
 
 export default function AddInvoicePage() {

@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { useDoc } from '@/firebase';
 import { doc, DocumentReference } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ContactForm } from '@/app/(app)/contacts/components/contact-form';
+import { ContactForm } from '@/app/contacts/components/contact-form';
 import type { Contact } from '@/schemas/contact';
 import { Button } from '@/components/ui/button';
 

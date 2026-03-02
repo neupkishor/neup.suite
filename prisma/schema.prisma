@@ -7,6 +7,14 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  account_id    String   @id @unique
+  display_name  String
+  display_image String?
+  neup_id       String   @unique
+  created_at    DateTime @default(now())
+}
+
 model Client {
   id         String   @id @default(uuid())
   name       String

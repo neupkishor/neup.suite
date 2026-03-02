@@ -6,8 +6,8 @@ import { Download, PlusCircle, ListTodo, Clock, CheckCircle2 } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { prisma } from '@/lib/prisma';
-import { CreateTaskLux } from '@/app/(app)/tasks/components/create-task-lux';
-import { TaskCard } from '@/app/(app)/tasks/components/task-card';
+import { CreateTaskLux } from '@/app/tasks/components/create-task-lux';
+import { TaskCard } from '@/app/tasks/components/task-card';
 import { Task, Project, Client, Subtask } from '@/generated/prisma';
 
 function TaskCardSkeleton() {

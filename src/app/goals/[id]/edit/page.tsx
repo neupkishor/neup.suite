@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GoalForm } from '@/app/(app)/goals/components/goal-form';
+import { GoalForm } from '@/app/goals/components/goal-form';
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { GoalStatus } from "@/generated/prisma";

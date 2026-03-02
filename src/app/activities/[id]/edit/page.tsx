@@ -2,7 +2,7 @@
 'use client';
 import { use, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ActivityForm } from '@/app/(app)/activities/components/activity-form';
+import { ActivityForm } from '@/app/activities/components/activity-form';
 import { useDoc, useCollection } from '@/firebase';
 import { useFirestore } from '@/firebase/provider';
 import { doc, DocumentReference, collection, CollectionReference, query, where } from 'firebase/firestore';

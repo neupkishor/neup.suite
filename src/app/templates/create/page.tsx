@@ -1,7 +1,7 @@
 
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TemplateForm } from '@/app/(app)/templates/components/template-form';
+import { TemplateForm } from '@/app/templates/components/template-form';
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";

@@ -5,6 +5,7 @@ config();
 
 const nextConfig: NextConfig = {
   /* config options here */
+  basePath: '/suite',
   typescript: {
     ignoreBuildErrors: true,
   },

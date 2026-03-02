@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { DeleteDocumentButton } from '@/app/(app)/documents/[id]/delete-button';
+import { DeleteDocumentButton } from '@/app/documents/[id]/delete-button';
 import { File, Calendar, User, FileText, Hash, HardDrive, ExternalLink } from 'lucide-react';
 
 const getStatusVariant = (status: string) => {

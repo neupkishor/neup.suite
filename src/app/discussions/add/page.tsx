@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DiscussionForm } from '@/app/(app)/discussions/components/discussion-form';
+import { DiscussionForm } from '@/app/discussions/components/discussion-form';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cookies } from "next/headers";

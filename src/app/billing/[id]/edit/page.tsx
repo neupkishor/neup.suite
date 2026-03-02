@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { InvoiceForm } from '@/app/(app)/billing/components/invoice-form';
+import { InvoiceForm } from '@/app/billing/components/invoice-form';
 import { notFound } from 'next/navigation';
 
 export default async function EditInvoicePage({ params }: { params: Promise<{ id: string }> }) {

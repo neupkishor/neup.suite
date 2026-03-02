@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TemplateForm } from '@/app/(app)/templates/components/template-form';
+import { TemplateForm } from '@/app/templates/components/template-form';
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";

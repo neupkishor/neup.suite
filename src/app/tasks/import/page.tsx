@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/prisma';
-import { ImportTasksForm } from '@/app/(app)/tasks/import/import-form';
+import { ImportTasksForm } from '@/app/tasks/import/import-form';
 import { TemplateType } from '@/generated/prisma';
 
 export default async function ImportTasksPage() {

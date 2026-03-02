@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FeedbackForm } from '@/app/(app)/feedback/components/feedback-form';
+import { FeedbackForm } from '@/app/feedback/components/feedback-form';
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
