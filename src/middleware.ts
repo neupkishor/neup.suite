@@ -14,8 +14,8 @@ export function middleware(request: NextRequest) {
   const isPublicPath = pathname === '/signin' || pathname.startsWith('/bridge/callback.v1');
 
   if ((!authAccountId || !authSessionId || !authSessionKey) && !isPublicPath) {
-    // If not signed in to Neup.Account, redirect to the main account signin
-    const accountSignInUrl = `${process.env.NEXT_PUBLIC_NEUP_ACCOUNT_URL || 'https://neupgroup.com/account'}/signin?redirect_to=${encodeURIComponent(`${process.env.NEXT_PUBLIC_APP_URL || 'https://neupgroup.com/suite'}${pathname}`)}`;
+    // If not signed in to Neup.Account, redirect to the main account signin start page
+    const accountSignInUrl = `https://neupgroup.com/account/auth/start?redirect_to=${encodeURIComponent(`https://neupgroup.com/suite${pathname}`)}`;
     return NextResponse.redirect(accountSignInUrl);
   }
 
