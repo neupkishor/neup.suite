@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
 import { DeleteProjectButton } from "./delete-button";
 
 const getStatusVariant = (status: string) => {
