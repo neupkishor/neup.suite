@@ -2,6 +2,8 @@
 import { getClients } from "@/actions/clients/get-clients";
 import { ClientList } from "./client-list";
 
+export const dynamic = "force-dynamic";
+
 export default async function ClientsPage() {
     const { clients, error } = await getClients();
 

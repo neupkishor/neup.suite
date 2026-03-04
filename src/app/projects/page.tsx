@@ -1,4 +1,3 @@
-
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
@@ -9,6 +8,8 @@ import { FolderKanban } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Project, Client } from "@/generated/prisma";
 import { getSession } from "@/actions/auth/session";
+
+export const dynamic = "force-dynamic";
 
 function ProjectCardSkeleton() {
     return (
