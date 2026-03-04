@@ -29,7 +29,7 @@ export function UserNav() {
     if (!accountId || !sessionId || !sessionKey) {
       // If any of the auth cookies are missing, redirect to the signin start page
       const currentPageUrl = window.location.href;
-      window.location.href = `https://neupgroup.com/auth/start?redirects=${encodeURIComponent(currentPageUrl)}`;
+      window.location.href = `https://neupgroup.com/account/auth/start?redirect_to=${encodeURIComponent(currentPageUrl)}`;
       return;
     }
 
