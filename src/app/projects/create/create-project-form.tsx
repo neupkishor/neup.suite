@@ -52,11 +52,17 @@ export function CreateProjectForm({ clients, initialClientId }: CreateProjectFor
     setSubmitError(null);
 
     try {
-        await createProject({
+        const result = await createProject({
             ...values,
             deadline: format(values.deadline, "yyyy-MM-dd"),
-        }, 'user_placeholder'); // Placeholder for auth user ID
-        router.push('/projects');
+        });
+
+        if (result.success) {
+            router.push('/projects');
+        } else {
+            setIsSubmitting(false);
+            setSubmitError(result.error || "Failed to create project");
+        }
     } catch (error) {
         setIsSubmitting(false);
         setSubmitError("An unexpected error occurred. Please try again.");

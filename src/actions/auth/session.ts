@@ -21,8 +21,8 @@ export async function getSession() {
     });
 
     // 2. Conditional Verification
-    const appId = process.env.NEUP_APP_ID || 'neup-one';
-    const verifyUrl = `${process.env.NEUP_ACCOUNT_API_URL || 'https://neupgroup.com/account'}/bridge/api.v1/auth/verify`;
+    const appId = 'neupsuite';
+    const verifyUrl = 'https://neupgroup.com/account/bridge/api.v1/auth/verify';
 
     const response = await fetch(verifyUrl, {
       method: 'POST',

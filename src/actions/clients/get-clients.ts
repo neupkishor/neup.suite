@@ -4,12 +4,17 @@ import { prisma } from '@/lib/prisma';
 import { Client } from '@/generated/prisma'; // Or where the type is defined, usually just Prisma Client
 // Actually usually import { Client } from '@prisma/client';
 
+import { getSession } from '../auth/session';
+
 export async function getClients() {
   try {
-    // In a real app, we would filter by the logged-in user's organization or ID
-    // const userId = ...
-    // where: { owner_id: userId }
+    const session = await getSession();
+    if (!session) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
     const clients = await prisma.client.findMany({
+      where: { owner_id: session.account_id },
       orderBy: {
         created_on: 'desc',
       },

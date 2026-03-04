@@ -38,6 +38,17 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         );
     }
 
+    // Fetch client details if associated
+    let clientName = 'No Client';
+    if (project.working_with) {
+        const client = await prisma.client.findUnique({
+            where: { id: project.working_with }
+        });
+        if (client) {
+            clientName = client.name;
+        }
+    }
+
     return (
         <Card>
             <CardHeader>
@@ -61,6 +72,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     <div className="space-y-1">
                         <p className="text-sm font-medium text-muted-foreground">Deadline</p>
                         <p className="text-lg font-semibold">{project.deadline ? project.deadline.toLocaleDateString() : 'No Deadline'}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">Client</p>
+                        <p className="text-lg font-semibold">{clientName}</p>
                     </div>
                     {/* Additional fields can be added here */}
                 </div>

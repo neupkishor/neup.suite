@@ -46,9 +46,7 @@ export default function CreateClientPage() {
     setIsSubmitting(true);
 
     try {
-        // TEMPORARY: Bypassing auth check until integrated
-        const tempUserId = "temp-user-id";
-        const result = await createClient(values, tempUserId);
+        const result = await createClient(values);
         
         if (result.success) {
             toast({

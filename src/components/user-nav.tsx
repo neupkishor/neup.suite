@@ -21,17 +21,32 @@ export function UserNav() {
   const [user, setUser] = useState<{account_id: string, display_name: string} | null>(null);
 
   useEffect(() => {
-    // In a real app, you might fetch the full user from an API or use a context provider
+    // Check authentication cookies on the client side
     const accountId = Cookies.get('auth_account_id');
+    const sessionId = Cookies.get('auth_session_id');
+    const sessionKey = Cookies.get('auth_session_key');
+
+    if (!accountId || !sessionId || !sessionKey) {
+      // If any of the auth cookies are missing, redirect to the signin start page
+      const currentPageUrl = window.location.href;
+      window.location.href = `https://neupgroup.com/auth/start?redirects=${encodeURIComponent(currentPageUrl)}`;
+      return;
+    }
+
     if (accountId) {
       setUser({ account_id: accountId, display_name: accountId });
     }
   }, []);
 
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.location.href = 'https://neupgroup.com/account';
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full" onClick={handleProfileClick}>
           <Avatar className="h-9 w-9">
             {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User Avatar" data-ai-hint={userAvatar.imageHint} />}
             <AvatarFallback>{user ? user.account_id.substring(0, 2).toUpperCase() : 'JD'}</AvatarFallback>

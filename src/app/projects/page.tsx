@@ -8,6 +8,7 @@ import { AddItemCard } from "@/components/add-item-card";
 import { FolderKanban } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Project, Client } from "@/generated/prisma";
+import { getSession } from "@/actions/auth/session";
 
 function ProjectCardSkeleton() {
     return (
@@ -27,11 +28,23 @@ function ProjectCardSkeleton() {
 }
 
 export default async function ProjectsPage() {
+    const session = await getSession();
+    if (!session) {
+        return (
+            <div className="text-center text-muted-foreground py-12">
+                Please sign in to view your projects.
+            </div>
+        );
+    }
+
     const cookieStore = await cookies();
     const clientId = cookieStore.get('client')?.value;
 
     const projects = await prisma.project.findMany({
-        where: clientId ? { working_with: clientId } : {},
+        where: {
+            project_owner: session.account_id,
+            ...(clientId ? { working_with: clientId } : {})
+        },
         orderBy: {
             created_on: 'asc',
         },
@@ -47,8 +60,8 @@ export default async function ProjectsPage() {
     }
 
     const getClientName = (cId: string | null) => {
-        if (!cId) return 'Unknown Client';
-        return clientsMap[cId] || 'Unknown Client';
+        if (!cId) return 'No Client';
+        return clientsMap[cId] || 'No Client';
     }
 
   return (
@@ -80,7 +93,7 @@ export default async function ProjectsPage() {
                             status: project.status,
                             deadline: project.deadline ? project.deadline.toLocaleDateString() : 'No Deadline',
                         }} 
-                        clientName={!clientId ? getClientName(project.clientId) : undefined} 
+                        clientName={!clientId ? getClientName(project.working_with) : undefined} 
                     />
                 </Link>
             ))}

@@ -5,8 +5,11 @@ import { clientSchema } from '@/schemas/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
-export async function createClient(data: z.infer<typeof clientSchema>, userId: string) {
-  if (!userId) {
+import { getSession } from '../auth/session';
+
+export async function createClient(data: z.infer<typeof clientSchema>) {
+  const session = await getSession();
+  if (!session) {
     return { success: false, error: 'User not authenticated' };
   }
 
@@ -23,8 +26,8 @@ export async function createClient(data: z.infer<typeof clientSchema>, userId: s
       data: {
         name,
         status: status || 'Onboarding', // Default status if not provided
-        created_by: userId,
-        owner_id: userId,
+        created_by: session.account_id,
+        owner_id: session.account_id,
       },
     });
 
